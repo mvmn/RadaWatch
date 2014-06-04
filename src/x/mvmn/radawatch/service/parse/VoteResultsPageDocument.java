@@ -278,5 +278,4 @@ public class VoteResultsPageDocument {
 			System.out.println(faction.toString());
 		}
 	}
-
 }
