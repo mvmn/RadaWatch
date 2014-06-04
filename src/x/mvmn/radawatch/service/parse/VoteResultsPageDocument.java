@@ -4,15 +4,15 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
-import scala.actors.threadpool.Arrays;
 
 public class VoteResultsPageDocument {
 
@@ -44,7 +44,8 @@ public class VoteResultsPageDocument {
 
 		Document document = Jsoup.connect(url).timeout(30000).get();
 		title = document.select(".head_gol font[color=Black]").text().trim();
-		String resultStr = document.select(".head_gol font[color=Red]").text().trim().toLowerCase();
+		String resultStr = document.select(".head_gol font[color=Red]").text().trim().toLowerCase()
+				+ document.select(".head_gol font[color=Green]").text().trim().toLowerCase();
 		if (resultStr.equals("рішення прийнято")) {
 			result = true;
 		} else if (resultStr.equals("рішення не прийнято")) {
@@ -83,18 +84,39 @@ public class VoteResultsPageDocument {
 
 	public static class Vote {
 
-		@SuppressWarnings("unchecked")
-		private static final List<String> expectedVotes = Arrays.asList(new String[] { "за", "проти", "утримався", "утрималась", "не голосував",
-				"не голосувала", "відсутній", "відсутня" });
+		public static enum VoteType {
+			FOR(1), AGAINST(2), ABSTAINED(3), SKIPPED(4), ABSENT(5);
+			private final int id;
+
+			VoteType(final int id) {
+				this.id = id;
+			}
+
+			public int getId() {
+				return this.id;
+			}
+		}
+
+		private static final Map<String, VoteType> mapVoteNameToVoteType;
+		static {
+			mapVoteNameToVoteType = new HashMap<String, VoteResultsPageDocument.Vote.VoteType>();
+			mapVoteNameToVoteType.put("за", VoteType.FOR);
+			mapVoteNameToVoteType.put("проти", VoteType.AGAINST);
+			mapVoteNameToVoteType.put("утримався", VoteType.ABSTAINED);
+			mapVoteNameToVoteType.put("утрималась", VoteType.ABSTAINED);
+			mapVoteNameToVoteType.put("не голосував", VoteType.SKIPPED);
+			mapVoteNameToVoteType.put("не голосувала", VoteType.SKIPPED);
+			mapVoteNameToVoteType.put("відсутній", VoteType.ABSENT);
+			mapVoteNameToVoteType.put("відсутня", VoteType.ABSENT);
+		}
 
 		private final String name;
-		private final String vote;
+		private final VoteType vote;
 
 		public Vote(final String name, final String vote) {
 			this.name = name;
-			this.vote = vote;
-
-			if (!expectedVotes.contains(vote.toLowerCase())) {
+			this.vote = mapVoteNameToVoteType.get(vote.toLowerCase());
+			if (this.vote == null) {
 				throw new RuntimeException("Unexpected vote value: " + vote);
 			}
 		}
@@ -103,7 +125,7 @@ public class VoteResultsPageDocument {
 			return name;
 		}
 
-		public String getVote() {
+		public VoteType getVote() {
 			return vote;
 		}
 

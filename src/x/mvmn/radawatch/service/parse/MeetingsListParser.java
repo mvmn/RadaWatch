@@ -1,13 +1,13 @@
 package x.mvmn.radawatch.service.parse;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
+import x.mvmn.radawatch.service.db.VoteResultsStorageService;
 
 public class MeetingsListParser {
 
@@ -26,23 +26,28 @@ public class MeetingsListParser {
 
 	private static final Pattern pageIdPattern = Pattern.compile(".*(?:\\?|&)g_id=(\\d+)(?:&.*|$)");
 
-	public List<VoteResultsPageDocument> fetchNewMeetings(final RecordExistenceChecker existenceChecker) throws Exception {
-		List<VoteResultsPageDocument> meetings = new ArrayList<VoteResultsPageDocument>();
-		for (int i = 1; i < lastPageNumber + 3; i++) {
-			Document document = Jsoup.connect(String.format(PAGE_URL_PATTERN, i)).timeout(30000).get();
-			for (Element link : document.select(".news_item .details a")) {
-				Matcher idMatcher = pageIdPattern.matcher(link.attr("href"));
-				idMatcher.find();
-				int id = Integer.parseInt(idMatcher.group(1));
-				if (!existenceChecker.checkExists(id)) {
-					meetings.add(new VoteResultsPageDocument(link.attr("href").trim()));
-				}
+	public int fetchNewMeetings(final int pageNumber, final RecordExistenceChecker existenceChecker, VoteResultsStorageService vrStore) throws Exception {
+		int result = 0;
+		Document document = Jsoup.connect(String.format(PAGE_URL_PATTERN, pageNumber)).timeout(30000).get();
+		for (Element link : document.select(".archieve_block .news_item .details a")) {
+			Matcher idMatcher = pageIdPattern.matcher(link.attr("href"));
+			idMatcher.find();
+			int id = Integer.parseInt(idMatcher.group(1));
+			if (!existenceChecker.checkExists(id)) {
+				vrStore.save(new VoteResultsPageDocument(link.attr("href").trim()));
+				result++;
+				System.out.println("Fetched meeting data for ID " + id);
 			}
 		}
-		return meetings;
+
+		return result;
 	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println(new MeetingsListParser().lastPageNumber);
+	}
+
+	public int getLastPageNumber() {
+		return lastPageNumber;
 	}
 }
