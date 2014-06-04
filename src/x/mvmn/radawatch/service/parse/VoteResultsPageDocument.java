@@ -115,7 +115,7 @@ public class VoteResultsPageDocument {
 
 		public Vote(final String name, final String vote) {
 			this.name = name;
-			this.vote = mapVoteNameToVoteType.get(vote.toLowerCase());
+			this.vote = mapVoteNameToVoteType.get(vote.toLowerCase().replaceAll("\\*", ""));
 			if (this.vote == null) {
 				throw new RuntimeException("Unexpected vote value: " + vote);
 			}
@@ -285,19 +285,19 @@ public class VoteResultsPageDocument {
 		return globalId;
 	}
 
-	public static void main(String args[]) throws Exception {
-		VoteResultsPageDocument tst = new VoteResultsPageDocument("http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=5354");
-		System.out.println(tst.globalId);
-		System.out.println(tst.title);
-		System.out.println(tst.result);
-		System.out.println(tst.date);
-		System.out.println(tst.votedYes);
-		System.out.println(tst.votedNo);
-		System.out.println(tst.abstained);
-		System.out.println(tst.skipped);
-		System.out.println(tst.total);
-		for (Faction faction : tst.factions) {
-			System.out.println(faction.toString());
-		}
-	}
+	// public static void main(String args[]) throws Exception {
+	// VoteResultsPageDocument tst = new VoteResultsPageDocument("http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=5354");
+	// System.out.println(tst.globalId);
+	// System.out.println(tst.title);
+	// System.out.println(tst.result);
+	// System.out.println(tst.date);
+	// System.out.println(tst.votedYes);
+	// System.out.println(tst.votedNo);
+	// System.out.println(tst.abstained);
+	// System.out.println(tst.skipped);
+	// System.out.println(tst.total);
+	// for (Faction faction : tst.factions) {
+	// System.out.println(faction.toString());
+	// }
+	// }
 }

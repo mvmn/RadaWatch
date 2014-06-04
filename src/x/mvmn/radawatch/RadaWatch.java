@@ -142,6 +142,7 @@ public class RadaWatch {
 			prbFetch.setIndeterminate(false);
 			prbFetch.setMinimum(0);
 			prbFetch.setMaximum(parser.getLastPageNumber() + 3);
+			prbFetch.setValue(0);
 		}
 
 		public void stop() {

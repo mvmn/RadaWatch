@@ -114,12 +114,8 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 			result = rs.next();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
 			if (conn != null) {
-				try {
-					conn.createStatement().execute("rollback");
-				} catch (Exception tre) {
-					tre.printStackTrace();
-				}
 				try {
 					conn.close();
 				} catch (Exception cce) {
