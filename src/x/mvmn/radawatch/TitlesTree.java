@@ -26,7 +26,6 @@ public class TitlesTree extends JPanel {
 	public void mapToNodes(DefaultMutableTreeNode parentNode, Map<String, Object> map) {
 		List<Map.Entry<String, Object>> entries = new ArrayList<Map.Entry<String, Object>>(map.entrySet());
 		Collections.sort(entries, new Comparator<Map.Entry<String, Object>>() {
-
 			@Override
 			public int compare(Entry<String, Object> m1, Entry<String, Object> m2) {
 				int v1 = 0;
@@ -39,8 +38,8 @@ public class TitlesTree extends JPanel {
 				}
 				return v2 - v1;
 			}
-
 		});
+
 		for (Map.Entry<String, Object> entry : entries) {
 			if (entry.getValue() instanceof java.util.Map) {
 				String nodeVal = String.format("%s [%s]", entry.getKey(), ((Map<String, Object>) entry.getValue()).get("__count"));

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,6 +17,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
+import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
+import net.sourceforge.jdatepicker.impl.UtilDateModel;
 import x.mvmn.radawatch.service.analyze.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.StorageService;
 import x.mvmn.radawatch.service.db.VoteResultsStorageService;
@@ -84,18 +88,28 @@ public class RadaWatch {
 		{
 			// TODO: refactor
 			JButton btnAnalyzeTitles = new JButton("Analyze titles");
+			final JDatePickerImpl datePickerFrom = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
+			final JDatePickerImpl datePickerTo = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
+
+			JPanel datesPanel = new JPanel(new BorderLayout());
+			datesPanel.add(datePickerFrom, BorderLayout.WEST);
+			datesPanel.add(datePickerTo, BorderLayout.EAST);
 			tabAnalyze.add(btnAnalyzeTitles, BorderLayout.SOUTH);
+			tabAnalyze.add(datesPanel, BorderLayout.NORTH);
+			final JPanel resultsPanel = new JPanel(new BorderLayout());
+			tabAnalyze.add(resultsPanel, BorderLayout.CENTER);
 			btnAnalyzeTitles.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					VotingTitlesAnalyzer titlesAnalyzer = new VotingTitlesAnalyzer(storageService);
 					try {
-						TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles((Integer) null, (Integer) null)));
-						tabAnalyze.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
-						tabAnalyze.invalidate();
-						tabAnalyze.revalidate();
-						tabAnalyze.repaint();
+						Date fromDate = (Date) datePickerFrom.getModel().getValue();
+						Date toDate = (Date) datePickerTo.getModel().getValue();
+						TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles(fromDate, toDate)));
+						resultsPanel.removeAll();
+						resultsPanel.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
+						resultsPanel.validate();
 					} catch (Exception ex) {
 						ex.printStackTrace();
 						JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",

@@ -27,6 +27,18 @@ public class VotingTitlesAnalyzer {
 		return storageService.execSelectCount("select count(*) from (select * from votesession " + generateLimitCondition(offset, count) + ")");
 	}
 
+	public List<String> getVotingTitles(final java.util.Date fromDate, final java.util.Date toDate) throws Exception {
+		Date fromDateSql = null;
+		Date toDateSql = null;
+		if (fromDate != null) {
+			fromDateSql = new Date(fromDate.getTime());
+		}
+		if (toDate != null) {
+			toDateSql = new Date(toDate.getTime());
+		}
+		return getVotingTitles(fromDateSql, toDateSql, true);
+	}
+
 	public List<String> getVotingTitles(final Date fromDate, final Date toDate) throws Exception {
 		return getVotingTitles(fromDate, toDate, true);
 	}
@@ -51,9 +63,9 @@ public class VotingTitlesAnalyzer {
 
 	protected String getTitleColumn(boolean appendDate) {
 		if (appendDate) {
-			return " concat(votetitle, '. /', votedate,'/') ";
+			return " concat(votetitle, '. /', votedate,'/', case votepassed when true then ' <прийнято>' else ' <НЕ прийнято>' end case) ";
 		} else {
-			return " votetitle ";
+			return " concat(votetitle, case votepassed when true then ' <прийнято>' else ' <НЕ прийнято>' end case)) ";
 		}
 	}
 
