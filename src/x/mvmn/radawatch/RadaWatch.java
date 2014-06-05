@@ -93,6 +93,9 @@ public class RadaWatch {
 					try {
 						TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles((Integer) null, (Integer) null)));
 						tabAnalyze.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
+						tabAnalyze.invalidate();
+						tabAnalyze.revalidate();
+						tabAnalyze.repaint();
 					} catch (Exception ex) {
 						ex.printStackTrace();
 						JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",

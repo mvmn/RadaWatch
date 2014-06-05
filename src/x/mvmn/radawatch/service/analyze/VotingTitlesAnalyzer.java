@@ -28,17 +28,33 @@ public class VotingTitlesAnalyzer {
 	}
 
 	public List<String> getVotingTitles(final Date fromDate, final Date toDate) throws Exception {
+		return getVotingTitles(fromDate, toDate, true);
+	}
+
+	public List<String> getVotingTitles(final Date fromDate, final Date toDate, boolean appendDates) throws Exception {
 		String whereCondition = "";
 		String dateConditions = generateDateConditions(fromDate, toDate);
 		if (dateConditions != null && dateConditions.trim().length() > 0) {
 			whereCondition = " WHERE " + dateConditions;
 		}
 
-		return storageService.execSelectOneColumn("select votetitle from votesession " + whereCondition);
+		return storageService.execSelectOneColumn("select " + getTitleColumn(appendDates) + " from votesession " + whereCondition);
 	}
 
 	public List<String> getVotingTitles(final Integer offset, final Integer count) throws Exception {
-		return storageService.execSelectOneColumn("select votetitle from votesession " + generateLimitCondition(offset, count));
+		return getVotingTitles(offset, count, true);
+	}
+
+	public List<String> getVotingTitles(final Integer offset, final Integer count, boolean appendDates) throws Exception {
+		return storageService.execSelectOneColumn("select " + getTitleColumn(appendDates) + " from votesession " + generateLimitCondition(offset, count));
+	}
+
+	protected String getTitleColumn(boolean appendDate) {
+		if (appendDate) {
+			return " concat(votetitle, '. /', votedate,'/') ";
+		} else {
+			return " votetitle ";
+		}
 	}
 
 	protected String generateDateConditions(final Date fromDate, final Date toDate) {
