@@ -12,9 +12,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import x.mvmn.radawatch.service.analyze.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.StorageService;
 import x.mvmn.radawatch.service.db.VoteResultsStorageService;
 import x.mvmn.radawatch.service.parse.MeetingsListParser;
@@ -76,13 +78,37 @@ public class RadaWatch {
 		});
 
 		// ----- //
-		mainWindow.setLayout(new BorderLayout());
+		JTabbedPane tabPane = new JTabbedPane();
+		final JPanel tabFetch = new JPanel(new BorderLayout());
+		final JPanel tabAnalyze = new JPanel(new BorderLayout());
+		{
+			// TODO: refactor
+			JButton btnAnalyzeTitles = new JButton("Analyze titles");
+			tabAnalyze.add(btnAnalyzeTitles, BorderLayout.SOUTH);
+			btnAnalyzeTitles.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					VotingTitlesAnalyzer titlesAnalyzer = new VotingTitlesAnalyzer(storageService);
+					try {
+						TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles((Integer) null, (Integer) null)));
+						tabAnalyze.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
+								JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			});
+		}
+		tabPane.addTab("Fetch", tabFetch);
+		tabPane.addTab("Analyze", tabAnalyze);
 		{
 			JPanel btnPanel = new JPanel(new BorderLayout());
 			btnPanel.add(btnBrowseDb, BorderLayout.WEST);
 			btnPanel.add(btnRecreateDb, BorderLayout.EAST);
 			btnPanel.add(btnFetch, BorderLayout.CENTER);
-			mainWindow.add(btnPanel, BorderLayout.SOUTH);
+			tabFetch.add(btnPanel, BorderLayout.SOUTH);
 		}
 		{
 			prbFetch.setIndeterminate(true);
@@ -91,7 +117,7 @@ public class RadaWatch {
 			progressPanel.add(new JLabel("Fetch progress"), BorderLayout.WEST);
 			progressPanel.add(prbFetch, BorderLayout.CENTER);
 			progressPanel.add(btnStop, BorderLayout.EAST);
-			mainWindow.add(progressPanel, BorderLayout.NORTH);
+			tabFetch.add(progressPanel, BorderLayout.NORTH);
 		}
 
 		btnStop.addActionListener(new ActionListener() {
@@ -124,8 +150,10 @@ public class RadaWatch {
 
 			}
 		});
-		mainWindow.add(new JScrollPane(txaLog), BorderLayout.CENTER);
+		tabFetch.add(new JScrollPane(txaLog), BorderLayout.CENTER);
 
+		mainWindow.getContentPane().setLayout(new BorderLayout());
+		mainWindow.getContentPane().add(tabPane, BorderLayout.CENTER);
 		mainWindow.pack();
 		mainWindow.setVisible(true);
 	}
@@ -141,7 +169,7 @@ public class RadaWatch {
 			parser = new MeetingsListParser();
 			prbFetch.setIndeterminate(false);
 			prbFetch.setMinimum(0);
-			prbFetch.setMaximum(parser.getLastPageNumber() + 3);
+			prbFetch.setMaximum(parser.getLastPageNumber());
 			prbFetch.setValue(0);
 		}
 
@@ -151,7 +179,7 @@ public class RadaWatch {
 
 		public void run() {
 			try {
-				for (int i = 1; i < parser.getLastPageNumber() + 3 && !stopRequested; i++) {
+				for (int i = 1; i < parser.getLastPageNumber() && !stopRequested; i++) {
 					final int currentPage = i;
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {

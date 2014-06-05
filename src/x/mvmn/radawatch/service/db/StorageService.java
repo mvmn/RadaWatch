@@ -2,7 +2,11 @@ package x.mvmn.radawatch.service.db;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.Server;
@@ -52,6 +56,28 @@ public class StorageService {
 		}
 	}
 
+	public int execSelectCount(String sqlStatement) throws SQLException {
+		int result = 0;
+		Connection connection = null;
+		try {
+			connection = getConnection();
+			Statement stmt = connection.createStatement();
+			ResultSet resultSet = stmt.executeQuery(sqlStatement);
+			if (resultSet != null && resultSet.next()) {
+				result = resultSet.getInt(1);
+			}
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (Exception connectionClosingException) {
+					connectionClosingException.printStackTrace();
+				}
+			}
+		}
+		return result;
+	}
+
 	public void dropTables() throws SQLException {
 		for (final String statement : SQL_DROP_TABLES.split("\n")) {
 			execSingleStatement(statement);
@@ -82,5 +108,29 @@ public class StorageService {
 				}
 			}
 		}.start();
+	}
+
+	public List<String> execSelectOneColumn(String sqlStatement) throws Exception {
+		List<String> result = new ArrayList<String>();
+		Connection connection = null;
+		try {
+			connection = getConnection();
+			Statement stmt = connection.createStatement();
+			ResultSet resultSet = stmt.executeQuery(sqlStatement);
+			if (resultSet != null) {
+				while (resultSet.next()) {
+					result.add(resultSet.getString(1));
+				}
+			}
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (Exception connectionClosingException) {
+					connectionClosingException.printStackTrace();
+				}
+			}
+		}
+		return result;
 	}
 }
