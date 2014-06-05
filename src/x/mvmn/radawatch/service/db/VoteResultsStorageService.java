@@ -5,10 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import x.mvmn.radawatch.model.DeputyVoteData;
+import x.mvmn.radawatch.model.VoteFactionData;
+import x.mvmn.radawatch.model.VoteResultsData;
 import x.mvmn.radawatch.service.parse.MeetingsListParser.RecordExistenceChecker;
-import x.mvmn.radawatch.service.parse.VoteResultsPageDocument;
-import x.mvmn.radawatch.service.parse.VoteResultsPageDocument.Faction;
-import x.mvmn.radawatch.service.parse.VoteResultsPageDocument.Vote;
 
 public class VoteResultsStorageService implements RecordExistenceChecker {
 
@@ -18,7 +18,7 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 		this.storageService = storageService;
 	}
 
-	public void save(final VoteResultsPageDocument document) {
+	public void save(final VoteResultsData data) {
 		Connection conn = null;
 		try {
 			conn = storageService.getConnection();
@@ -29,15 +29,15 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 							"insert into votesession (g_id, votetitle, votedate, votedyes, votedno, abstained, skipped, total, votepassed) values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 							Statement.RETURN_GENERATED_KEYS);
 
-			insertVoteSessionRecord.setInt(1, document.getGlobalId());
-			insertVoteSessionRecord.setString(2, document.getTitle());
-			insertVoteSessionRecord.setTimestamp(3, new java.sql.Timestamp(document.getDate().getTime()));
-			insertVoteSessionRecord.setInt(4, document.getVotedYes());
-			insertVoteSessionRecord.setInt(5, document.getVotedNo());
-			insertVoteSessionRecord.setInt(6, document.getAbstained());
-			insertVoteSessionRecord.setInt(7, document.getSkipped());
-			insertVoteSessionRecord.setInt(8, document.getTotal());
-			insertVoteSessionRecord.setBoolean(9, document.getResult());
+			insertVoteSessionRecord.setInt(1, data.getGlobalId());
+			insertVoteSessionRecord.setString(2, data.getTitle());
+			insertVoteSessionRecord.setTimestamp(3, new java.sql.Timestamp(data.getDate().getTime()));
+			insertVoteSessionRecord.setInt(4, data.getVotedYes());
+			insertVoteSessionRecord.setInt(5, data.getVotedNo());
+			insertVoteSessionRecord.setInt(6, data.getAbstained());
+			insertVoteSessionRecord.setInt(7, data.getSkipped());
+			insertVoteSessionRecord.setInt(8, data.getTotal());
+			insertVoteSessionRecord.setBoolean(9, data.getResult());
 
 			insertVoteSessionRecord.executeUpdate();
 			int voteSessionId;
@@ -54,7 +54,7 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 							Statement.RETURN_GENERATED_KEYS);
 			final PreparedStatement insertVoteRecord = conn
 					.prepareStatement("insert into individualvote (votesessionid, votesessionfactionid, name, voted) values (?, ?, ?, ?)");
-			for (Faction factionInfo : document.getFactions()) {
+			for (VoteFactionData factionInfo : data.getFactions()) {
 				insertVoteFactionRecord.setInt(1, voteSessionId);
 				insertVoteFactionRecord.setString(2, factionInfo.getTitle());
 				insertVoteFactionRecord.setInt(3, factionInfo.getSize());
@@ -73,7 +73,7 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 					generatedKeys.close();
 				}
 
-				for (Vote voteInfo : factionInfo.getVotes()) {
+				for (DeputyVoteData voteInfo : factionInfo.getVotes()) {
 					insertVoteRecord.setInt(1, voteSessionId);
 					insertVoteRecord.setInt(2, voteFactionRecordId);
 					insertVoteRecord.setString(3, voteInfo.getName());

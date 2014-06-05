@@ -137,6 +137,58 @@ public class RadaWatch {
 		JTabbedPane tabPane = new JTabbedPane();
 		final JPanel tabFetch = new JPanel(new BorderLayout());
 		final JPanel tabAnalyze = new JPanel(new BorderLayout());
+		final JPanel tabStats = new JPanel(new BorderLayout());
+		tabPane.addTab("Fetch", tabFetch);
+		tabPane.addTab("Analyze", tabAnalyze);
+		tabPane.addTab("Stats", tabStats);
+		{
+			// TODO: refactor
+			final JButton btnGenCharts = new JButton("Generate charts");
+			final JDatePickerImpl datePickerFrom = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
+			final JDatePickerImpl datePickerTo = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
+			JPanel datesPanel = new JPanel(new BorderLayout());
+			datesPanel.add(datePickerFrom, BorderLayout.WEST);
+			datesPanel.add(datePickerTo, BorderLayout.EAST);
+			datesPanel.add(new JLabel("<== Date FROM | Date TO ==>", JLabel.CENTER), BorderLayout.CENTER);
+			tabStats.add(btnGenCharts, BorderLayout.SOUTH);
+			tabStats.add(datesPanel, BorderLayout.NORTH);
+			final JPanel resultsPanel = new JPanel(new BorderLayout());
+			tabStats.add(resultsPanel, BorderLayout.CENTER);
+			btnGenCharts.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					btnGenCharts.setEnabled(false);
+					new Thread() {
+						public void run() {
+							try {
+
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										btnGenCharts.setEnabled(true);
+										resultsPanel.removeAll();
+										// resultsPanel.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
+										resultsPanel.validate();
+
+									}
+								});
+							} catch (final Exception ex) {
+								ex.printStackTrace();
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										btnGenCharts.setEnabled(true);
+										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
+												JOptionPane.ERROR_MESSAGE);
+									}
+								});
+							}
+						}
+					}.start();
+				}
+			});
+		}
+
 		{
 			// TODO: refactor
 			final JButton btnAnalyzeTitles = new JButton("Analyze titles");
@@ -186,14 +238,11 @@ public class RadaWatch {
 									}
 								});
 							}
-
 						}
 					}.start();
 				}
 			});
 		}
-		tabPane.addTab("Fetch", tabFetch);
-		tabPane.addTab("Analyze", tabAnalyze);
 		{
 			JPanel btnPanel = new JPanel(new BorderLayout());
 			JPanel btnSubPanel = new JPanel(new BorderLayout());

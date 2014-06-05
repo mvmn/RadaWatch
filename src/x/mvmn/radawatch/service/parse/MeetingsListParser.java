@@ -34,7 +34,7 @@ public class MeetingsListParser {
 			idMatcher.find();
 			int id = Integer.parseInt(idMatcher.group(1));
 			if (!existenceChecker.checkExists(id)) {
-				vrStore.save(new VoteResultsPageDocument(link.attr("href").trim()));
+				vrStore.save(new VoteResultsPageDocument(link.attr("href").trim()).getVoteResultsData());
 				result++;
 				System.out.println("Fetched meeting data for ID " + id);
 			}
