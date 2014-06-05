@@ -94,6 +94,7 @@ public class RadaWatch {
 			JPanel datesPanel = new JPanel(new BorderLayout());
 			datesPanel.add(datePickerFrom, BorderLayout.WEST);
 			datesPanel.add(datePickerTo, BorderLayout.EAST);
+			datesPanel.add(new JLabel("<== Date FROM | Date TO ==>", JLabel.CENTER), BorderLayout.CENTER);
 			tabAnalyze.add(btnAnalyzeTitles, BorderLayout.SOUTH);
 			tabAnalyze.add(datesPanel, BorderLayout.NORTH);
 			final JPanel resultsPanel = new JPanel(new BorderLayout());
