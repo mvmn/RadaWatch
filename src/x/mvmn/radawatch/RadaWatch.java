@@ -4,9 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.util.Date;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -16,6 +22,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+
+import org.h2.tools.Script;
+import org.h2.util.IOUtils;
 
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
 import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
@@ -42,6 +51,7 @@ public class RadaWatch {
 	private final VoteResultsStorageService vrStore = new VoteResultsStorageService(storageService);
 	private final JButton btnRecreateDb = new JButton("Re-create DB");
 	private final JButton btnBrowseDb = new JButton("Browse DB");
+	private final JButton btnBackupDb = new JButton("Backup DB");
 	private final JButton btnFetch = new JButton("Fetch data");
 	private final JButton btnStop = new JButton("Stop fetch");
 	private final JProgressBar prbFetch = new JProgressBar(JProgressBar.HORIZONTAL);
@@ -61,6 +71,46 @@ public class RadaWatch {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				storageService.openDbBrowser();
+			}
+		});
+		btnBackupDb.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(mainWindow)) {
+					final File fileToSaveTo = fileChooser.getSelectedFile();
+					new Thread() {
+						public void run() {
+							btnBackupDb.setEnabled(false);
+							FileOutputStream fis = null;
+							try {
+								fis = new FileOutputStream(fileToSaveTo);
+								Method m = Script.class.getDeclaredMethod("process", Connection.class, OutputStream.class);
+								m.setAccessible(true);
+								m.invoke(null, storageService.getConnection(), fis);
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										JOptionPane.showMessageDialog(mainWindow, "File " + fileToSaveTo.getPath() + " saved successfully",
+												"DB backup succeeded", JOptionPane.INFORMATION_MESSAGE);
+									}
+								});
+							} catch (final Exception ex) {
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										ex.printStackTrace();
+										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
+												JOptionPane.ERROR_MESSAGE);
+									}
+								});
+							} finally {
+								IOUtils.closeSilently(fis);
+								btnBackupDb.setEnabled(true);
+							}
+						}
+					}.start();
+				}
 			}
 		});
 		btnRecreateDb.addActionListener(new ActionListener() {
@@ -123,7 +173,10 @@ public class RadaWatch {
 		tabPane.addTab("Analyze", tabAnalyze);
 		{
 			JPanel btnPanel = new JPanel(new BorderLayout());
-			btnPanel.add(btnBrowseDb, BorderLayout.WEST);
+			JPanel btnSubPanel = new JPanel(new BorderLayout());
+			btnSubPanel.add(btnBrowseDb, BorderLayout.CENTER);
+			btnSubPanel.add(btnBackupDb, BorderLayout.EAST);
+			btnPanel.add(btnSubPanel, BorderLayout.WEST);
 			btnPanel.add(btnRecreateDb, BorderLayout.EAST);
 			btnPanel.add(btnFetch, BorderLayout.CENTER);
 			tabFetch.add(btnPanel, BorderLayout.SOUTH);
