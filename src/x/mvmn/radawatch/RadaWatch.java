@@ -79,9 +79,9 @@ public class RadaWatch {
 				JFileChooser fileChooser = new JFileChooser();
 				if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(mainWindow)) {
 					final File fileToSaveTo = fileChooser.getSelectedFile();
+					btnBackupDb.setEnabled(false);
 					new Thread() {
 						public void run() {
-							btnBackupDb.setEnabled(false);
 							FileOutputStream fis = null;
 							try {
 								fis = new FileOutputStream(fileToSaveTo);
@@ -91,22 +91,24 @@ public class RadaWatch {
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
+										btnBackupDb.setEnabled(true);
 										JOptionPane.showMessageDialog(mainWindow, "File " + fileToSaveTo.getPath() + " saved successfully",
 												"DB backup succeeded", JOptionPane.INFORMATION_MESSAGE);
 									}
 								});
 							} catch (final Exception ex) {
+								ex.printStackTrace();
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
-										ex.printStackTrace();
+										btnBackupDb.setEnabled(true);
 										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
 												JOptionPane.ERROR_MESSAGE);
 									}
 								});
 							} finally {
 								IOUtils.closeSilently(fis);
-								btnBackupDb.setEnabled(true);
+
 							}
 						}
 					}.start();
@@ -137,7 +139,7 @@ public class RadaWatch {
 		final JPanel tabAnalyze = new JPanel(new BorderLayout());
 		{
 			// TODO: refactor
-			JButton btnAnalyzeTitles = new JButton("Analyze titles");
+			final JButton btnAnalyzeTitles = new JButton("Analyze titles");
 			final JDatePickerImpl datePickerFrom = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
 			final JDatePickerImpl datePickerTo = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
 
@@ -153,19 +155,40 @@ public class RadaWatch {
 
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					VotingTitlesAnalyzer titlesAnalyzer = new VotingTitlesAnalyzer(storageService);
-					try {
-						Date fromDate = (Date) datePickerFrom.getModel().getValue();
-						Date toDate = (Date) datePickerTo.getModel().getValue();
-						TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles(fromDate, toDate)));
-						resultsPanel.removeAll();
-						resultsPanel.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
-						resultsPanel.validate();
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
-								JOptionPane.ERROR_MESSAGE);
-					}
+					btnAnalyzeTitles.setEnabled(false);
+
+					new Thread() {
+						public void run() {
+							try {
+								VotingTitlesAnalyzer titlesAnalyzer = new VotingTitlesAnalyzer(storageService);
+								Date fromDate = (Date) datePickerFrom.getModel().getValue();
+								Date toDate = (Date) datePickerTo.getModel().getValue();
+								final TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles(fromDate, toDate)));
+
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										btnAnalyzeTitles.setEnabled(true);
+										resultsPanel.removeAll();
+										resultsPanel.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
+										resultsPanel.validate();
+
+									}
+								});
+							} catch (final Exception ex) {
+								ex.printStackTrace();
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										btnAnalyzeTitles.setEnabled(true);
+										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
+												JOptionPane.ERROR_MESSAGE);
+									}
+								});
+							}
+
+						}
+					}.start();
 				}
 			});
 		}
