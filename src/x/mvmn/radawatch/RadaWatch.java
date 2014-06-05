@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -23,12 +24,15 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
-import org.h2.tools.Script;
-import org.h2.util.IOUtils;
-
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
 import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
 import net.sourceforge.jdatepicker.impl.UtilDateModel;
+
+import org.h2.tools.RunScript;
+import org.h2.tools.Script;
+import org.h2.util.IOUtils;
+import org.h2.util.JdbcUtils;
+
 import x.mvmn.radawatch.service.analyze.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.StorageService;
 import x.mvmn.radawatch.service.db.VoteResultsStorageService;
@@ -52,6 +56,7 @@ public class RadaWatch {
 	private final JButton btnRecreateDb = new JButton("Re-create DB");
 	private final JButton btnBrowseDb = new JButton("Browse DB");
 	private final JButton btnBackupDb = new JButton("Backup DB");
+	private final JButton btnRestoreDb = new JButton("Restore DB");
 	private final JButton btnFetch = new JButton("Fetch data");
 	private final JButton btnStop = new JButton("Stop fetch");
 	private final JProgressBar prbFetch = new JProgressBar(JProgressBar.HORIZONTAL);
@@ -67,10 +72,74 @@ public class RadaWatch {
 				RadaWatch.this.closeRequest();
 			}
 		});
+
+		JTabbedPane tabPane = new JTabbedPane();
+		final JPanel tabFetch = new JPanel(new BorderLayout());
+		final JPanel tabAnalyze = new JPanel(new BorderLayout());
+		final JPanel tabStats = new JPanel(new BorderLayout());
+		tabPane.addTab("Fetch", tabFetch);
+		tabPane.addTab("Analyze", tabAnalyze);
+		tabPane.addTab("Stats", tabStats);
+
 		btnBrowseDb.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				storageService.openDbBrowser();
+			}
+		});
+
+		btnRestoreDb.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(mainWindow)) {
+					final File fileToLoadFrom = fileChooser.getSelectedFile();
+					btnRestoreDb.setEnabled(false);
+					btnBackupDb.setEnabled(false);
+					btnRecreateDb.setEnabled(false);
+					btnFetch.setEnabled(false);
+					new Thread() {
+						public void run() {
+							FileReader fis = null;
+							Connection conn = null;
+							try {
+								storageService.dropTables();
+								conn = storageService.getConnection();
+								fis = new FileReader(fileToLoadFrom);
+								RunScript.execute(conn, fis);
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										btnRestoreDb.setEnabled(true);
+										btnBackupDb.setEnabled(true);
+										btnRecreateDb.setEnabled(true);
+										btnFetch.setEnabled(true);
+
+										JOptionPane.showMessageDialog(mainWindow, "Script " + fileToLoadFrom.getPath() + " executed successfully",
+												"DB restore succeeded", JOptionPane.INFORMATION_MESSAGE);
+									}
+								});
+							} catch (final Exception ex) {
+								ex.printStackTrace();
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										btnRestoreDb.setEnabled(true);
+										btnBackupDb.setEnabled(true);
+										btnRecreateDb.setEnabled(true);
+										btnFetch.setEnabled(true);
+
+										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
+												JOptionPane.ERROR_MESSAGE);
+									}
+								});
+							} finally {
+								IOUtils.closeSilently(fis);
+								JdbcUtils.closeSilently(conn);
+							}
+						}
+					}.start();
+				}
 			}
 		});
 		btnBackupDb.addActionListener(new ActionListener() {
@@ -134,13 +203,6 @@ public class RadaWatch {
 		});
 
 		// ----- //
-		JTabbedPane tabPane = new JTabbedPane();
-		final JPanel tabFetch = new JPanel(new BorderLayout());
-		final JPanel tabAnalyze = new JPanel(new BorderLayout());
-		final JPanel tabStats = new JPanel(new BorderLayout());
-		tabPane.addTab("Fetch", tabFetch);
-		tabPane.addTab("Analyze", tabAnalyze);
-		tabPane.addTab("Stats", tabStats);
 		{
 			// TODO: refactor
 			final JButton btnGenCharts = new JButton("Generate charts");
@@ -245,11 +307,18 @@ public class RadaWatch {
 		}
 		{
 			JPanel btnPanel = new JPanel(new BorderLayout());
-			JPanel btnSubPanel = new JPanel(new BorderLayout());
-			btnSubPanel.add(btnBrowseDb, BorderLayout.CENTER);
-			btnSubPanel.add(btnBackupDb, BorderLayout.EAST);
-			btnPanel.add(btnSubPanel, BorderLayout.WEST);
-			btnPanel.add(btnRecreateDb, BorderLayout.EAST);
+			{
+				JPanel btnSubPanel = new JPanel(new BorderLayout());
+				btnSubPanel.add(btnBrowseDb, BorderLayout.CENTER);
+				btnSubPanel.add(btnBackupDb, BorderLayout.EAST);
+				btnPanel.add(btnSubPanel, BorderLayout.WEST);
+			}
+			{
+				JPanel btnSubPanel = new JPanel(new BorderLayout());
+				btnSubPanel.add(btnRestoreDb, BorderLayout.CENTER);
+				btnSubPanel.add(btnRecreateDb, BorderLayout.EAST);
+				btnPanel.add(btnSubPanel, BorderLayout.EAST);
+			}
 			btnPanel.add(btnFetch, BorderLayout.CENTER);
 			tabFetch.add(btnPanel, BorderLayout.SOUTH);
 		}
