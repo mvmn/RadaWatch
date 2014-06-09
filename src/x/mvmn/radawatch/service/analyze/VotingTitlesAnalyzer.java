@@ -18,11 +18,6 @@ public class VotingTitlesAnalyzer {
 		return getVotingTitles(utilDateToSqlDate(fromDate), utilDateToSqlDate(toDate), true, titleFilter);
 	}
 
-	public List<String> getVotingTitles(final java.util.Date fromDate, final java.util.Date toDate, boolean appendDates, final String titleFilter)
-			throws Exception {
-		return getVotingTitles(utilDateToSqlDate(fromDate), utilDateToSqlDate(toDate), appendDates, titleFilter);
-	}
-
 	public int getCount(final Date fromDate, final Date toDate, final String titleFilter) throws Exception {
 		return storageService.execSelectCount("select count(*) from votesession " + getQueryConditions(fromDate, toDate, null, null, titleFilter));
 	}
@@ -36,7 +31,7 @@ public class VotingTitlesAnalyzer {
 	}
 
 	public List<String> getVotingTitles(final Date fromDate, final Date toDate, final boolean appendDates, final String titleFilter) throws Exception {
-		return storageService.execSelectOneColumn("select " + getTitleColumn(appendDates) + getQueryConditions(fromDate, toDate, null, null, titleFilter));
+		return storageService.execSelectOneColumn("select " + getQueryColumns() + getQueryConditions(fromDate, toDate, null, null, titleFilter));
 	}
 
 	public List<String> getVotingTitles(final Integer offset, final Integer count, final String titleFilter) throws Exception {
@@ -44,7 +39,7 @@ public class VotingTitlesAnalyzer {
 	}
 
 	public List<String> getVotingTitles(final Integer offset, final Integer count, final boolean appendDates, final String titleFilter) throws Exception {
-		return storageService.execSelectOneColumn("select " + getTitleColumn(appendDates) + getQueryConditions(null, null, offset, count, titleFilter));
+		return storageService.execSelectOneColumn("select " + getQueryColumns() + getQueryConditions(null, null, offset, count, titleFilter));
 	}
 
 	protected String getQueryConditions(final Date fromDate, final Date toDate, final Integer offset, final Integer count, final String titleFilter) {
@@ -70,12 +65,8 @@ public class VotingTitlesAnalyzer {
 		return whereCondition;
 	}
 
-	protected String getTitleColumn(final boolean appendDate) {
-		if (appendDate) {
-			return " concat(votetitle, '. /', votedate,'/', case votepassed when true then ' <прийнято>' else ' <НЕ прийнято>' end case) ";
-		} else {
-			return " concat(votetitle, case votepassed when true then ' <прийнято>' else ' <НЕ прийнято>' end case) ";
-		}
+	protected String getQueryColumns() {
+		return " concat(votetitle, '. /', votedate,'/', case votepassed when true then ' <прийнято>' else ' <НЕ прийнято>' end case, ' ', votedyes,'/',votedno,' (',total,')') ";
 	}
 
 	protected String generateDateConditions(final Date fromDate, final Date toDate) {

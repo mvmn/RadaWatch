@@ -105,9 +105,7 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 
 	public List<VoteResultsData> getVoteResults(final Integer offset, final Integer count) {
 		List<VoteResultsData> result = null;
-		
-		
-		
+
 		return result;
 	}
 
