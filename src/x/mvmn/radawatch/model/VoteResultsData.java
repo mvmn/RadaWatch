@@ -3,10 +3,10 @@ package x.mvmn.radawatch.model;
 import java.util.Date;
 import java.util.List;
 
-public class VoteResultsData {
+public class VoteResultsData extends DbEntry {
 	private final int globalId;
 	private final String title;
-	private final Boolean result;
+	private final boolean result;
 	private final Date date;
 	private final int votedYes;
 	private final int votedNo;
@@ -15,9 +15,9 @@ public class VoteResultsData {
 	private final int total;
 	private final List<VoteFactionData> factions;
 
-	public VoteResultsData(int globalId, String title, Boolean result, Date date, int votedYes, int votedNo, int abstained, int skipped, int total,
-			List<VoteFactionData> factions) {
-		super();
+	public VoteResultsData(final int dbId, final int globalId, final String title, final boolean result, final Date date, final int votedYes,
+			final int votedNo, final int abstained, final int skipped, final int total, final List<VoteFactionData> factions) {
+		super(dbId);
 		this.globalId = globalId;
 		this.title = title;
 		this.result = result;

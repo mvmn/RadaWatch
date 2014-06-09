@@ -14,58 +14,67 @@ public class VotingTitlesAnalyzer {
 		this.storageService = storageService;
 	}
 
-	public int getCount(final Date fromDate, final Date toDate) throws Exception {
-		String whereCondition = "";
-		String dateConditions = generateDateConditions(fromDate, toDate);
-		if (dateConditions != null && dateConditions.trim().length() > 0) {
-			whereCondition = " WHERE " + dateConditions;
-		}
-		return storageService.execSelectCount("select count(*) from votesession  " + whereCondition);
+	public List<String> getVotingTitles(final java.util.Date fromDate, final java.util.Date toDate, final String titleFilter) throws Exception {
+		return getVotingTitles(utilDateToSqlDate(fromDate), utilDateToSqlDate(toDate), true, titleFilter);
+	}
+
+	public List<String> getVotingTitles(final java.util.Date fromDate, final java.util.Date toDate, boolean appendDates, final String titleFilter)
+			throws Exception {
+		return getVotingTitles(utilDateToSqlDate(fromDate), utilDateToSqlDate(toDate), appendDates, titleFilter);
+	}
+
+	public int getCount(final Date fromDate, final Date toDate, final String titleFilter) throws Exception {
+		return storageService.execSelectCount("select count(*) from votesession " + getQueryConditions(fromDate, toDate, null, null, titleFilter));
 	}
 
 	public int getCount(final Integer offset, final Integer count) throws Exception {
 		return storageService.execSelectCount("select count(*) from (select * from votesession " + generateLimitCondition(offset, count) + ")");
 	}
 
-	public List<String> getVotingTitles(final java.util.Date fromDate, final java.util.Date toDate) throws Exception {
-		Date fromDateSql = null;
-		Date toDateSql = null;
-		if (fromDate != null) {
-			fromDateSql = new Date(fromDate.getTime());
-		}
-		if (toDate != null) {
-			toDateSql = new Date(toDate.getTime());
-		}
-		return getVotingTitles(fromDateSql, toDateSql, true);
+	public List<String> getVotingTitles(final Date fromDate, final Date toDate, final String titleFilter) throws Exception {
+		return getVotingTitles(fromDate, toDate, true, titleFilter);
 	}
 
-	public List<String> getVotingTitles(final Date fromDate, final Date toDate) throws Exception {
-		return getVotingTitles(fromDate, toDate, true);
+	public List<String> getVotingTitles(final Date fromDate, final Date toDate, final boolean appendDates, final String titleFilter) throws Exception {
+		return storageService.execSelectOneColumn("select " + getTitleColumn(appendDates) + getQueryConditions(fromDate, toDate, null, null, titleFilter));
 	}
 
-	public List<String> getVotingTitles(final Date fromDate, final Date toDate, boolean appendDates) throws Exception {
+	public List<String> getVotingTitles(final Integer offset, final Integer count, final String titleFilter) throws Exception {
+		return getVotingTitles(offset, count, true, titleFilter);
+	}
+
+	public List<String> getVotingTitles(final Integer offset, final Integer count, final boolean appendDates, final String titleFilter) throws Exception {
+		return storageService.execSelectOneColumn("select " + getTitleColumn(appendDates) + getQueryConditions(null, null, offset, count, titleFilter));
+	}
+
+	protected String getQueryConditions(final Date fromDate, final Date toDate, final Integer offset, final Integer count, final String titleFilter) {
+		return " from votesession " + generateWhereClause(fromDate, toDate, titleFilter) + " " + generateLimitCondition(offset, count);
+	}
+
+	protected String generateWhereClause(final Date fromDate, final Date toDate, final String titleFilter) {
 		String whereCondition = "";
+		String titleCondition = (titleFilter != null && titleFilter.trim().length() > 0 && !titleFilter.trim().equals("%")) ? " votetitle like '%"
+				+ titleFilter.trim().replaceAll("'", "''") + "%' " : null;
 		String dateConditions = generateDateConditions(fromDate, toDate);
 		if (dateConditions != null && dateConditions.trim().length() > 0) {
 			whereCondition = " WHERE " + dateConditions;
 		}
-
-		return storageService.execSelectOneColumn("select " + getTitleColumn(appendDates) + " from votesession " + whereCondition);
+		if (titleCondition != null && titleCondition.trim().length() > 0) {
+			if (whereCondition.trim().length() > 0) {
+				whereCondition += " AND ";
+			} else {
+				whereCondition = " WHERE ";
+			}
+			whereCondition += titleCondition;
+		}
+		return whereCondition;
 	}
 
-	public List<String> getVotingTitles(final Integer offset, final Integer count) throws Exception {
-		return getVotingTitles(offset, count, true);
-	}
-
-	public List<String> getVotingTitles(final Integer offset, final Integer count, boolean appendDates) throws Exception {
-		return storageService.execSelectOneColumn("select " + getTitleColumn(appendDates) + " from votesession " + generateLimitCondition(offset, count));
-	}
-
-	protected String getTitleColumn(boolean appendDate) {
+	protected String getTitleColumn(final boolean appendDate) {
 		if (appendDate) {
 			return " concat(votetitle, '. /', votedate,'/', case votepassed when true then ' <прийнято>' else ' <НЕ прийнято>' end case) ";
 		} else {
-			return " concat(votetitle, case votepassed when true then ' <прийнято>' else ' <НЕ прийнято>' end case)) ";
+			return " concat(votetitle, case votepassed when true then ' <прийнято>' else ' <НЕ прийнято>' end case) ";
 		}
 	}
 
@@ -102,8 +111,18 @@ public class VotingTitlesAnalyzer {
 		return result;
 	}
 
+	protected Date utilDateToSqlDate(final java.util.Date utillDate) {
+		final Date result;
+		if (utillDate != null) {
+			result = new Date(utillDate.getTime());
+		} else {
+			result = null;
+		}
+		return result;
+	}
+
 	@SuppressWarnings("unchecked")
-	protected Map<String, Object> getMap(Map<String, Object> map, String key) {
+	protected Map<String, Object> getMap(final Map<String, Object> map, final String key) {
 		Map<String, Object> result = (Map<String, Object>) map.get(key);
 		if (result == null) {
 			result = new ConcurrentHashMap<String, Object>();
@@ -116,7 +135,7 @@ public class VotingTitlesAnalyzer {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void remap(Map<String, Object> pp, String ppkey, Map<String, Object> parent) {
+	protected void remap(final Map<String, Object> pp, final String ppkey, final Map<String, Object> parent) {
 		for (Map.Entry<String, Object> entry : parent.entrySet())
 			if (entry.getValue() instanceof Map) {
 				remap(parent, entry.getKey(), (Map<String, Object>) entry.getValue());
@@ -136,8 +155,8 @@ public class VotingTitlesAnalyzer {
 		}
 	}
 
-	public Map<String, Object> mapTitles(List<String> titles) {
-		Map<String, Object> result = new ConcurrentHashMap<String, Object>();
+	public Map<String, Object> mapTitles(final List<String> titles) {
+		final Map<String, Object> result = new ConcurrentHashMap<String, Object>();
 		for (String title : titles) {
 			Map<String, Object> map = result;
 

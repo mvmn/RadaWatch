@@ -3,7 +3,7 @@ package x.mvmn.radawatch.model;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DeputyVoteData {
+public class DeputyVoteData extends DbEntry {
 
 	public static enum VoteType {
 		FOR(1), AGAINST(2), ABSTAINED(3), SKIPPED(4), ABSENT(5);
@@ -34,7 +34,8 @@ public class DeputyVoteData {
 	private final String name;
 	private final DeputyVoteData.VoteType vote;
 
-	public DeputyVoteData(final String name, final String vote) {
+	public DeputyVoteData(final int dbId, final String name, final String vote) {
+		super(dbId);
 		this.name = name;
 		this.vote = mapVoteNameToVoteType.get(vote.toLowerCase().replaceAll("\\*", ""));
 		if (this.vote == null) {

@@ -2,7 +2,7 @@ package x.mvmn.radawatch.model;
 
 import java.util.List;
 
-public class VoteFactionData {
+public class VoteFactionData extends DbEntry {
 	private final String title;
 	private final int size;
 	private final int votedYes;
@@ -13,7 +13,9 @@ public class VoteFactionData {
 
 	private final List<DeputyVoteData> votes;
 
-	public VoteFactionData(String title, int size, int votedYes, int votedNo, int abstained, int skipped, int absent, final List<DeputyVoteData> votes) {
+	public VoteFactionData(final int dbId, final String title, final int size, final int votedYes, final int votedNo, final int abstained, final int skipped,
+			final int absent, final List<DeputyVoteData> votes) {
+		super(dbId);
 		this.title = title;
 		this.size = size;
 		this.votedYes = votedYes;

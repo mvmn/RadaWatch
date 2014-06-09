@@ -83,7 +83,7 @@ public class VoteResultsPageDocument {
 			factions.add(praseFaction(factionContainer));
 		}
 
-		data = new VoteResultsData(globalId, title, result, date, votedYes, votedNo, abstained, skipped, total, factions);
+		data = new VoteResultsData(-1, globalId, title, result, date, votedYes, votedNo, abstained, skipped, total, factions);
 	}
 
 	protected VoteFactionData praseFaction(Element factionContainer) {
@@ -100,14 +100,14 @@ public class VoteResultsPageDocument {
 		Matcher factionTotals = factionTotalsPattern.matcher(factionHeading);
 		List<DeputyVoteData> factionVotes = new ArrayList<DeputyVoteData>();
 		for (Element voteElem : factionContainer.select(".frd li")) {
-			factionVotes.add(new DeputyVoteData(voteElem.select(".dep").text().trim(), voteElem.select(".golos").text().trim()));
+			factionVotes.add(new DeputyVoteData(-1, voteElem.select(".dep").text().trim(), voteElem.select(".golos").text().trim()));
 		}
 		if (factionVotes.size() < 1) {
 			throw new RuntimeException("Zero votes matched for faction " + factionContainer);
 		}
 
 		if (factionTotals.matches()) {
-			result = new VoteFactionData(factionTitle, factionSizeVal, Integer.parseInt(factionTotals.group(1)), Integer.parseInt(factionTotals.group(2)),
+			result = new VoteFactionData(-1, factionTitle, factionSizeVal, Integer.parseInt(factionTotals.group(1)), Integer.parseInt(factionTotals.group(2)),
 					Integer.parseInt(factionTotals.group(3)), Integer.parseInt(factionTotals.group(4)), Integer.parseInt(factionTotals.group(5)), factionVotes);
 		} else {
 			throw new RuntimeException("Failed to parse out faction totals from heading text " + factionHeading);

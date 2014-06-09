@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 
 import x.mvmn.radawatch.model.DeputyVoteData;
 import x.mvmn.radawatch.model.VoteFactionData;
@@ -18,7 +19,7 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 		this.storageService = storageService;
 	}
 
-	public void save(final VoteResultsData data) {
+	public void addRecord(final VoteResultsData data) {
 		Connection conn = null;
 		try {
 			conn = storageService.getConnection();
@@ -100,6 +101,14 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 				}
 			}
 		}
+	}
+
+	public List<VoteResultsData> getVoteResults(final Integer offset, final Integer count) {
+		List<VoteResultsData> result = null;
+		
+		
+		
+		return result;
 	}
 
 	@Override

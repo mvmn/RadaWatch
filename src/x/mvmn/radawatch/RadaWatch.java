@@ -22,6 +22,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
@@ -208,7 +209,7 @@ public class RadaWatch {
 			final JButton btnGenCharts = new JButton("Generate charts");
 			final JDatePickerImpl datePickerFrom = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
 			final JDatePickerImpl datePickerTo = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
-			JPanel datesPanel = new JPanel(new BorderLayout());
+			final JPanel datesPanel = new JPanel(new BorderLayout());
 			datesPanel.add(datePickerFrom, BorderLayout.WEST);
 			datesPanel.add(datePickerTo, BorderLayout.EAST);
 			datesPanel.add(new JLabel("<== Date FROM | Date TO ==>", JLabel.CENTER), BorderLayout.CENTER);
@@ -257,10 +258,15 @@ public class RadaWatch {
 			final JDatePickerImpl datePickerFrom = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
 			final JDatePickerImpl datePickerTo = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
 
-			JPanel datesPanel = new JPanel(new BorderLayout());
+			final JPanel datesPanel = new JPanel(new BorderLayout());
 			datesPanel.add(datePickerFrom, BorderLayout.WEST);
 			datesPanel.add(datePickerTo, BorderLayout.EAST);
-			datesPanel.add(new JLabel("<== Date FROM | Date TO ==>", JLabel.CENTER), BorderLayout.CENTER);
+			final JTextField tfTitleFilter = new JTextField();
+			final JPanel titleFilterPanel = new JPanel(new BorderLayout());
+			titleFilterPanel.add(new JLabel("<== Date FROM", JLabel.CENTER), BorderLayout.WEST);
+			titleFilterPanel.add(new JLabel("Date TO ==>", JLabel.CENTER), BorderLayout.EAST);
+			titleFilterPanel.add(tfTitleFilter, BorderLayout.CENTER);
+			datesPanel.add(titleFilterPanel, BorderLayout.CENTER);
 			tabAnalyze.add(btnAnalyzeTitles, BorderLayout.SOUTH);
 			tabAnalyze.add(datesPanel, BorderLayout.NORTH);
 			final JPanel resultsPanel = new JPanel(new BorderLayout());
@@ -274,10 +280,11 @@ public class RadaWatch {
 					new Thread() {
 						public void run() {
 							try {
-								VotingTitlesAnalyzer titlesAnalyzer = new VotingTitlesAnalyzer(storageService);
-								Date fromDate = (Date) datePickerFrom.getModel().getValue();
-								Date toDate = (Date) datePickerTo.getModel().getValue();
-								final TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles(fromDate, toDate)));
+								final VotingTitlesAnalyzer titlesAnalyzer = new VotingTitlesAnalyzer(storageService);
+								final Date fromDate = (Date) datePickerFrom.getModel().getValue();
+								final Date toDate = (Date) datePickerTo.getModel().getValue();
+								final TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles(fromDate, toDate,
+										tfTitleFilter.getText())));
 
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
