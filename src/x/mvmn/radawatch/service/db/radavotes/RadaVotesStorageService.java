@@ -101,17 +101,13 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteResu
 				}
 			}
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception cce) {
-				}
-			}
+			JdbcUtils.closeSilently(conn);
 		}
 	}
 
 	public List<VoteResultsData> getVoteResults(final Integer offset, final Integer count) {
 		List<VoteResultsData> result = null;
+		// TODO: implement
 
 		return result;
 	}
