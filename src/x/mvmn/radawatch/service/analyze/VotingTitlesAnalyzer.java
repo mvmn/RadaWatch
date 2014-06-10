@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import x.mvmn.radawatch.service.db.StorageService;
+import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
 public class VotingTitlesAnalyzer {
-	protected final StorageService storageService;
+	protected final DataBaseConnectionService storageService;
 
-	public VotingTitlesAnalyzer(final StorageService storageService) {
+	public VotingTitlesAnalyzer(final DataBaseConnectionService storageService) {
 		this.storageService = storageService;
 	}
 

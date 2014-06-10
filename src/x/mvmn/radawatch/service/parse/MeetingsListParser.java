@@ -7,7 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import x.mvmn.radawatch.service.db.VoteResultsStorageService;
+import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
 
 public class MeetingsListParser {
 
@@ -26,7 +26,7 @@ public class MeetingsListParser {
 
 	private static final Pattern pageIdPattern = Pattern.compile(".*(?:\\?|&)g_id=(\\d+)(?:&.*|$)");
 
-	public int fetchNewMeetings(final int pageNumber, final RecordExistenceChecker existenceChecker, VoteResultsStorageService vrStore) throws Exception {
+	public int fetchNewMeetings(final int pageNumber, final RecordExistenceChecker existenceChecker, RadaVotesStorageService vrStore) throws Exception {
 		int result = 0;
 		Document document = Jsoup.connect(String.format(PAGE_URL_PATTERN, pageNumber)).timeout(30000).get();
 		for (Element link : document.select(".archieve_block .news_item .details a")) {

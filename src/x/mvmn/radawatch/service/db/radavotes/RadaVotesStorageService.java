@@ -1,4 +1,4 @@
-package x.mvmn.radawatch.service.db;
+package x.mvmn.radawatch.service.db.radavotes;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,20 +9,26 @@ import java.util.List;
 import x.mvmn.radawatch.model.DeputyVoteData;
 import x.mvmn.radawatch.model.VoteFactionData;
 import x.mvmn.radawatch.model.VoteResultsData;
+import x.mvmn.radawatch.service.db.AbstractDataStorageService;
+import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.parse.MeetingsListParser.RecordExistenceChecker;
 
-public class VoteResultsStorageService implements RecordExistenceChecker {
+public class RadaVotesStorageService extends AbstractDataStorageService implements RecordExistenceChecker {
 
-	protected final StorageService storageService;
+	private static final String[] SQL_TABLES = new String[] { "votesession", "votesessionfaction", "individualvote" };
+	private static final String SQL_TABLES_DEFINITIONS[] = new String[] {
+			"id int not null primary key auto_increment, g_id int not null, votetitle varchar(16384), votedate TIMESTAMP, votedyes int, votedno int, abstained int, skipped int, total int, votepassed BOOL",
+			"id int not null primary key auto_increment, votesessionid int, title varchar(16384), totalmembers int, votedyes int, votedno int, abstained int, skipped int, absent int",
+			"id int not null primary key auto_increment, votesessionid int, votesessionfactionid int, name varchar(16384), voted varchar(1024)" };
 
-	public VoteResultsStorageService(final StorageService storageService) {
-		this.storageService = storageService;
+	public RadaVotesStorageService(final DataBaseConnectionService dbService) {
+		super(dbService);
 	}
 
 	public void addRecord(final VoteResultsData data) {
 		Connection conn = null;
 		try {
-			conn = storageService.getConnection();
+			conn = dbService.getConnection();
 			conn.createStatement().execute("begin transaction");
 
 			final PreparedStatement insertVoteSessionRecord = conn
@@ -114,7 +120,7 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 		boolean result = true;
 		Connection conn = null;
 		try {
-			conn = storageService.getConnection();
+			conn = dbService.getConnection();
 			Statement stmt = conn.createStatement();
 			stmt.execute("select * from votesession  where g_id = " + meetingId);
 			ResultSet rs = stmt.getResultSet();
@@ -132,12 +138,20 @@ public class VoteResultsStorageService implements RecordExistenceChecker {
 		return result;
 	}
 
-	// public static void main(String args[]) throws Exception {
-	// VoteResultsPageDocument testDoc = new VoteResultsPageDocument("http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=5354");
-	// StorageService storService = new StorageService();
-	// storService.dropTables();
-	// storService.createTables();
-	// VoteResultsStorageService test = new VoteResultsStorageService(storService);
-	// test.save(testDoc);
-	// }
+	@Override
+	public String[] getTablesNames() {
+		return SQL_TABLES;
+	}
+
+	@Override
+	public String getTableDefinitionSql(final String tableName) {
+		int index = -1;
+		for (int i = 0; i < SQL_TABLES.length; i++) {
+			if (SQL_TABLES[i].equalsIgnoreCase(tableName)) {
+				index = i;
+				break;
+			}
+		}
+		return SQL_TABLES_DEFINITIONS[index];
+	}
 }
