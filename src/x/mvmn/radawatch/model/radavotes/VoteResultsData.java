@@ -1,9 +1,11 @@
-package x.mvmn.radawatch.model;
+package x.mvmn.radawatch.model.radavotes;
 
 import java.util.Date;
 import java.util.List;
 
-public class VoteResultsData extends DbEntry {
+import x.mvmn.radawatch.model.Entity;
+
+public class VoteResultsData extends Entity {
 	private final int globalId;
 	private final String title;
 	private final boolean result;

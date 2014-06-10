@@ -12,11 +12,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import x.mvmn.radawatch.model.DeputyVoteData;
-import x.mvmn.radawatch.model.VoteFactionData;
-import x.mvmn.radawatch.model.VoteResultsData;
+import x.mvmn.radawatch.model.radavotes.DeputyVoteData;
+import x.mvmn.radawatch.model.radavotes.VoteFactionData;
+import x.mvmn.radawatch.model.radavotes.VoteResultsData;
 
-public class VoteResultsPageDocument {
+public class VoteResultsParser {
 
 	private final VoteResultsData data;
 
@@ -30,7 +30,7 @@ public class VoteResultsPageDocument {
 
 	private final DateFormat dateFormat = new SimpleDateFormat("d.M.yyyy HH:mm");
 
-	public VoteResultsPageDocument(String url) throws Exception {
+	public VoteResultsParser(String url) throws Exception {
 		Matcher idMatcher = pageIdPattern.matcher(url);
 		idMatcher.find();
 		List<VoteFactionData> factions = new ArrayList<VoteFactionData>();

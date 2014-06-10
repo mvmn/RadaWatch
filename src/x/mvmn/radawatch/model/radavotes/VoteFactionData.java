@@ -1,8 +1,10 @@
-package x.mvmn.radawatch.model;
+package x.mvmn.radawatch.model.radavotes;
 
 import java.util.List;
 
-public class VoteFactionData extends DbEntry {
+import x.mvmn.radawatch.model.Entity;
+
+public class VoteFactionData extends Entity {
 	private final String title;
 	private final int size;
 	private final int votedYes;

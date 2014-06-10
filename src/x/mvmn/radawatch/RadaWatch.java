@@ -428,7 +428,7 @@ public class RadaWatch {
 							txaLog.append(String.format("Fetching from page %s...\n", currentPage));
 						}
 					});
-					final int fetchedRecords = parser.fetchNewMeetings(i, vrStore, vrStore);
+					final int fetchedRecords = parser.fetchNewMeetings(i, vrStore);
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							prbFetch.setValue(currentPage);

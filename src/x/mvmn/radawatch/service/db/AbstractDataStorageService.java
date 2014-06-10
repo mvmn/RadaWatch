@@ -1,6 +1,8 @@
 package x.mvmn.radawatch.service.db;
 
-public abstract class AbstractDataStorageService implements DataStorageService {
+import x.mvmn.radawatch.model.Entity;
+
+public abstract class AbstractDataStorageService<T extends Entity> implements DataStorageService<T> {
 
 	protected final DataBaseConnectionService dbService;
 

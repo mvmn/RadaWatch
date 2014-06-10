@@ -1,9 +1,11 @@
-package x.mvmn.radawatch.model;
+package x.mvmn.radawatch.model.radavotes;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DeputyVoteData extends DbEntry {
+import x.mvmn.radawatch.model.Entity;
+
+public class DeputyVoteData extends Entity {
 
 	public static enum VoteType {
 		FOR(1), AGAINST(2), ABSTAINED(3), SKIPPED(4), ABSENT(5);

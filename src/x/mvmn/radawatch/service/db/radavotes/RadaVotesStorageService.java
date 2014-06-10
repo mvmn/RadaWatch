@@ -6,14 +6,15 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import x.mvmn.radawatch.model.DeputyVoteData;
-import x.mvmn.radawatch.model.VoteFactionData;
-import x.mvmn.radawatch.model.VoteResultsData;
+import org.h2.util.JdbcUtils;
+
+import x.mvmn.radawatch.model.radavotes.DeputyVoteData;
+import x.mvmn.radawatch.model.radavotes.VoteFactionData;
+import x.mvmn.radawatch.model.radavotes.VoteResultsData;
 import x.mvmn.radawatch.service.db.AbstractDataStorageService;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
-import x.mvmn.radawatch.service.parse.MeetingsListParser.RecordExistenceChecker;
 
-public class RadaVotesStorageService extends AbstractDataStorageService implements RecordExistenceChecker {
+public class RadaVotesStorageService extends AbstractDataStorageService<VoteResultsData> {
 
 	private static final String[] SQL_TABLES = new String[] { "votesession", "votesessionfaction", "individualvote" };
 	private static final String SQL_TABLES_DEFINITIONS[] = new String[] {
@@ -25,7 +26,7 @@ public class RadaVotesStorageService extends AbstractDataStorageService implemen
 		super(dbService);
 	}
 
-	public void addRecord(final VoteResultsData data) {
+	public void storeNewRecord(final VoteResultsData data) {
 		Connection conn = null;
 		try {
 			conn = dbService.getConnection();
@@ -116,7 +117,7 @@ public class RadaVotesStorageService extends AbstractDataStorageService implemen
 	}
 
 	@Override
-	public boolean checkExists(int meetingId) {
+	public boolean checkExists(int meetingId) throws Exception {
 		boolean result = true;
 		Connection conn = null;
 		try {
@@ -125,15 +126,8 @@ public class RadaVotesStorageService extends AbstractDataStorageService implemen
 			stmt.execute("select * from votesession  where g_id = " + meetingId);
 			ResultSet rs = stmt.getResultSet();
 			result = rs.next();
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception cce) {
-				}
-			}
+			JdbcUtils.closeSilently(conn);
 		}
 		return result;
 	}

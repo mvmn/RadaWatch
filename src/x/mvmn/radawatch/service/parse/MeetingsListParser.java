@@ -13,10 +13,6 @@ public class MeetingsListParser {
 
 	private static final String PAGE_URL_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
 
-	public static interface RecordExistenceChecker {
-		public boolean checkExists(int meetingId);
-	}
-
 	private final int lastPageNumber;
 
 	public MeetingsListParser() throws Exception {
@@ -26,15 +22,15 @@ public class MeetingsListParser {
 
 	private static final Pattern pageIdPattern = Pattern.compile(".*(?:\\?|&)g_id=(\\d+)(?:&.*|$)");
 
-	public int fetchNewMeetings(final int pageNumber, final RecordExistenceChecker existenceChecker, RadaVotesStorageService vrStore) throws Exception {
+	public int fetchNewMeetings(final int pageNumber, RadaVotesStorageService vrStore) throws Exception {
 		int result = 0;
 		Document document = Jsoup.connect(String.format(PAGE_URL_PATTERN, pageNumber)).timeout(30000).get();
 		for (Element link : document.select(".archieve_block .news_item .details a")) {
 			Matcher idMatcher = pageIdPattern.matcher(link.attr("href"));
 			idMatcher.find();
 			int id = Integer.parseInt(idMatcher.group(1));
-			if (!existenceChecker.checkExists(id)) {
-				vrStore.addRecord(new VoteResultsPageDocument(link.attr("href").trim()).getVoteResultsData());
+			if (!vrStore.checkExists(id)) {
+				vrStore.storeNewRecord(new VoteResultsParser(link.attr("href").trim()).getVoteResultsData());
 				result++;
 				System.out.println("Fetched meeting data for ID " + id);
 			}
