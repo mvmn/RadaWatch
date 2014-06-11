@@ -1,5 +1,9 @@
 package x.mvmn.radawatch;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
@@ -11,6 +15,7 @@ import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
 
 class FetchJob<T extends Entity> implements Runnable {
 
+	private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final ItemsByPagedLinksParser<T> parser;
 	private final DataStorageService<T> store;
 	private volatile boolean stopRequested = false;
@@ -37,6 +42,7 @@ class FetchJob<T extends Entity> implements Runnable {
 		try {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
+					fetchLog.append("Fetch job started " + dateFormat.format(new Date()) + ".\n");
 					fetchLog.append("Parsing pages count... ");
 				}
 			});
@@ -92,7 +98,7 @@ class FetchJob<T extends Entity> implements Runnable {
 			if (stopRequested) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						fetchLog.append(String.format("Stopped by user.\n"));
+						fetchLog.append(String.format("Stopping fetch on user request.\n"));
 					}
 				});
 			}
@@ -112,6 +118,7 @@ class FetchJob<T extends Entity> implements Runnable {
 		} finally {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
+					fetchLog.append("Fetch job ended " + dateFormat.format(new Date()) + ".\n");
 					fetchProgressPanel.reset();
 				}
 			});
