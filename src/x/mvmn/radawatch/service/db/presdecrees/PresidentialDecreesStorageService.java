@@ -14,7 +14,7 @@ import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 public class PresidentialDecreesStorageService extends AbstractDataStorageService<PresidentialDecree> {
 
 	private static final String SQL_TABLES[] = new String[] { "presidentialdecree" };
-	private static final String SQL_TABLE_PRESIDENTIALDECREE_DEFINITION = "id int not null primary key auto_increment, g_id int, reldate TIMESTAMP, decreetype varchar(1024), numcode varchar(1024), title varchar(16384), fulltext varchar(65536)";
+	private static final String SQL_TABLE_PRESIDENTIALDECREE_DEFINITION = "id int not null primary key auto_increment, g_id int, reldate TIMESTAMP, decreetype varchar(1024), numcode varchar(1024), title varchar(16384), fulltext varchar(1048576)";
 
 	public PresidentialDecreesStorageService(final DataBaseConnectionService dbService) {
 		super(dbService);
