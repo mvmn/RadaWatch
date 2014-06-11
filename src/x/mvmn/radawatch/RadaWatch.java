@@ -10,7 +10,6 @@ import java.io.FileReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -18,9 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
@@ -33,9 +30,10 @@ import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
 import x.mvmn.radawatch.gui.FetchPanel;
-import x.mvmn.radawatch.gui.analyze.TitlesTree;
+import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
+import x.mvmn.radawatch.service.analyze.presdecrees.PresidentialDecreesTitlesAnalyzer;
 import x.mvmn.radawatch.service.analyze.radavotes.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
@@ -213,65 +211,12 @@ public class RadaWatch {
 			});
 		}
 
+		JTabbedPane analyzeSubtabs = new JTabbedPane();
+		tabAnalyze.add(analyzeSubtabs, BorderLayout.CENTER);
 		{
-			// TODO: refactor
-			final JButton btnAnalyzeTitles = new JButton("Analyze titles");
-			final JDatePickerImpl datePickerFrom = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
-			final JDatePickerImpl datePickerTo = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
-
-			final JPanel datesPanel = new JPanel(new BorderLayout());
-			datesPanel.add(datePickerFrom, BorderLayout.WEST);
-			datesPanel.add(datePickerTo, BorderLayout.EAST);
-			final JTextField tfTitleFilter = new JTextField();
-			final JPanel titleFilterPanel = new JPanel(new BorderLayout());
-			titleFilterPanel.add(new JLabel("<== Date FROM", JLabel.CENTER), BorderLayout.WEST);
-			titleFilterPanel.add(new JLabel("Date TO ==>", JLabel.CENTER), BorderLayout.EAST);
-			titleFilterPanel.add(tfTitleFilter, BorderLayout.CENTER);
-			datesPanel.add(titleFilterPanel, BorderLayout.CENTER);
-			tabAnalyze.add(btnAnalyzeTitles, BorderLayout.SOUTH);
-			tabAnalyze.add(datesPanel, BorderLayout.NORTH);
-			final JPanel resultsPanel = new JPanel(new BorderLayout());
-			tabAnalyze.add(resultsPanel, BorderLayout.CENTER);
-			btnAnalyzeTitles.addActionListener(new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent arg0) {
-					btnAnalyzeTitles.setEnabled(false);
-
-					new Thread() {
-						public void run() {
-							try {
-								final VotingTitlesAnalyzer titlesAnalyzer = new VotingTitlesAnalyzer(storageService);
-								final Date fromDate = (Date) datePickerFrom.getModel().getValue();
-								final Date toDate = (Date) datePickerTo.getModel().getValue();
-								final TitlesTree titlesTree = new TitlesTree(titlesAnalyzer.mapTitles(titlesAnalyzer.getVotingTitles(fromDate, toDate,
-										tfTitleFilter.getText())));
-
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										btnAnalyzeTitles.setEnabled(true);
-										resultsPanel.removeAll();
-										resultsPanel.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
-										resultsPanel.validate();
-
-									}
-								});
-							} catch (final Exception ex) {
-								ex.printStackTrace();
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										btnAnalyzeTitles.setEnabled(true);
-										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
-												JOptionPane.ERROR_MESSAGE);
-									}
-								});
-							}
-						}
-					}.start();
-				}
-			});
+			analyzeSubtabs.addTab("Analyze Rada Votes Titles", new TitlesAnalysisPanel(new VotingTitlesAnalyzer(storageService), mainWindow));
+			analyzeSubtabs.addTab("Analyze Presidential Decrees Titles", new TitlesAnalysisPanel(new PresidentialDecreesTitlesAnalyzer(storageService),
+					mainWindow));
 		}
 
 		{
@@ -312,6 +257,7 @@ public class RadaWatch {
 							@Override
 							public void run() {
 								btnBackupDb.setEnabled(true);
+								btnRestoreDb.setEnabled(true);
 								JOptionPane.showMessageDialog(mainWindow, "File " + fileToSaveTo.getPath() + " saved successfully", "DB backup succeeded",
 										JOptionPane.INFORMATION_MESSAGE);
 								if (callbackOnSwingEDT != null) {
