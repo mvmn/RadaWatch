@@ -47,7 +47,11 @@ public class PredisentialDecreesParser extends AbstractJSoupItemsByPagedLinksPar
 		List<ItemLinkData<PresidentialDecree>> result = new ArrayList<ItemLinkData<PresidentialDecree>>(itemsHeadlines.size());
 		for (Element itemHeadlineElem : itemsHeadlines) {
 			String type = cleanText(itemHeadlineElem.select(".head").first().ownText()).replaceAll("[ ]*№", "").trim();
-			String numberCode = cleanText(itemHeadlineElem.select(".head b").first().text()).trim();
+			String numberCode = "";
+			Element numberCodeElem = itemHeadlineElem.select(".head b").first();
+			if (numberCodeElem != null) {
+				numberCode = cleanText(numberCodeElem.text()).trim();
+			}
 			String dateStr = cleanText(itemHeadlineElem.select(".date").first().text()).trim();
 			String title = cleanText(itemHeadlineElem.select("a").first().text()).trim();
 			String href = cleanText(itemHeadlineElem.select("a").first().attr("href")).trim();
@@ -110,7 +114,7 @@ public class PredisentialDecreesParser extends AbstractJSoupItemsByPagedLinksPar
 		final Map<String, String> itemData = itemLinkData.getAdditionalData();
 		final java.util.Date utilDate = dateFormat.parse(itemData.get("dateStr").toLowerCase());
 		final Date date = new Date(utilDate.getTime());
-		return new PresidentialDecree(itemLinkData.getItemSiteId(), itemData.get("decreeType"), itemData.get("title"), date, itemData.get("numberCode"),
+		return new PresidentialDecree(-1, itemLinkData.getItemSiteId(), itemData.get("decreeType"), itemData.get("title"), date, itemData.get("numberCode"),
 				itemFullText.toString().trim());
 	}
 

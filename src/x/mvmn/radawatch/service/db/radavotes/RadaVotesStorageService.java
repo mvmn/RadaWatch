@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.List;
 
 import org.h2.util.JdbcUtils;
 
@@ -26,7 +25,7 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteResu
 		super(dbService);
 	}
 
-	public void storeNewRecord(final VoteResultsData data) {
+	public void storeNewRecord(final VoteResultsData data) throws Exception {
 		Connection conn = null;
 		try {
 			conn = dbService.getConnection();
@@ -92,7 +91,6 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteResu
 
 			conn.createStatement().execute("commit");
 		} catch (Exception e) {
-			e.printStackTrace();
 			if (conn != null) {
 				try {
 					conn.createStatement().execute("rollback");
@@ -100,17 +98,18 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteResu
 					tre.printStackTrace();
 				}
 			}
+			throw e;
 		} finally {
 			JdbcUtils.closeSilently(conn);
 		}
 	}
 
-	public List<VoteResultsData> getVoteResults(final Integer offset, final Integer count) {
-		List<VoteResultsData> result = null;
-		// TODO: implement
-
-		return result;
-	}
+	// public List<VoteResultsData> getVoteResults(final Integer offset, final Integer count) {
+	// List<VoteResultsData> result = null;
+	// // TODO: implement
+	//
+	// return result;
+	// }
 
 	@Override
 	public boolean checkExists(int meetingId) throws Exception {

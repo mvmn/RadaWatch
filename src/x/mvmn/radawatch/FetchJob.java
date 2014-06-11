@@ -41,6 +41,8 @@ class FetchJob<T extends Entity> implements Runnable {
 	}
 
 	public void run() {
+		int lastTriedPageNumber = 0;
+		int lastTriedItemId = 0;
 		try {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -58,6 +60,7 @@ class FetchJob<T extends Entity> implements Runnable {
 
 			for (int pageIndex = 1; pageIndex <= totalPagesCount && !stopRequested; pageIndex++) {
 				final int currentPage = pageIndex;
+				lastTriedPageNumber = pageIndex;
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						fetchLog.append(String.format("Fetching from page %s...\n", currentPage));
@@ -77,6 +80,7 @@ class FetchJob<T extends Entity> implements Runnable {
 				for (int itemIndex = 0; itemIndex < itemsLinksData.size(); itemIndex++) {
 					ItemLinkData<T> itemLinkData = itemsLinksData.get(itemIndex);
 					int itemId = itemLinkData.getItemSiteId();
+					lastTriedItemId = itemId;
 					if (stopRequested) {
 						break;
 					}
@@ -111,9 +115,12 @@ class FetchJob<T extends Entity> implements Runnable {
 				});
 			}
 		} catch (final Exception ex) {
+			final int finalLastTriedPageNumber = lastTriedPageNumber;
+			final int finalLastTriedItemId = lastTriedItemId;
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					fetchLog.append(String.format("Fetch failed with exception %s %s", ex.getClass().getName(), ex.getMessage()));
+					fetchLog.append(String.format("Fetch failed (while fetching page %s item %s) with exception %s %s.\n", finalLastTriedPageNumber,
+							finalLastTriedItemId, ex.getClass().getName(), ex.getMessage()));
 				}
 			});
 			if (errorHandler != null) {
