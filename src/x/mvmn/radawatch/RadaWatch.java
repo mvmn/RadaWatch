@@ -35,9 +35,11 @@ import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
 import x.mvmn.radawatch.gui.FetchProgressPanel;
+import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
 import x.mvmn.radawatch.service.analyze.radavotes.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
+import x.mvmn.radawatch.service.db.DataStorageService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
 import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
@@ -69,7 +71,7 @@ public class RadaWatch {
 	private final FetchProgressPanel fetchProgressPanel = new FetchProgressPanel("Rada votes fetch progress");
 	private final JTextArea txaLog = new JTextArea();
 
-	private volatile FetchJob fetchJob = null;
+	private volatile FetchJob<VoteResultsData> fetchJob = null;
 
 	public RadaWatch() {
 		mainWindow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -377,7 +379,7 @@ public class RadaWatch {
 				synchronized (this) {
 					if (fetchJob == null) {
 						try {
-							fetchJob = new FetchJob();
+							fetchJob = new FetchJob<VoteResultsData>(new VoteResultsParser(), vrStore);
 							fetchJob.beforeRun();
 							new Thread(fetchJob).start();
 						} catch (Exception ex) {
@@ -400,16 +402,23 @@ public class RadaWatch {
 		mainWindow.setVisible(true);
 	}
 
-	private class FetchJob implements Runnable {
+	private class FetchJob<T extends Entity> implements Runnable {
 
-		private ItemsByPagedLinksParser<VoteResultsData> parser;
+		private ItemsByPagedLinksParser<T> parser;
+		private DataStorageService<T> store;
 		private volatile boolean stopRequested = false;
 		private int totalPagesCount = 0;
 
+		public FetchJob(final ItemsByPagedLinksParser<T> parser, final DataStorageService<T> store) {
+			this.parser = parser;
+			this.store = store;
+		}
+
 		public void beforeRun() throws Exception {
 			btnFetch.setEnabled(false);
-			parser = new VoteResultsParser();
+			txaLog.append("Parsing pages count... ");
 			totalPagesCount = parser.parseOutTotalPagesCount(); // TODO: move off EDT
+			txaLog.append(String.format("%s pages found.\n", totalPagesCount));
 			fetchProgressPanel.setPagesCount(totalPagesCount);
 		}
 
@@ -419,7 +428,7 @@ public class RadaWatch {
 
 		public void run() {
 			try {
-				for (int pageIndex = 1; pageIndex < totalPagesCount && !stopRequested; pageIndex++) {
+				for (int pageIndex = 1; pageIndex <= totalPagesCount && !stopRequested; pageIndex++) {
 					final int currentPage = pageIndex;
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
@@ -432,6 +441,7 @@ public class RadaWatch {
 						public void run() {
 							fetchProgressPanel.setPagesProgress(currentPage);
 							fetchProgressPanel.setItemsCount(itemIds.length);
+							fetchProgressPanel.setItemsProgress(0);
 						}
 					});
 
@@ -442,10 +452,10 @@ public class RadaWatch {
 							break;
 						}
 						if (!vrStore.checkExists(itemId)) {
-							vrStore.storeNewRecord(parser.parseOutItem(itemId));
+							store.storeNewRecord(parser.parseOutItem(itemId));
 							fetchedRecords++;
 						}
-						final int currentItem = itemIndex;
+						final int currentItem = itemIndex + 1;
 						SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
 								fetchProgressPanel.setItemsProgress(currentItem);
@@ -478,6 +488,7 @@ public class RadaWatch {
 			} finally {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
+						btnFetch.setEnabled(true);
 						fetchProgressPanel.reset();
 					}
 				});
