@@ -19,7 +19,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -35,6 +34,7 @@ import org.h2.tools.Script;
 import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
+import x.mvmn.radawatch.gui.FetchProgressPanel;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
 import x.mvmn.radawatch.service.analyze.radavotes.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
@@ -66,7 +66,7 @@ public class RadaWatch {
 	private final JButton btnRestoreDb = new JButton("Restore DB");
 	private final JButton btnFetch = new JButton("Fetch data");
 	private final JButton btnStop = new JButton("Stop fetch");
-	private final JProgressBar prbFetch = new JProgressBar(JProgressBar.HORIZONTAL);
+	private final FetchProgressPanel fetchProgressPanel = new FetchProgressPanel("Rada votes fetch progress");
 	private final JTextArea txaLog = new JTextArea();
 
 	private volatile FetchJob fetchJob = null;
@@ -355,11 +355,9 @@ public class RadaWatch {
 			tabFetch.add(btnPanel, BorderLayout.SOUTH);
 		}
 		{
-			prbFetch.setIndeterminate(true);
-			prbFetch.setEnabled(false);
+			fetchProgressPanel.reset();
 			JPanel progressPanel = new JPanel(new BorderLayout());
-			progressPanel.add(new JLabel("Fetch progress"), BorderLayout.WEST);
-			progressPanel.add(prbFetch, BorderLayout.CENTER);
+			progressPanel.add(fetchProgressPanel, BorderLayout.CENTER);
 			progressPanel.add(btnStop, BorderLayout.EAST);
 			tabFetch.add(progressPanel, BorderLayout.NORTH);
 		}
@@ -410,13 +408,9 @@ public class RadaWatch {
 
 		public void beforeRun() throws Exception {
 			btnFetch.setEnabled(false);
-			prbFetch.setEnabled(true);
 			parser = new VoteResultsParser();
 			totalPagesCount = parser.parseOutTotalPagesCount(); // TODO: move off EDT
-			prbFetch.setIndeterminate(false);
-			prbFetch.setMinimum(0);
-			prbFetch.setMaximum(totalPagesCount);
-			prbFetch.setValue(0);
+			fetchProgressPanel.setPagesCount(totalPagesCount);
 		}
 
 		public void stop() {
@@ -425,16 +419,25 @@ public class RadaWatch {
 
 		public void run() {
 			try {
-				for (int i = 1; i < totalPagesCount && !stopRequested; i++) {
-					final int currentPage = i;
+				for (int pageIndex = 1; pageIndex < totalPagesCount && !stopRequested; pageIndex++) {
+					final int currentPage = pageIndex;
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							txaLog.append(String.format("Fetching from page %s...\n", currentPage));
 						}
 					});
 					final int[] itemIds = parser.parseOutItemsSiteIds(currentPage);
+					fetchProgressPanel.setItemsCount(totalPagesCount);
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							fetchProgressPanel.setPagesProgress(currentPage);
+							fetchProgressPanel.setItemsCount(itemIds.length);
+						}
+					});
+
 					int fetchedRecords = 0;
-					for (int itemId : itemIds) {
+					for (int itemIndex = 0; itemIndex < itemIds.length; itemIndex++) {
+						int itemId = itemIds[itemIndex];
 						if (stopRequested) {
 							break;
 						}
@@ -442,12 +445,18 @@ public class RadaWatch {
 							vrStore.storeNewRecord(parser.parseOutItem(itemId));
 							fetchedRecords++;
 						}
+						final int currentItem = itemIndex;
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								fetchProgressPanel.setItemsProgress(currentItem);
+
+							}
+						});
 					}
-					final int fetchedRecordsFinal = fetchedRecords;
+					final int finalFetchedRecords = fetchedRecords;
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
-							prbFetch.setValue(currentPage);
-							txaLog.append(String.format("Fetched %s records from page %s.\n", fetchedRecordsFinal, currentPage));
+							txaLog.append(String.format("Fetched %s new items from page %s\n", finalFetchedRecords, currentPage));
 						}
 					});
 				}
@@ -469,9 +478,7 @@ public class RadaWatch {
 			} finally {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						prbFetch.setIndeterminate(true);
-						prbFetch.setEnabled(false);
-						btnFetch.setEnabled(true);
+						fetchProgressPanel.reset();
 					}
 				});
 				fetchJob = null;
@@ -488,5 +495,9 @@ public class RadaWatch {
 		mainWindow.setVisible(false);
 		mainWindow.dispose();
 		System.exit(0);
+	}
+
+	public String toString() {
+		return mainWindow.getTitle();
 	}
 }
