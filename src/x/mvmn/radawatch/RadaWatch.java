@@ -34,15 +34,13 @@ import org.h2.tools.Script;
 import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
+import x.mvmn.lang.ExceptionHandler;
 import x.mvmn.radawatch.gui.FetchProgressPanel;
-import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
 import x.mvmn.radawatch.service.analyze.radavotes.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
-import x.mvmn.radawatch.service.db.DataStorageService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
-import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
 import x.mvmn.radawatch.service.parse.radavotes.VoteResultsParser;
 import x.mvmn.radawatch.swing.EmptyWindowListener;
 
@@ -379,10 +377,32 @@ public class RadaWatch {
 				synchronized (this) {
 					if (fetchJob == null) {
 						try {
-							fetchJob = new FetchJob<VoteResultsData>(new VoteResultsParser(), vrStore);
-							fetchJob.beforeRun();
+							btnFetch.setEnabled(false);
+							fetchJob = new FetchJob<VoteResultsData>(new VoteResultsParser(), vrStore, new Runnable() {
+								public void run() {
+									RadaWatch.this.fetchJob = null;
+									SwingUtilities.invokeLater(new Runnable() {
+										public void run() {
+											btnFetch.setEnabled(true);
+										}
+									});
+								}
+							}, fetchProgressPanel, txaLog, new ExceptionHandler<Exception>() {
+								@Override
+								public void handleException(final Exception exception) {
+									exception.printStackTrace();
+									SwingUtilities.invokeLater(new Runnable() {
+										public void run() {
+											JOptionPane.showMessageDialog(mainWindow, "Fetch error: " + exception.getClass().getCanonicalName() + " "
+													+ exception.getMessage(), "Error occurred", JOptionPane.ERROR_MESSAGE);
+										}
+									});
+
+								}
+							});
 							new Thread(fetchJob).start();
 						} catch (Exception ex) {
+							btnFetch.setEnabled(false);
 							ex.printStackTrace();
 							JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
 									JOptionPane.ERROR_MESSAGE);
@@ -400,101 +420,6 @@ public class RadaWatch {
 		mainWindow.getContentPane().add(tabPane, BorderLayout.CENTER);
 		mainWindow.pack();
 		mainWindow.setVisible(true);
-	}
-
-	private class FetchJob<T extends Entity> implements Runnable {
-
-		private ItemsByPagedLinksParser<T> parser;
-		private DataStorageService<T> store;
-		private volatile boolean stopRequested = false;
-		private int totalPagesCount = 0;
-
-		public FetchJob(final ItemsByPagedLinksParser<T> parser, final DataStorageService<T> store) {
-			this.parser = parser;
-			this.store = store;
-		}
-
-		public void beforeRun() throws Exception {
-			btnFetch.setEnabled(false);
-			txaLog.append("Parsing pages count... ");
-			totalPagesCount = parser.parseOutTotalPagesCount(); // TODO: move off EDT
-			txaLog.append(String.format("%s pages found.\n", totalPagesCount));
-			fetchProgressPanel.setPagesCount(totalPagesCount);
-		}
-
-		public void stop() {
-			this.stopRequested = true;
-		}
-
-		public void run() {
-			try {
-				for (int pageIndex = 1; pageIndex <= totalPagesCount && !stopRequested; pageIndex++) {
-					final int currentPage = pageIndex;
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							txaLog.append(String.format("Fetching from page %s...\n", currentPage));
-						}
-					});
-					final int[] itemIds = parser.parseOutItemsSiteIds(currentPage);
-					fetchProgressPanel.setItemsCount(totalPagesCount);
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							fetchProgressPanel.setPagesProgress(currentPage);
-							fetchProgressPanel.setItemsCount(itemIds.length);
-							fetchProgressPanel.setItemsProgress(0);
-						}
-					});
-
-					int fetchedRecords = 0;
-					for (int itemIndex = 0; itemIndex < itemIds.length; itemIndex++) {
-						int itemId = itemIds[itemIndex];
-						if (stopRequested) {
-							break;
-						}
-						if (!vrStore.checkExists(itemId)) {
-							store.storeNewRecord(parser.parseOutItem(itemId));
-							fetchedRecords++;
-						}
-						final int currentItem = itemIndex + 1;
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								fetchProgressPanel.setItemsProgress(currentItem);
-
-							}
-						});
-					}
-					final int finalFetchedRecords = fetchedRecords;
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							txaLog.append(String.format("Fetched %s new items from page %s\n", finalFetchedRecords, currentPage));
-						}
-					});
-				}
-				if (stopRequested) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							txaLog.append(String.format("Stopped by user.\n"));
-						}
-					});
-				}
-			} catch (final Exception ex) {
-				ex.printStackTrace();
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						JOptionPane.showMessageDialog(mainWindow, "Fetch error: " + ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
-								JOptionPane.ERROR_MESSAGE);
-					}
-				});
-			} finally {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						btnFetch.setEnabled(true);
-						fetchProgressPanel.reset();
-					}
-				});
-				fetchJob = null;
-			}
-		}
 	}
 
 	public void closeRequest() {
