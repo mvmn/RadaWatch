@@ -16,9 +16,9 @@ import org.jsoup.nodes.Element;
 import x.mvmn.radawatch.model.radavotes.DeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
-import x.mvmn.radawatch.service.parse.ItemsPagedLinksParser;
+import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
 
-public class VoteResultsParser implements ItemsPagedLinksParser<VoteResultsData> {
+public class VoteResultsParser implements ItemsByPagedLinksParser<VoteResultsData> {
 
 	private static final String PAGE_URL_STR_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
 	private static final String ITEM_URL_STR_PATTERN = "http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=%s";
@@ -34,7 +34,7 @@ public class VoteResultsParser implements ItemsPagedLinksParser<VoteResultsData>
 	private final DateFormat siteDateFormat = new SimpleDateFormat("d.M.yyyy HH:mm");
 
 	@Override
-	public int parseTotalPagesCount() throws Exception {
+	public int parseOutTotalPagesCount() throws Exception {
 		Document document = Jsoup.connect(String.format(PAGE_URL_STR_PATTERN, 1)).timeout(30000).get();
 		return Integer.parseInt(document.select(".pages li:not(:contains(наступна))").last().text());
 	}

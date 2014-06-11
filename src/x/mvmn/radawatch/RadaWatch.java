@@ -40,7 +40,7 @@ import x.mvmn.radawatch.service.analyze.radavotes.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
-import x.mvmn.radawatch.service.parse.ItemsPagedLinksParser;
+import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
 import x.mvmn.radawatch.service.parse.radavotes.VoteResultsParser;
 import x.mvmn.radawatch.swing.EmptyWindowListener;
 
@@ -404,7 +404,7 @@ public class RadaWatch {
 
 	private class FetchJob implements Runnable {
 
-		private ItemsPagedLinksParser<VoteResultsData> parser;
+		private ItemsByPagedLinksParser<VoteResultsData> parser;
 		private volatile boolean stopRequested = false;
 		private int totalPagesCount = 0;
 
@@ -412,7 +412,7 @@ public class RadaWatch {
 			btnFetch.setEnabled(false);
 			prbFetch.setEnabled(true);
 			parser = new VoteResultsParser();
-			totalPagesCount = parser.parseTotalPagesCount(); // TODO: move off EDT
+			totalPagesCount = parser.parseOutTotalPagesCount(); // TODO: move off EDT
 			prbFetch.setIndeterminate(false);
 			prbFetch.setMinimum(0);
 			prbFetch.setMaximum(totalPagesCount);

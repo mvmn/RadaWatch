@@ -2,9 +2,9 @@ package x.mvmn.radawatch.service.parse;
 
 import x.mvmn.radawatch.model.Entity;
 
-public interface ItemsPagedLinksParser<T extends Entity> {
+public interface ItemsByPagedLinksParser<T extends Entity> {
 
-	public int parseTotalPagesCount() throws Exception;
+	public int parseOutTotalPagesCount() throws Exception;
 
 	public int[] parseOutItemsSiteIds(int pageNumber) throws Exception;
 
