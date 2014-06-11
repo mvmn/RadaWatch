@@ -1,14 +1,12 @@
 package x.mvmn.radawatch.service.parse;
 
-import java.util.List;
-
 import x.mvmn.radawatch.model.Entity;
 
 public interface ItemsPagedLinksParser<T extends Entity> {
 
-	public int parseTotalPagesCount();
+	public int parseTotalPagesCount() throws Exception;
 
-	public List<String> parseOutItemsLinks(int pageNumber);
+	public int[] parseOutItemsSiteIds(int pageNumber) throws Exception;
 
-	public T parseOutItem(String itemLinks);
+	public T parseOutItem(int itemSiteId) throws Exception;
 }

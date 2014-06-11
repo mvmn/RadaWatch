@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,27 +17,57 @@ import x.mvmn.radawatch.model.radavotes.DeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
 
-public class VoteResultsParser {
+public class VoteResultsParser implements ItemsPagedLinksParser<VoteResultsData> {
 
-	private final VoteResultsData data;
+	private static final String PAGE_URL_STR_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
+	private static final String ITEM_URL_STR_PATTERN = "http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=%s";
 
-	private final Pattern datePattern = Pattern.compile(".*[^\\d](\\d{1,2}.\\d{1,2}.\\d{4}\\s+\\d{1,2}:\\d{1,2})([^\\d].*|$)");
-	private final Pattern totalsPattern = Pattern
+	private static final Pattern DATE_REGEX_PATTERN = Pattern.compile(".*[^\\d](\\d{1,2}.\\d{1,2}.\\d{4}\\s+\\d{1,2}:\\d{1,2})([^\\d].*|$)");
+	private static final Pattern TOTALS_REGEX_PATTERN = Pattern
 			.compile(".*За:(\\d+)\\s+Проти:(\\d+)\\s+Утрималися:(\\d+)\\s+Не\\s+голосували:(\\d+)\\s+Всього:(\\d+)([^\\d].*|$)");
-	private final Pattern factionTotalsPattern = Pattern
+	private static final Pattern FACTION_TOTALS_REGEX_PATTERN = Pattern
 			.compile(".*За:(\\d+)\\s+Проти:(\\d+)\\s+Утрималися:(\\d+)\\s+Не\\s+голосували:(\\d+)\\s+Відсутні:(\\d+)([^\\d].*|$)");
-	private final Pattern factionSizePattern = Pattern.compile(".*Кількість\\s+депутатів:\\s+([\\d]+)([^\\d].*|$)");
-	private static final Pattern pageIdPattern = Pattern.compile(".*(?:\\?|&)g_id=(\\d+)(?:&.*|$)");
+	private static final Pattern FACTION_SIZE_REGEX_PATTERN = Pattern.compile(".*Кількість\\s+депутатів:\\s+([\\d]+)([^\\d].*|$)");
+	private static final Pattern PAGE_ID_IN_URL_REGEX_PATTERN = Pattern.compile(".*(?:\\?|&)g_id=(\\d+)(?:&.*|$)");
 
-	private final DateFormat dateFormat = new SimpleDateFormat("d.M.yyyy HH:mm");
+	private final DateFormat siteDateFormat = new SimpleDateFormat("d.M.yyyy HH:mm");
 
-	public VoteResultsParser(String url) throws Exception {
-		Matcher idMatcher = pageIdPattern.matcher(url);
-		idMatcher.find();
+	@Override
+	public int parseTotalPagesCount() throws Exception {
+		Document document = Jsoup.connect(String.format(PAGE_URL_STR_PATTERN, 1)).timeout(30000).get();
+		return Integer.parseInt(document.select(".pages li:not(:contains(наступна))").last().text());
+	}
+
+	@Override
+	public int[] parseOutItemsSiteIds(int pageNumber) throws Exception {
+		List<Integer> result = new ArrayList<Integer>();
+		Document document = Jsoup.connect(String.format(PAGE_URL_STR_PATTERN, pageNumber)).timeout(30000).get();
+		for (Element link : document.select(".archieve_block .news_item .details a")) {
+			Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(link.attr("href"));
+			idMatcher.find();
+			int id = Integer.parseInt(idMatcher.group(1));
+			result.add(id);
+		}
+		int[] arrResult = new int[result.size()];
+		Iterator<Integer> iterator = result.iterator();
+		for (int i = 0; i < arrResult.length && iterator.hasNext(); i++) {
+			arrResult[i] = iterator.next();
+		}
+		return arrResult;
+	}
+
+	@Override
+	public VoteResultsData parseOutItem(int itemSiteId) throws Exception {
+		return parseVoteResults(itemSiteId);
+	}
+
+	public VoteResultsData parseVoteResults(int id) throws Exception {
+		final VoteResultsData data;
+
 		List<VoteFactionData> factions = new ArrayList<VoteFactionData>();
-		final int globalId = Integer.parseInt(idMatcher.group(1));
+		final int globalId = id;
 
-		Document document = Jsoup.connect(url).timeout(30000).get();
+		Document document = Jsoup.connect(String.format(ITEM_URL_STR_PATTERN, id)).timeout(30000).get();
 		final String title = document.select(".head_gol font[color=Black]").text().trim();
 		String resultStr = document.select(".head_gol font[color=Red]").text().trim().toLowerCase()
 				+ document.select(".head_gol font[color=Green]").text().trim().toLowerCase();
@@ -58,15 +89,15 @@ public class VoteResultsParser {
 		{
 			String headingText = document.select(".head_gol").text();
 			{
-				Matcher dateMatcher = datePattern.matcher(headingText);
+				Matcher dateMatcher = DATE_REGEX_PATTERN.matcher(headingText);
 				if (dateMatcher.matches()) {
-					date = dateFormat.parse(dateMatcher.group(1));
+					date = siteDateFormat.parse(dateMatcher.group(1));
 				} else {
 					throw new Exception("Unable to find vote date in heading text: " + headingText);
 				}
 			}
 			{
-				Matcher totalsMatcher = totalsPattern.matcher(headingText);
+				Matcher totalsMatcher = TOTALS_REGEX_PATTERN.matcher(headingText);
 				if (totalsMatcher.matches()) {
 					votedYes = Integer.parseInt(totalsMatcher.group(1));
 					votedNo = Integer.parseInt(totalsMatcher.group(2));
@@ -84,20 +115,21 @@ public class VoteResultsParser {
 		}
 
 		data = new VoteResultsData(-1, globalId, title, result, date, votedYes, votedNo, abstained, skipped, total, factions);
+		return data;
 	}
 
 	protected VoteFactionData praseFaction(Element factionContainer) {
 		VoteFactionData result;
 		String factionTitle = factionContainer.select(".frn b").text().trim();
 		String factionHeading = factionContainer.select(".frn").text();
-		Matcher factionSize = factionSizePattern.matcher(factionHeading);
+		Matcher factionSize = FACTION_SIZE_REGEX_PATTERN.matcher(factionHeading);
 		int factionSizeVal;
 		if (factionSize.matches()) {
 			factionSizeVal = Integer.parseInt(factionSize.group(1));
 		} else {
 			throw new RuntimeException("Failed to parse out faction size from heading text " + factionHeading);
 		}
-		Matcher factionTotals = factionTotalsPattern.matcher(factionHeading);
+		Matcher factionTotals = FACTION_TOTALS_REGEX_PATTERN.matcher(factionHeading);
 		List<DeputyVoteData> factionVotes = new ArrayList<DeputyVoteData>();
 		for (Element voteElem : factionContainer.select(".frd li")) {
 			factionVotes.add(new DeputyVoteData(-1, voteElem.select(".dep").text().trim(), voteElem.select(".golos").text().trim()));
@@ -113,10 +145,6 @@ public class VoteResultsParser {
 			throw new RuntimeException("Failed to parse out faction totals from heading text " + factionHeading);
 		}
 		return result;
-	}
-
-	public VoteResultsData getVoteResultsData() {
-		return this.data;
 	}
 
 	// public static void main(String args[]) throws Exception {

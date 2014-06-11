@@ -35,11 +35,13 @@ import org.h2.tools.Script;
 import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
+import x.mvmn.radawatch.model.radavotes.VoteResultsData;
 import x.mvmn.radawatch.service.analyze.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
-import x.mvmn.radawatch.service.parse.MeetingsListParser;
+import x.mvmn.radawatch.service.parse.ItemsPagedLinksParser;
+import x.mvmn.radawatch.service.parse.VoteResultsParser;
 import x.mvmn.radawatch.swing.EmptyWindowListener;
 
 public class RadaWatch {
@@ -402,16 +404,18 @@ public class RadaWatch {
 
 	private class FetchJob implements Runnable {
 
-		private MeetingsListParser parser;
+		private ItemsPagedLinksParser<VoteResultsData> parser;
 		private volatile boolean stopRequested = false;
+		private int totalPagesCount = 0;
 
 		public void beforeRun() throws Exception {
 			btnFetch.setEnabled(false);
 			prbFetch.setEnabled(true);
-			parser = new MeetingsListParser();
+			parser = new VoteResultsParser();
+			totalPagesCount = parser.parseTotalPagesCount(); // TODO: move off EDT
 			prbFetch.setIndeterminate(false);
 			prbFetch.setMinimum(0);
-			prbFetch.setMaximum(parser.getLastPageNumber());
+			prbFetch.setMaximum(totalPagesCount);
 			prbFetch.setValue(0);
 		}
 
@@ -421,18 +425,29 @@ public class RadaWatch {
 
 		public void run() {
 			try {
-				for (int i = 1; i < parser.getLastPageNumber() && !stopRequested; i++) {
+				for (int i = 1; i < totalPagesCount && !stopRequested; i++) {
 					final int currentPage = i;
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							txaLog.append(String.format("Fetching from page %s...\n", currentPage));
 						}
 					});
-					final int fetchedRecords = parser.fetchNewMeetings(i, vrStore);
+					final int[] itemIds = parser.parseOutItemsSiteIds(currentPage);
+					int fetchedRecords = 0;
+					for (int itemId : itemIds) {
+						if (stopRequested) {
+							break;
+						}
+						if (!vrStore.checkExists(itemId)) {
+							vrStore.storeNewRecord(parser.parseOutItem(itemId));
+							fetchedRecords++;
+						}
+					}
+					final int fetchedRecordsFinal = fetchedRecords;
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							prbFetch.setValue(currentPage);
-							txaLog.append(String.format("Fetched %s records from page %s.\n", fetchedRecords, currentPage));
+							txaLog.append(String.format("Fetched %s records from page %s.\n", fetchedRecordsFinal, currentPage));
 						}
 					});
 				}

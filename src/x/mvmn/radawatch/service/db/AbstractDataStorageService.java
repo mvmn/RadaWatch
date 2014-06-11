@@ -17,7 +17,7 @@ public abstract class AbstractDataStorageService<T extends Entity> implements Da
 
 	@Override
 	public void createTable(String tableName, boolean ifNotExists) throws Exception {
-		dbService.execSingleStatement("create table " + tableName + (ifNotExists ? " if not exists (" : " (") + getTableDefinitionSql(tableName) + ");");
+		dbService.execSingleStatement("create table if not exists " + tableName + (ifNotExists ? " (" : " (") + getTableDefinitionSql(tableName) + ");");
 	}
 
 	@Override
