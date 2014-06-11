@@ -4,21 +4,19 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import x.mvmn.radawatch.model.radavotes.DeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
-import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
+import x.mvmn.radawatch.service.parse.AbstractJSoupItemsByPagedLinksParser;
 
-public class VoteResultsParser implements ItemsByPagedLinksParser<VoteResultsData> {
+public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<VoteResultsData> {
 
 	private static final String PAGE_URL_STR_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
 	private static final String ITEM_URL_STR_PATTERN = "http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=%s";
@@ -35,40 +33,36 @@ public class VoteResultsParser implements ItemsByPagedLinksParser<VoteResultsDat
 
 	@Override
 	public int parseOutTotalPagesCount() throws Exception {
-		Document document = Jsoup.connect(String.format(PAGE_URL_STR_PATTERN, 1)).timeout(30000).get();
+		Document document = get(String.format(PAGE_URL_STR_PATTERN, 1));
 		return Integer.parseInt(document.select(".pages li:not(:contains(наступна))").last().text());
 	}
 
 	@Override
-	public int[] parseOutItemsSiteIds(int pageNumber) throws Exception {
-		List<Integer> result = new ArrayList<Integer>();
-		Document document = Jsoup.connect(String.format(PAGE_URL_STR_PATTERN, pageNumber)).timeout(30000).get();
+	public List<ItemLinkData<VoteResultsData>> parseOutItemsLinksData(final int pageNumber) throws Exception {
+		List<ItemLinkData<VoteResultsData>> result = new ArrayList<ItemLinkData<VoteResultsData>>();
+		Document document = get(String.format(PAGE_URL_STR_PATTERN, pageNumber));
 		for (Element link : document.select(".archieve_block .news_item .details a")) {
-			Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(link.attr("href"));
+			String href = link.attr("href");
+			Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href);
 			idMatcher.find();
 			int id = Integer.parseInt(idMatcher.group(1));
-			result.add(id);
+			result.add(new ItemLinkData<VoteResultsData>(href, id));
 		}
-		int[] arrResult = new int[result.size()];
-		Iterator<Integer> iterator = result.iterator();
-		for (int i = 0; i < arrResult.length && iterator.hasNext(); i++) {
-			arrResult[i] = iterator.next();
-		}
-		return arrResult;
+		return result;
 	}
 
 	@Override
-	public VoteResultsData parseOutItem(int itemSiteId) throws Exception {
-		return parseVoteResults(itemSiteId);
+	public VoteResultsData parseOutItem(final ItemLinkData<VoteResultsData> itemLinkData) throws Exception {
+		return parseVoteResults(itemLinkData.getItemSiteId());
 	}
 
-	public VoteResultsData parseVoteResults(int id) throws Exception {
+	public VoteResultsData parseVoteResults(final int id) throws Exception {
 		final VoteResultsData data;
 
 		List<VoteFactionData> factions = new ArrayList<VoteFactionData>();
 		final int globalId = id;
 
-		Document document = Jsoup.connect(String.format(ITEM_URL_STR_PATTERN, id)).timeout(30000).get();
+		Document document = get(String.format(ITEM_URL_STR_PATTERN, id));
 		final String title = document.select(".head_gol font[color=Black]").text().trim();
 		String resultStr = document.select(".head_gol font[color=Red]").text().trim().toLowerCase()
 				+ document.select(".head_gol font[color=Green]").text().trim().toLowerCase();

@@ -3,6 +3,7 @@ package x.mvmn.radawatch;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
@@ -12,6 +13,7 @@ import x.mvmn.radawatch.gui.FetchProgressPanel;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.db.DataStorageService;
 import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
+import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser.ItemLinkData;
 
 class FetchJob<T extends Entity> implements Runnable {
 
@@ -61,24 +63,25 @@ class FetchJob<T extends Entity> implements Runnable {
 						fetchLog.append(String.format("Fetching from page %s...\n", currentPage));
 					}
 				});
-				final int[] itemIds = parser.parseOutItemsSiteIds(currentPage);
+				final List<ItemLinkData<T>> itemsLinksData = parser.parseOutItemsLinksData(currentPage);
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						fetchProgressPanel.setPagesProgress(currentPage);
-						fetchProgressPanel.setItemsCount(itemIds.length);
+						fetchProgressPanel.setItemsCount(itemsLinksData.size());
 						fetchProgressPanel.setItemsProgress(0);
 					}
 				});
 
 				int fetchedRecords = 0;
 				int existedRecords = 0;
-				for (int itemIndex = 0; itemIndex < itemIds.length; itemIndex++) {
-					int itemId = itemIds[itemIndex];
+				for (int itemIndex = 0; itemIndex < itemsLinksData.size(); itemIndex++) {
+					ItemLinkData<T> itemLinkData = itemsLinksData.get(itemIndex);
+					int itemId = itemLinkData.getItemSiteId();
 					if (stopRequested) {
 						break;
 					}
 					if (!store.checkExists(itemId)) {
-						store.storeNewRecord(parser.parseOutItem(itemId));
+						store.storeNewRecord(parser.parseOutItem(itemLinkData));
 						fetchedRecords++;
 					} else {
 						existedRecords++;
@@ -96,7 +99,7 @@ class FetchJob<T extends Entity> implements Runnable {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						fetchLog.append(String.format("Fetched %s new of %s total items (%s aready fetched) from page %s\n", finalFetchedRecords,
-								itemIds.length, finalExistedRecords, currentPage));
+								itemsLinksData.size(), finalExistedRecords, currentPage));
 					}
 				});
 			}

@@ -93,95 +93,74 @@ public class RadaWatch {
 		btnRestoreDb.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fileChooser = new JFileChooser();
-				if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(mainWindow)) {
-					final File fileToLoadFrom = fileChooser.getSelectedFile();
-					btnRestoreDb.setEnabled(false);
-					btnBackupDb.setEnabled(false);
-					votesFetchController.setControlsEnabled(false);
-					new Thread() {
-						public void run() {
-							FileReader fis = null;
-							Connection conn = null;
-							try {
-								votesFetchController.getStorage().dropAllTables();
-								pdStore.dropAllTables();
-								conn = storageService.getConnection();
-								fis = new FileReader(fileToLoadFrom);
-								RunScript.execute(conn, fis);
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										btnRestoreDb.setEnabled(true);
-										btnBackupDb.setEnabled(true);
-										votesFetchController.setControlsEnabled(true);
+				final Runnable restoreLogic = new Runnable() {
+					public void run() {
 
-										JOptionPane.showMessageDialog(mainWindow, "Script " + fileToLoadFrom.getPath() + " executed successfully",
-												"DB restore succeeded", JOptionPane.INFORMATION_MESSAGE);
-									}
-								});
-							} catch (final Exception ex) {
-								ex.printStackTrace();
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										btnRestoreDb.setEnabled(true);
-										btnBackupDb.setEnabled(true);
-										votesFetchController.setControlsEnabled(true);
+						JFileChooser fileChooser = new JFileChooser();
+						if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(mainWindow)) {
+							final File fileToLoadFrom = fileChooser.getSelectedFile();
+							btnRestoreDb.setEnabled(false);
+							btnBackupDb.setEnabled(false);
+							votesFetchController.setControlsEnabled(false);
+							new Thread() {
+								public void run() {
+									FileReader fis = null;
+									Connection conn = null;
+									try {
+										votesFetchController.getStorage().dropAllTables();
+										pdStore.dropAllTables();
+										conn = storageService.getConnection();
+										fis = new FileReader(fileToLoadFrom);
+										RunScript.execute(conn, fis);
+										SwingUtilities.invokeLater(new Runnable() {
+											@Override
+											public void run() {
+												btnRestoreDb.setEnabled(true);
+												btnBackupDb.setEnabled(true);
+												votesFetchController.setControlsEnabled(true);
 
-										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
-												JOptionPane.ERROR_MESSAGE);
+												JOptionPane.showMessageDialog(mainWindow, "Script " + fileToLoadFrom.getPath() + " executed successfully",
+														"DB restore succeeded", JOptionPane.INFORMATION_MESSAGE);
+											}
+										});
+									} catch (final Exception ex) {
+										ex.printStackTrace();
+										SwingUtilities.invokeLater(new Runnable() {
+											@Override
+											public void run() {
+												btnRestoreDb.setEnabled(true);
+												btnBackupDb.setEnabled(true);
+												votesFetchController.setControlsEnabled(true);
+
+												JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(),
+														"Error occurred", JOptionPane.ERROR_MESSAGE);
+											}
+										});
+									} finally {
+										IOUtils.closeSilently(fis);
+										JdbcUtils.closeSilently(conn);
 									}
-								});
-							} finally {
-								IOUtils.closeSilently(fis);
-								JdbcUtils.closeSilently(conn);
-							}
+								}
+							}.start();
 						}
-					}.start();
+					}
+				};
+				if (JOptionPane.OK_OPTION == JOptionPane
+						.showConfirmDialog(
+								mainWindow,
+								"Restoring DB will overwrite currend DB completely \n(all current data will be deleted, and only then new data will be imported).\nDo you wish to backup current DB first?",
+								"Backup current DB before restoring new?", JOptionPane.YES_NO_OPTION)) {
+					RadaWatch.this.backupDb(restoreLogic);
+				} else {
+					restoreLogic.run();
 				}
 			}
+
 		});
 		btnBackupDb.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fileChooser = new JFileChooser();
-				if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(mainWindow)) {
-					final File fileToSaveTo = fileChooser.getSelectedFile();
-					btnBackupDb.setEnabled(false);
-					new Thread() {
-						public void run() {
-							FileOutputStream fis = null;
-							try {
-								fis = new FileOutputStream(fileToSaveTo);
-								Method m = Script.class.getDeclaredMethod("process", Connection.class, OutputStream.class);
-								m.setAccessible(true);
-								m.invoke(null, storageService.getConnection(), fis);
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										btnBackupDb.setEnabled(true);
-										JOptionPane.showMessageDialog(mainWindow, "File " + fileToSaveTo.getPath() + " saved successfully",
-												"DB backup succeeded", JOptionPane.INFORMATION_MESSAGE);
-									}
-								});
-							} catch (final Exception ex) {
-								ex.printStackTrace();
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										btnBackupDb.setEnabled(true);
-										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
-												JOptionPane.ERROR_MESSAGE);
-									}
-								});
-							} finally {
-								IOUtils.closeSilently(fis);
-
-							}
-						}
-					}.start();
-				}
+				RadaWatch.this.backupDb(null);
 			}
 		});
 
@@ -313,6 +292,50 @@ public class RadaWatch {
 		}
 		mainWindow.pack();
 		mainWindow.setVisible(true);
+	}
+
+	protected void backupDb(final Runnable callbackOnSwingEDT) {
+		JFileChooser fileChooser = new JFileChooser();
+		if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(mainWindow)) {
+			final File fileToSaveTo = fileChooser.getSelectedFile();
+			btnBackupDb.setEnabled(false);
+			btnRestoreDb.setEnabled(false);
+			new Thread() {
+				public void run() {
+					FileOutputStream fis = null;
+					try {
+						fis = new FileOutputStream(fileToSaveTo);
+						Method m = Script.class.getDeclaredMethod("process", Connection.class, OutputStream.class);
+						m.setAccessible(true);
+						m.invoke(null, storageService.getConnection(), fis);
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								btnBackupDb.setEnabled(true);
+								JOptionPane.showMessageDialog(mainWindow, "File " + fileToSaveTo.getPath() + " saved successfully", "DB backup succeeded",
+										JOptionPane.INFORMATION_MESSAGE);
+								if (callbackOnSwingEDT != null) {
+									callbackOnSwingEDT.run();
+								}
+							}
+						});
+					} catch (final Exception ex) {
+						ex.printStackTrace();
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								btnBackupDb.setEnabled(true);
+								btnRestoreDb.setEnabled(true);
+								JOptionPane.showMessageDialog(mainWindow, "DB backup failed: " + ex.getClass().getCanonicalName() + " " + ex.getMessage(),
+										"Error occurred", JOptionPane.ERROR_MESSAGE);
+							}
+						});
+					} finally {
+						IOUtils.closeSilently(fis);
+					}
+				}
+			}.start();
+		}
 	}
 
 	public void closeRequest() {
