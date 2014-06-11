@@ -105,8 +105,8 @@ public class RadaWatch {
 									FileReader fis = null;
 									Connection conn = null;
 									try {
-										// votesFetchController.getStorage().dropAllTables();
-										// presDecreesFetchController.getStorage().dropAllTables();
+										votesFetchController.getStorage().dropAllTables();
+										presDecreesFetchController.getStorage().dropAllTables();
 										conn = storageService.getConnection();
 										fis = new FileReader(fileToLoadFrom);
 										RunScript.execute(conn, fis);
