@@ -102,8 +102,12 @@ public class FetchController<T extends Entity> implements ActionListener {
 		return parentView;
 	}
 
-	public FetchPanel getFetchPanel() {
+	public FetchPanel getView() {
 		return fetchPanel;
+	}
+
+	public void setControlsEnabled(boolean enabled) {
+		fetchPanel.setEnabled(enabled);
 	}
 
 	public ItemsByPagedLinksParser<T> getParser() {
@@ -112,5 +116,9 @@ public class FetchController<T extends Entity> implements ActionListener {
 
 	public DataStorageService<T> getStorage() {
 		return storage;
+	}
+
+	public String getDataTitle() {
+		return fetchPanel.getDataTitle();
 	}
 }

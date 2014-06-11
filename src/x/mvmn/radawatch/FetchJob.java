@@ -71,6 +71,7 @@ class FetchJob<T extends Entity> implements Runnable {
 				});
 
 				int fetchedRecords = 0;
+				int existedRecords = 0;
 				for (int itemIndex = 0; itemIndex < itemIds.length; itemIndex++) {
 					int itemId = itemIds[itemIndex];
 					if (stopRequested) {
@@ -79,6 +80,8 @@ class FetchJob<T extends Entity> implements Runnable {
 					if (!store.checkExists(itemId)) {
 						store.storeNewRecord(parser.parseOutItem(itemId));
 						fetchedRecords++;
+					} else {
+						existedRecords++;
 					}
 					final int currentItem = itemIndex + 1;
 					SwingUtilities.invokeLater(new Runnable() {
@@ -89,9 +92,11 @@ class FetchJob<T extends Entity> implements Runnable {
 					});
 				}
 				final int finalFetchedRecords = fetchedRecords;
+				final int finalExistedRecords = existedRecords;
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						fetchLog.append(String.format("Fetched %s new items from page %s\n", finalFetchedRecords, currentPage));
+						fetchLog.append(String.format("Fetched %s new of %s total items (%s aready fetched) from page %s\n", finalFetchedRecords,
+								itemIds.length, finalExistedRecords, currentPage));
 					}
 				});
 			}

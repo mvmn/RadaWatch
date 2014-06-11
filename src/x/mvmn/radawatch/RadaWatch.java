@@ -34,11 +34,13 @@ import org.h2.util.JdbcUtils;
 
 import x.mvmn.radawatch.gui.FetchPanel;
 import x.mvmn.radawatch.gui.analyze.TitlesTree;
+import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
 import x.mvmn.radawatch.service.analyze.radavotes.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
+import x.mvmn.radawatch.service.parse.presdecrees.PredisentialDecreesParser;
 import x.mvmn.radawatch.service.parse.radavotes.VoteResultsParser;
 import x.mvmn.radawatch.swing.EmptyWindowListener;
 
@@ -61,6 +63,8 @@ public class RadaWatch {
 	private final JButton btnRestoreDb = new JButton("Restore DB");
 	private final FetchController<VoteResultsData> votesFetchController = new FetchController<VoteResultsData>(new VoteResultsParser(),
 			new RadaVotesStorageService(storageService), new FetchPanel("Rada Votes"), mainWindow);
+	private final FetchController<PresidentialDecree> presDecreesFetchController = new FetchController<PresidentialDecree>(new PredisentialDecreesParser(),
+			new PresidentialDecreesStorageService(storageService), new FetchPanel("Presidential Decrees"), mainWindow);
 
 	public RadaWatch() {
 		mainWindow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -94,7 +98,7 @@ public class RadaWatch {
 					final File fileToLoadFrom = fileChooser.getSelectedFile();
 					btnRestoreDb.setEnabled(false);
 					btnBackupDb.setEnabled(false);
-					votesFetchController.getFetchPanel().setEnabled(false);
+					votesFetchController.setControlsEnabled(false);
 					new Thread() {
 						public void run() {
 							FileReader fis = null;
@@ -110,7 +114,7 @@ public class RadaWatch {
 									public void run() {
 										btnRestoreDb.setEnabled(true);
 										btnBackupDb.setEnabled(true);
-										votesFetchController.getFetchPanel().setEnabled(true);
+										votesFetchController.setControlsEnabled(true);
 
 										JOptionPane.showMessageDialog(mainWindow, "Script " + fileToLoadFrom.getPath() + " executed successfully",
 												"DB restore succeeded", JOptionPane.INFORMATION_MESSAGE);
@@ -123,7 +127,7 @@ public class RadaWatch {
 									public void run() {
 										btnRestoreDb.setEnabled(true);
 										btnBackupDb.setEnabled(true);
-										votesFetchController.getFetchPanel().setEnabled(true);
+										votesFetchController.setControlsEnabled(true);
 
 										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
 												JOptionPane.ERROR_MESSAGE);
@@ -290,23 +294,23 @@ public class RadaWatch {
 				}
 			});
 		}
+
+		{
+			JTabbedPane tabFetchSubtabs = new JTabbedPane();
+			tabFetch.add(tabFetchSubtabs, BorderLayout.CENTER);
+			tabFetchSubtabs.addTab(votesFetchController.getDataTitle(), votesFetchController.getView());
+			tabFetchSubtabs.addTab(presDecreesFetchController.getDataTitle(), presDecreesFetchController.getView());
+		}
+
+		mainWindow.getContentPane().setLayout(new BorderLayout());
+		mainWindow.getContentPane().add(tabPane, BorderLayout.CENTER);
 		{
 			JPanel btnPanel = new JPanel(new BorderLayout());
 			btnPanel.add(btnRestoreDb, BorderLayout.WEST);
 			btnPanel.add(btnBrowseDb, BorderLayout.CENTER);
 			btnPanel.add(btnBackupDb, BorderLayout.EAST);
-			tabFetch.add(btnPanel, BorderLayout.SOUTH);
+			mainWindow.getContentPane().add(btnPanel, BorderLayout.SOUTH);
 		}
-		{
-			JPanel progressPanel = new JPanel(new BorderLayout());
-			progressPanel.add(votesFetchController.getFetchPanel(), BorderLayout.CENTER);
-			tabFetch.add(progressPanel, BorderLayout.NORTH);
-		}
-
-		tabFetch.add(votesFetchController.getFetchPanel(), BorderLayout.CENTER);
-
-		mainWindow.getContentPane().setLayout(new BorderLayout());
-		mainWindow.getContentPane().add(tabPane, BorderLayout.CENTER);
 		mainWindow.pack();
 		mainWindow.setVisible(true);
 	}
