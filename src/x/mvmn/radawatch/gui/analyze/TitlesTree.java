@@ -1,4 +1,4 @@
-package x.mvmn.radawatch;
+package x.mvmn.radawatch.gui.analyze;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;

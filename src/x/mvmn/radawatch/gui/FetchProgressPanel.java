@@ -30,11 +30,12 @@ public class FetchProgressPanel extends JPanel implements PagedFetchProgressIndi
 		progressPanel.add(pagesProgressBar);
 		progressPanel.add(itemsProgressBar);
 		JPanel labelsPanel = new JPanel(new GridLayout(2, 1));
-		labelsPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 6));
+		// labelsPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 6));
 		labelsPanel.add(pagesProgressLabel);
 		labelsPanel.add(itemsProgressLabel);
 		this.add(progressPanel, BorderLayout.CENTER);
 		this.add(labelsPanel, BorderLayout.EAST);
+		reset();
 	}
 
 	@Override
