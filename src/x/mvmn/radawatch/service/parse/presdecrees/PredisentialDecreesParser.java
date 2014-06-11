@@ -1,4 +1,4 @@
-package x.mvmn.radawatch.service.parse;
+package x.mvmn.radawatch.service.parse.presdecrees;
 
 public class PredisentialDecreesParser {
 

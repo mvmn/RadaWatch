@@ -1,4 +1,4 @@
-package x.mvmn.radawatch.service.analyze;
+package x.mvmn.radawatch.service.analyze.radavotes;
 
 import java.sql.Date;
 import java.util.List;

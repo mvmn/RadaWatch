@@ -1,4 +1,4 @@
-package x.mvmn.radawatch.service.parse;
+package x.mvmn.radawatch.service.parse.radavotes;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -16,6 +16,7 @@ import org.jsoup.nodes.Element;
 import x.mvmn.radawatch.model.radavotes.DeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
+import x.mvmn.radawatch.service.parse.ItemsPagedLinksParser;
 
 public class VoteResultsParser implements ItemsPagedLinksParser<VoteResultsData> {
 

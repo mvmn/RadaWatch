@@ -36,12 +36,12 @@ import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
-import x.mvmn.radawatch.service.analyze.VotingTitlesAnalyzer;
+import x.mvmn.radawatch.service.analyze.radavotes.VotingTitlesAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
 import x.mvmn.radawatch.service.parse.ItemsPagedLinksParser;
-import x.mvmn.radawatch.service.parse.VoteResultsParser;
+import x.mvmn.radawatch.service.parse.radavotes.VoteResultsParser;
 import x.mvmn.radawatch.swing.EmptyWindowListener;
 
 public class RadaWatch {
@@ -55,7 +55,7 @@ public class RadaWatch {
 		return INSTANCE;
 	}
 
-	private final JFrame mainWindow = new JFrame("Rada Watch");
+	private final JFrame mainWindow = new JFrame("Rada Watch by Mykola Makhin"); // Shameless selfpromotion, hehe
 	private final DataBaseConnectionService storageService = new DataBaseConnectionService();
 	private final RadaVotesStorageService vrStore = new RadaVotesStorageService(storageService);
 	private final PresidentialDecreesStorageService pdStore = new PresidentialDecreesStorageService(storageService);
