@@ -55,7 +55,6 @@ public class RadaWatch {
 
 	private final JFrame mainWindow = new JFrame("Rada Watch by Mykola Makhin"); // Shameless selfpromotion, hehe
 	private final DataBaseConnectionService storageService = new DataBaseConnectionService();
-	private final PresidentialDecreesStorageService pdStore = new PresidentialDecreesStorageService(storageService);
 	private final JButton btnBrowseDb = new JButton("Browse DB");
 	private final JButton btnBackupDb = new JButton("Backup DB");
 	private final JButton btnRestoreDb = new JButton("Restore DB");
@@ -100,13 +99,14 @@ public class RadaWatch {
 							btnRestoreDb.setEnabled(false);
 							btnBackupDb.setEnabled(false);
 							votesFetchController.setControlsEnabled(false);
+							presDecreesFetchController.setControlsEnabled(false);
 							new Thread() {
 								public void run() {
 									FileReader fis = null;
 									Connection conn = null;
 									try {
-										votesFetchController.getStorage().dropAllTables();
-										pdStore.dropAllTables();
+										// votesFetchController.getStorage().dropAllTables();
+										// presDecreesFetchController.getStorage().dropAllTables();
 										conn = storageService.getConnection();
 										fis = new FileReader(fileToLoadFrom);
 										RunScript.execute(conn, fis);
@@ -116,6 +116,7 @@ public class RadaWatch {
 												btnRestoreDb.setEnabled(true);
 												btnBackupDb.setEnabled(true);
 												votesFetchController.setControlsEnabled(true);
+												presDecreesFetchController.setControlsEnabled(true);
 
 												JOptionPane.showMessageDialog(mainWindow, "Script " + fileToLoadFrom.getPath() + " executed successfully",
 														"DB restore succeeded", JOptionPane.INFORMATION_MESSAGE);
@@ -129,6 +130,7 @@ public class RadaWatch {
 												btnRestoreDb.setEnabled(true);
 												btnBackupDb.setEnabled(true);
 												votesFetchController.setControlsEnabled(true);
+												presDecreesFetchController.setControlsEnabled(true);
 
 												JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(),
 														"Error occurred", JOptionPane.ERROR_MESSAGE);

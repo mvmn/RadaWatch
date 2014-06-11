@@ -17,9 +17,9 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteResu
 
 	private static final String[] SQL_TABLES = new String[] { "votesession", "votesessionfaction", "individualvote" };
 	private static final String SQL_TABLES_DEFINITIONS[] = new String[] {
-			"id int not null primary key auto_increment, g_id int not null, votetitle varchar(16384), votedate TIMESTAMP, votedyes int, votedno int, abstained int, skipped int, total int, votepassed BOOL",
-			"id int not null primary key auto_increment, votesessionid int, title varchar(16384), totalmembers int, votedyes int, votedno int, abstained int, skipped int, absent int",
-			"id int not null primary key auto_increment, votesessionid int, votesessionfactionid int, name varchar(16384), voted varchar(1024)" };
+			"id int not null primary key auto_increment, g_id int not null, votetitle varchar(16384), votedate TIMESTAMP, votedyes int, votedno int, abstained int, skipped int, total int, votepassed BOOL, unique index votesession_g_id(g_id), index votesession_votedate(votedate), index votesession_votepassed(votepassed)",
+			"id int not null primary key auto_increment, votesessionid int, title varchar(16384), totalmembers int, votedyes int, votedno int, abstained int, skipped int, absent int, index votesessionfaction_votesessionid(votesessionid), index votesessionfaction_title(title)",
+			"id int not null primary key auto_increment, votesessionid int, votesessionfactionid int, name varchar(16384), voted varchar(1024), index individualvote_votesessionid(votesessionid), index individualvote_votesessionfactionid(votesessionfactionid), index individualvote_name(name)" };
 
 	public RadaVotesStorageService(final DataBaseConnectionService dbService) {
 		super(dbService);
