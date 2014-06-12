@@ -1,10 +1,51 @@
 package x.mvmn.radawatch.service.analyze;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TitlesAnalyzisHelper {
+
+	public static class TextNode {
+		final ConcurrentHashMap<String, TextNode> children = new ConcurrentHashMap<String, TextNode>();
+		private int count = 1;
+		private String value;
+
+		public TextNode(final String value) {
+			this.value = value;
+		}
+
+		public TextNode addOrIncrementChild(String value) {
+			final String key = value.toLowerCase();
+			TextNode result = children.get(key);
+			if (result == null) {
+				result = new TextNode(value);
+				children.put(key, result);
+			} else {
+				result.setCount(result.getCount() + 1);
+			}
+			return result;
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+		public void setCount(int count) {
+			this.count = count;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public ConcurrentHashMap<String, TextNode> getChildren() {
+			return children;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	protected static Map<String, Object> mapWords(final Map<String, Object> map, final String key) {
@@ -19,37 +60,30 @@ public class TitlesAnalyzisHelper {
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected static void flattenMap(final Map<String, Object> pp, final String ppkey, final Map<String, Object> parent) {
-		for (Map.Entry<String, Object> entry : parent.entrySet())
-			if (entry.getValue() instanceof Map) {
-				flattenMap(parent, entry.getKey(), (Map<String, Object>) entry.getValue());
-			}
-		if (pp != null) {
-			Map<String, Object> node = null;
-			String nodeKey = null;
-			for (Map.Entry<String, Object> entry : parent.entrySet())
-				if (entry.getValue() instanceof Map) {
-					node = (Map<String, Object>) entry.getValue();
-					nodeKey = entry.getKey();
-				}
-			if (node != null && node.get("__count").equals(parent.get("__count"))) {
-				pp.remove(ppkey);
-				pp.put(ppkey + " " + nodeKey, node);
+	public static TextNode mapTitlesToTreeNodes(final Iterable<String> titles) {
+		final TextNode rootNode = new TextNode("Всі");
+		for (String title : titles) {
+			TextNode currentNode = rootNode;
+			for (String val : title.split(" ")) {
+				currentNode = currentNode.addOrIncrementChild(val);
 			}
 		}
+
+		flattenTree(null, null, rootNode);
+		return rootNode;
 	}
 
-	public static Map<String, Object> mapTitles(final List<String> titles) {
-		final Map<String, Object> result = new ConcurrentHashMap<String, Object>();
-		for (String title : titles) {
-			Map<String, Object> map = result;
-
-			for (String val : title.split(" ")) {
-				map = mapWords(map, val);
-			}
+	public static void flattenTree(final TextNode grandParentNode, final String parentNodeKey, final TextNode parentNode) {
+		for (Map.Entry<String, TextNode> childEntry : parentNode.getChildren().entrySet()) {
+			flattenTree(parentNode, childEntry.getKey(), childEntry.getValue());
 		}
-		flattenMap(null, null, result);
-		return result;
+		if (grandParentNode != null && parentNode.getChildren().size() == 1) {
+			final Map.Entry<String, TextNode> singleChildEntry = parentNode.getChildren().entrySet().iterator().next();
+			final TextNode singleChild = singleChildEntry.getValue();
+			final String newKey = parentNodeKey + " " + singleChildEntry.getKey();
+			grandParentNode.getChildren().remove(parentNodeKey);
+			singleChild.setValue(parentNode.getValue() + " " + singleChild.getValue());
+			grandParentNode.getChildren().put(newKey, singleChild);
+		}
 	}
 }

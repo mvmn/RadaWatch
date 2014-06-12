@@ -12,41 +12,32 @@ import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.TextNode;
+
 public class TitlesTree extends JPanel {
 	private static final long serialVersionUID = -3566611786628177595L;
 
-	public TitlesTree(Map<String, Object> titlesMap) {
+	public TitlesTree(final Map<String, TextNode> topNodes) {
 		super(new BorderLayout());
 		DefaultMutableTreeNode rootnode = new DefaultMutableTreeNode("Всі");
-		mapToNodes(rootnode, titlesMap);
+		textNodesToTreeNodes(rootnode, topNodes);
 		this.add(new JTree(rootnode), BorderLayout.CENTER);
 	}
 
-	@SuppressWarnings("unchecked")
-	public void mapToNodes(DefaultMutableTreeNode parentNode, Map<String, Object> map) {
-		List<Map.Entry<String, Object>> entries = new ArrayList<Map.Entry<String, Object>>(map.entrySet());
-		Collections.sort(entries, new Comparator<Map.Entry<String, Object>>() {
+	public void textNodesToTreeNodes(DefaultMutableTreeNode parentNode, Map<String, TextNode> topNodes) {
+		List<Map.Entry<String, TextNode>> entries = new ArrayList<Map.Entry<String, TextNode>>(topNodes.entrySet());
+		Collections.sort(entries, new Comparator<Map.Entry<String, TextNode>>() {
 			@Override
-			public int compare(Entry<String, Object> m1, Entry<String, Object> m2) {
-				int v1 = 0;
-				int v2 = 0;
-				if (m1.getValue() instanceof java.util.Map) {
-					v1 = (Integer) ((Map<String, Object>) m1.getValue()).get("__count");
-				}
-				if (m2.getValue() instanceof java.util.Map) {
-					v2 = (Integer) ((Map<String, Object>) m2.getValue()).get("__count");
-				}
-				return v2 - v1;
+			public int compare(Entry<String, TextNode> textNodeEntry1, Entry<String, TextNode> textNodeEntry2) {
+				return textNodeEntry2.getValue().getCount() - textNodeEntry1.getValue().getCount();
 			}
 		});
-
-		for (Map.Entry<String, Object> entry : entries) {
-			if (entry.getValue() instanceof java.util.Map) {
-				String nodeVal = String.format("%s [%s]", entry.getKey(), ((Map<String, Object>) entry.getValue()).get("__count"));
-				DefaultMutableTreeNode newNode = new javax.swing.tree.DefaultMutableTreeNode(nodeVal);
-				parentNode.add(newNode);
-				mapToNodes(newNode, (Map<String, Object>) entry.getValue());
-			}
+		for (Map.Entry<String, TextNode> entry : entries) {
+			final TextNode textNode = entry.getValue();
+			String nodeVal = String.format("%s [%s]", textNode.getValue(), textNode.getCount());
+			DefaultMutableTreeNode newNode = new javax.swing.tree.DefaultMutableTreeNode(nodeVal);
+			parentNode.add(newNode);
+			textNodesToTreeNodes(newNode, textNode.getChildren());
 		}
 	}
 }

@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -19,6 +20,7 @@ import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
 import net.sourceforge.jdatepicker.impl.UtilDateModel;
 import x.mvmn.radawatch.service.analyze.TitlesAnalyzer;
 import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper;
+import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.TextNode;
 
 public class TitlesAnalysisPanel extends JPanel {
 
@@ -59,8 +61,10 @@ public class TitlesAnalysisPanel extends JPanel {
 						try {
 							final Date fromDate = (Date) datePickerFrom.getModel().getValue();
 							final Date toDate = (Date) datePickerTo.getModel().getValue();
-							final TitlesTree titlesTree = new TitlesTree(TitlesAnalyzisHelper.mapTitles(titlesAnalyzer.getTitles(fromDate, toDate,
-									tfTitleFilter.getText())));
+							List<String> titles = titlesAnalyzer.getTitles(fromDate, toDate, tfTitleFilter.getText());
+							final TextNode rootNode = TitlesAnalyzisHelper.mapTitlesToTreeNodes(titles);
+							// TitlesAnalyzisHelper.mapTitles(titles);
+							final TitlesTree titlesTree = new TitlesTree(rootNode.getChildren());
 
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override
@@ -88,5 +92,4 @@ public class TitlesAnalysisPanel extends JPanel {
 			}
 		});
 	}
-
 }
