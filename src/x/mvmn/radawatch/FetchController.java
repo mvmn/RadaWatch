@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import x.mvmn.lang.ExceptionHandler;
+import x.mvmn.radawatch.gui.DBStatsPanel;
 import x.mvmn.radawatch.gui.FetchPanel;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.db.DataStorageService;
@@ -48,6 +49,10 @@ public class FetchController<T extends Entity> implements ActionListener {
 										fetchPanel.setInProgress(false);
 									}
 								});
+								DBStatsPanel<?> dbStatsPanel = fetchPanel.getDbStatsPanel();
+								if (dbStatsPanel != null) {
+									dbStatsPanel.refresh();
+								}
 							}
 						}, fetchPanel.getFetchProgressPanel(), fetchPanel.getTxaFetchLog(), new ExceptionHandler<Exception>() {
 							@Override

@@ -1,11 +1,13 @@
 package x.mvmn.radawatch.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 
 public class FetchPanel extends JPanel {
@@ -26,10 +28,12 @@ public class FetchPanel extends JPanel {
 	protected final JButton btnDbTablesReset;
 
 	protected volatile boolean inProgress = false;
+	protected final DBStatsPanel<?> dbStatsPanel;
 
-	public FetchPanel(final String dataTitle) {
+	public FetchPanel(final String dataTitle, final DBStatsPanel<?> dbStatsPanel) {
 		super(new BorderLayout());
 		this.dataTitle = dataTitle;
+		this.dbStatsPanel = dbStatsPanel;
 		fetchProgressPanel = new FetchProgressPanel("Fetch progress for " + dataTitle);
 		btnFetch = new JButton("Fetch " + dataTitle + " data");
 		btnStop = new JButton("Stop fetching " + dataTitle);
@@ -37,7 +41,14 @@ public class FetchPanel extends JPanel {
 		btnFetch.setActionCommand(ACT_COMMAND_FETCH);
 		btnStop.setActionCommand(ACT_COMMAND_STOP);
 		btnDbTablesReset.setActionCommand(ACT_COMMAND_RESET_DB_TABLES);
-		this.add(new JScrollPane(txaFetchLog), BorderLayout.CENTER);
+		Component mainComponent = new JScrollPane(txaFetchLog);
+		if (dbStatsPanel != null) {
+			final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainComponent, dbStatsPanel);
+			splitPane.setDividerLocation(0.5f);
+			splitPane.setResizeWeight(0.5f);
+			mainComponent = splitPane;
+		}
+		this.add(mainComponent, BorderLayout.CENTER);
 		this.add(fetchProgressPanel, BorderLayout.NORTH);
 		final JPanel buttonsPanel = new JPanel(new BorderLayout());
 		buttonsPanel.add(btnDbTablesReset, BorderLayout.WEST);
@@ -87,5 +98,9 @@ public class FetchPanel extends JPanel {
 
 	public String getDataTitle() {
 		return dataTitle;
+	}
+
+	public DBStatsPanel<?> getDbStatsPanel() {
+		return dbStatsPanel;
 	}
 }

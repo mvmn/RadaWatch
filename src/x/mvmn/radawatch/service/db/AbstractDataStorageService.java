@@ -1,5 +1,8 @@
 package x.mvmn.radawatch.service.db;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import x.mvmn.radawatch.model.Entity;
 
 public abstract class AbstractDataStorageService<T extends Entity> implements DataStorageService<T> {
@@ -32,5 +35,16 @@ public abstract class AbstractDataStorageService<T extends Entity> implements Da
 		for (final String tableName : getTablesNames()) {
 			createTable(tableName, true);
 		}
+	}
+
+	public Map<String, String> getStats() throws Exception {
+		final Map<String, String> results = new HashMap<String, String>();
+
+		for (final String tableName : getTablesNames()) {
+			int count = dbService.execSelectCount("select count(*) from " + tableName);
+			results.put(tableName, String.valueOf(count));
+		}
+
+		return results;
 	}
 }

@@ -1,5 +1,7 @@
 package x.mvmn.radawatch.service.db;
 
+import java.util.Map;
+
 import x.mvmn.radawatch.model.Entity;
 
 public interface DataStorageService<T extends Entity> {
@@ -19,5 +21,7 @@ public interface DataStorageService<T extends Entity> {
 	public void storeNewRecord(final T data) throws Exception;
 
 	public boolean checkExists(int itemId) throws Exception;
+
+	public Map<String, String> getStats() throws Exception;
 
 }
