@@ -3,9 +3,9 @@ package x.mvmn.radawatch.model.radavotes;
 import java.util.Date;
 import java.util.List;
 
-import x.mvmn.radawatch.model.Entity;
+import x.mvmn.radawatch.model.SubEntityCapableEntity;
 
-public class VoteResultsData extends Entity {
+public class VoteResultsData extends SubEntityCapableEntity<VoteFactionData> {
 	private final int globalId;
 	private final String title;
 	private final boolean result;
@@ -70,6 +70,11 @@ public class VoteResultsData extends Entity {
 
 	public List<VoteFactionData> getFactions() {
 		return factions;
+	}
+
+	@Override
+	public List<VoteFactionData> getSubEntities() {
+		return getFactions();
 	}
 
 }

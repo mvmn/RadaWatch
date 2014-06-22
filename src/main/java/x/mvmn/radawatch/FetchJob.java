@@ -9,7 +9,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 import x.mvmn.lang.ExceptionHandler;
-import x.mvmn.radawatch.gui.FetchProgressPanel;
+import x.mvmn.radawatch.gui.fetch.FetchProgressPanel;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.db.DataStorageService;
 import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;

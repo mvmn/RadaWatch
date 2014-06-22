@@ -1,4 +1,4 @@
-package x.mvmn.radawatch.gui;
+package x.mvmn.radawatch.gui.fetch;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;

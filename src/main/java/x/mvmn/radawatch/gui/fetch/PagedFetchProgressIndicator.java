@@ -1,4 +1,4 @@
-package x.mvmn.radawatch.gui;
+package x.mvmn.radawatch.gui.fetch;
 
 public interface PagedFetchProgressIndicator {
 

@@ -8,8 +8,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import x.mvmn.lang.ExceptionHandler;
-import x.mvmn.radawatch.gui.DBStatsPanel;
-import x.mvmn.radawatch.gui.FetchPanel;
+import x.mvmn.radawatch.gui.fetch.DBStatsPanel;
+import x.mvmn.radawatch.gui.fetch.FetchPanel;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.db.DataStorageService;
 import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
