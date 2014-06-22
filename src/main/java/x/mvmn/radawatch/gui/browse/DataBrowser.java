@@ -2,7 +2,7 @@ package x.mvmn.radawatch.gui.browse;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -45,7 +45,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		public ItemDetailView(final E item, final ViewAdaptor<E> viewAdaptor, DataBrowser<? extends Entity> subItemsBrowser) {
 			super(new BorderLayout());
 			final int fieldsCount = viewAdaptor.getFieldsCount(true);
-			final JPanel detailsPanel = new JPanel(new FlowLayout());
+			final JPanel detailsPanel = new JPanel(new GridLayout(fieldsCount, 1));
 
 			for (int i = 0; i < fieldsCount; i++) {
 				// detailsPanel.add(new JLabel(viewAdaptor.getFieldName(i, true)));
