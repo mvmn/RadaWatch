@@ -4,7 +4,7 @@ import java.util.List;
 
 import x.mvmn.radawatch.model.SubEntityCapableEntity;
 
-public class VoteFactionData extends SubEntityCapableEntity<DeputyVoteData> {
+public class VoteSessionPerFactionData extends SubEntityCapableEntity<IndividualDeputyVoteData> {
 	private final String title;
 	private final int size;
 	private final int votedYes;
@@ -13,10 +13,10 @@ public class VoteFactionData extends SubEntityCapableEntity<DeputyVoteData> {
 	private final int skipped;
 	private final int absent;
 
-	private final List<DeputyVoteData> votes;
+	private final List<IndividualDeputyVoteData> votes;
 
-	public VoteFactionData(final int dbId, final String title, final int size, final int votedYes, final int votedNo, final int abstained, final int skipped,
-			final int absent, final List<DeputyVoteData> votes) {
+	public VoteSessionPerFactionData(final int dbId, final String title, final int size, final int votedYes, final int votedNo, final int abstained,
+			final int skipped, final int absent, final List<IndividualDeputyVoteData> votes) {
 		super(dbId);
 		this.title = title;
 		this.size = size;
@@ -62,12 +62,12 @@ public class VoteFactionData extends SubEntityCapableEntity<DeputyVoteData> {
 				+ skipped + ", absent=" + absent + ", votes=" + votes + "]";
 	}
 
-	public List<DeputyVoteData> getVotes() {
+	public List<IndividualDeputyVoteData> getVotes() {
 		return votes;
 	}
 
 	@Override
-	public List<DeputyVoteData> getSubEntities() {
+	public List<IndividualDeputyVoteData> getSubEntities() {
 		return getVotes();
 	}
 }

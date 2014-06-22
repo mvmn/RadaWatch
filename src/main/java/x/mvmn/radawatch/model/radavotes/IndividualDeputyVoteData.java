@@ -5,7 +5,7 @@ import java.util.Map;
 
 import x.mvmn.radawatch.model.Entity;
 
-public class DeputyVoteData extends Entity {
+public class IndividualDeputyVoteData extends Entity {
 
 	public static enum VoteType {
 		FOR(1), AGAINST(2), ABSTAINED(3), SKIPPED(4), ABSENT(5);
@@ -20,9 +20,9 @@ public class DeputyVoteData extends Entity {
 		}
 	}
 
-	private static final Map<String, DeputyVoteData.VoteType> mapVoteNameToVoteType;
+	private static final Map<String, IndividualDeputyVoteData.VoteType> mapVoteNameToVoteType;
 	static {
-		mapVoteNameToVoteType = new HashMap<String, DeputyVoteData.VoteType>();
+		mapVoteNameToVoteType = new HashMap<String, IndividualDeputyVoteData.VoteType>();
 		mapVoteNameToVoteType.put("за", VoteType.FOR);
 		mapVoteNameToVoteType.put("проти", VoteType.AGAINST);
 		mapVoteNameToVoteType.put("утримався", VoteType.ABSTAINED);
@@ -34,9 +34,9 @@ public class DeputyVoteData extends Entity {
 	}
 
 	private final String name;
-	private final DeputyVoteData.VoteType vote;
+	private final IndividualDeputyVoteData.VoteType vote;
 
-	public DeputyVoteData(final int dbId, final String name, final String vote) {
+	public IndividualDeputyVoteData(final int dbId, final String name, final String vote) {
 		super(dbId);
 		this.name = name;
 		this.vote = mapVoteNameToVoteType.get(vote.toLowerCase().replaceAll("\\*", ""));
@@ -49,7 +49,7 @@ public class DeputyVoteData extends Entity {
 		return name;
 	}
 
-	public DeputyVoteData.VoteType getVote() {
+	public IndividualDeputyVoteData.VoteType getVote() {
 		return vote;
 	}
 

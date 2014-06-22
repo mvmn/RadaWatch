@@ -11,12 +11,12 @@ import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import x.mvmn.radawatch.model.radavotes.DeputyVoteData;
-import x.mvmn.radawatch.model.radavotes.VoteFactionData;
-import x.mvmn.radawatch.model.radavotes.VoteResultsData;
+import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
+import x.mvmn.radawatch.model.radavotes.VoteSessionPerFactionData;
+import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
 import x.mvmn.radawatch.service.parse.AbstractJSoupItemsByPagedLinksParser;
 
-public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<VoteResultsData> {
+public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<VoteSessionResultsData> {
 
 	private static final String PAGE_URL_STR_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
 	private static final String ITEM_URL_STR_PATTERN = "http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=%s";
@@ -38,28 +38,28 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 	}
 
 	@Override
-	public List<ItemLinkData<VoteResultsData>> parseOutItemsLinksData(final int pageNumber) throws Exception {
-		List<ItemLinkData<VoteResultsData>> result = new ArrayList<ItemLinkData<VoteResultsData>>();
+	public List<ItemLinkData<VoteSessionResultsData>> parseOutItemsLinksData(final int pageNumber) throws Exception {
+		List<ItemLinkData<VoteSessionResultsData>> result = new ArrayList<ItemLinkData<VoteSessionResultsData>>();
 		Document document = get(String.format(PAGE_URL_STR_PATTERN, pageNumber));
 		for (Element link : document.select(".archieve_block .news_item .details a")) {
 			String href = link.attr("href");
 			Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href);
 			idMatcher.find();
 			int id = Integer.parseInt(idMatcher.group(1));
-			result.add(new ItemLinkData<VoteResultsData>(href, id));
+			result.add(new ItemLinkData<VoteSessionResultsData>(href, id));
 		}
 		return result;
 	}
 
 	@Override
-	public VoteResultsData parseOutItem(final ItemLinkData<VoteResultsData> itemLinkData) throws Exception {
+	public VoteSessionResultsData parseOutItem(final ItemLinkData<VoteSessionResultsData> itemLinkData) throws Exception {
 		return parseVoteResults(itemLinkData.getItemSiteId());
 	}
 
-	public VoteResultsData parseVoteResults(final int id) throws Exception {
-		final VoteResultsData data;
+	public VoteSessionResultsData parseVoteResults(final int id) throws Exception {
+		final VoteSessionResultsData data;
 
-		List<VoteFactionData> factions = new ArrayList<VoteFactionData>();
+		List<VoteSessionPerFactionData> factions = new ArrayList<VoteSessionPerFactionData>();
 		final int globalId = id;
 
 		Document document = get(String.format(ITEM_URL_STR_PATTERN, id));
@@ -109,12 +109,12 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 			factions.add(praseFaction(factionContainer));
 		}
 
-		data = new VoteResultsData(-1, globalId, title, result, date, votedYes, votedNo, abstained, skipped, total, factions);
+		data = new VoteSessionResultsData(-1, globalId, title, result, date, votedYes, votedNo, abstained, skipped, total, factions);
 		return data;
 	}
 
-	protected VoteFactionData praseFaction(Element factionContainer) {
-		VoteFactionData result;
+	protected VoteSessionPerFactionData praseFaction(Element factionContainer) {
+		VoteSessionPerFactionData result;
 		String factionTitle = factionContainer.select(".frn b").text().trim();
 		String factionHeading = factionContainer.select(".frn").text();
 		Matcher factionSize = FACTION_SIZE_REGEX_PATTERN.matcher(factionHeading);
@@ -125,17 +125,18 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 			throw new RuntimeException("Failed to parse out faction size from heading text " + factionHeading);
 		}
 		Matcher factionTotals = FACTION_TOTALS_REGEX_PATTERN.matcher(factionHeading);
-		List<DeputyVoteData> factionVotes = new ArrayList<DeputyVoteData>();
+		List<IndividualDeputyVoteData> factionVotes = new ArrayList<IndividualDeputyVoteData>();
 		for (Element voteElem : factionContainer.select(".frd li")) {
-			factionVotes.add(new DeputyVoteData(-1, voteElem.select(".dep").text().trim(), voteElem.select(".golos").text().trim()));
+			factionVotes.add(new IndividualDeputyVoteData(-1, voteElem.select(".dep").text().trim(), voteElem.select(".golos").text().trim()));
 		}
 		if (factionVotes.size() < 1) {
 			throw new RuntimeException("Zero votes matched for faction " + factionContainer);
 		}
 
 		if (factionTotals.matches()) {
-			result = new VoteFactionData(-1, factionTitle, factionSizeVal, Integer.parseInt(factionTotals.group(1)), Integer.parseInt(factionTotals.group(2)),
-					Integer.parseInt(factionTotals.group(3)), Integer.parseInt(factionTotals.group(4)), Integer.parseInt(factionTotals.group(5)), factionVotes);
+			result = new VoteSessionPerFactionData(-1, factionTitle, factionSizeVal, Integer.parseInt(factionTotals.group(1)), Integer.parseInt(factionTotals
+					.group(2)), Integer.parseInt(factionTotals.group(3)), Integer.parseInt(factionTotals.group(4)), Integer.parseInt(factionTotals.group(5)),
+					factionVotes);
 		} else {
 			throw new RuntimeException("Failed to parse out faction totals from heading text " + factionHeading);
 		}

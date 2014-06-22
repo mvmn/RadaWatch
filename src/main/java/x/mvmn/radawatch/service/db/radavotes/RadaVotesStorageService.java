@@ -7,13 +7,13 @@ import java.sql.Statement;
 
 import org.h2.util.JdbcUtils;
 
-import x.mvmn.radawatch.model.radavotes.DeputyVoteData;
-import x.mvmn.radawatch.model.radavotes.VoteFactionData;
-import x.mvmn.radawatch.model.radavotes.VoteResultsData;
+import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
+import x.mvmn.radawatch.model.radavotes.VoteSessionPerFactionData;
+import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
 import x.mvmn.radawatch.service.db.AbstractDataStorageService;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
-public class RadaVotesStorageService extends AbstractDataStorageService<VoteResultsData> {
+public class RadaVotesStorageService extends AbstractDataStorageService<VoteSessionResultsData> {
 
 	private static final String[] SQL_TABLES = new String[] { "votesession", "votesessionfaction", "individualvote" };
 	private static final String SQL_TABLES_DEFINITIONS[] = new String[] {
@@ -25,7 +25,7 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteResu
 		super(dbService);
 	}
 
-	public void storeNewRecord(final VoteResultsData data) throws Exception {
+	public void storeNewRecord(final VoteSessionResultsData data) throws Exception {
 		Connection conn = null;
 		try {
 			conn = dbService.getConnection();
@@ -61,7 +61,7 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteResu
 							Statement.RETURN_GENERATED_KEYS);
 			final PreparedStatement insertVoteRecord = conn
 					.prepareStatement("insert into individualvote (votesessionid, votesessionfactionid, name, voted) values (?, ?, ?, ?)");
-			for (VoteFactionData factionInfo : data.getFactions()) {
+			for (VoteSessionPerFactionData factionInfo : data.getFactions()) {
 				insertVoteFactionRecord.setInt(1, voteSessionId);
 				insertVoteFactionRecord.setString(2, factionInfo.getTitle());
 				insertVoteFactionRecord.setInt(3, factionInfo.getSize());
@@ -80,7 +80,7 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteResu
 					generatedKeys.close();
 				}
 
-				for (DeputyVoteData voteInfo : factionInfo.getVotes()) {
+				for (IndividualDeputyVoteData voteInfo : factionInfo.getVotes()) {
 					insertVoteRecord.setInt(1, voteSessionId);
 					insertVoteRecord.setInt(2, voteFactionRecordId);
 					insertVoteRecord.setString(3, voteInfo.getName());

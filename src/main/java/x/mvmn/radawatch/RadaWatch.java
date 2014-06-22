@@ -33,7 +33,7 @@ import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.gui.fetch.FetchPanel;
 import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
-import x.mvmn.radawatch.model.radavotes.VoteResultsData;
+import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
 import x.mvmn.radawatch.service.analyze.presdecrees.PresidentialDecreesTitlesExtractor;
 import x.mvmn.radawatch.service.analyze.radavotes.RadaVotesTitlesExtractor;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
@@ -64,8 +64,8 @@ public class RadaWatch {
 	private final JButton btnRestoreDb = new JButton("Restore DB");
 	private final RadaVotesStorageService rvStorage = new RadaVotesStorageService(storageService);
 	private final PresidentialDecreesStorageService pdStorage = new PresidentialDecreesStorageService(storageService);
-	private final FetchController<VoteResultsData> votesFetchController = new FetchController<VoteResultsData>(new VoteResultsParser(), rvStorage,
-			new FetchPanel<VoteResultsData>("Rada Votes", rvStorage), mainWindow);
+	private final FetchController<VoteSessionResultsData> votesFetchController = new FetchController<VoteSessionResultsData>(new VoteResultsParser(),
+			rvStorage, new FetchPanel<VoteSessionResultsData>("Rada Votes", rvStorage), mainWindow);
 	private final FetchController<PresidentialDecree> presDecreesFetchController = new FetchController<PresidentialDecree>(new PredisentialDecreesParser(),
 			pdStorage, new FetchPanel<PresidentialDecree>("Presidential Decrees", pdStorage), mainWindow);
 
@@ -234,8 +234,8 @@ public class RadaWatch {
 			tabBrowse.add(tabBrowseSubtabs, BorderLayout.CENTER);
 			// tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), votesFetchController.getView());
 
-			tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), new DataBrowser<VoteResultsData>("", new RadaVotesBrowseService(storageService), -1,
-					new RadaVotesBrowseService.RadaVotesViewAdaptor(), null));
+			tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), new DataBrowser<VoteSessionResultsData>("",
+					new RadaVotesBrowseService(storageService), -1, new RadaVotesBrowseService.RadaVotesViewAdaptor(), null));
 			tabBrowseSubtabs.addTab(presDecreesFetchController.getDataTitle(), new DataBrowser<PresidentialDecree>("Presidential decrees",
 					new PresidentialDecreesBrowseService(storageService), -1, new PresidentialDecreesBrowseService.PresidentialDecreesViewAdaptor(), null));
 		}

@@ -4,11 +4,11 @@ import java.sql.Date;
 import java.sql.ResultSet;
 
 import x.mvmn.radawatch.gui.browse.DataBrowser.ViewAdaptor;
-import x.mvmn.radawatch.model.radavotes.VoteResultsData;
+import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
 import x.mvmn.radawatch.service.db.AbstractDataBrowseService;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
-public class RadaVotesBrowseService extends AbstractDataBrowseService<VoteResultsData> {
+public class RadaVotesBrowseService extends AbstractDataBrowseService<VoteSessionResultsData> {
 
 	public RadaVotesBrowseService(final DataBaseConnectionService dbService) {
 		super(dbService);
@@ -35,7 +35,7 @@ public class RadaVotesBrowseService extends AbstractDataBrowseService<VoteResult
 	}
 
 	@Override
-	protected VoteResultsData resultSetRowToEntity(ResultSet resultSet) throws Exception {
+	protected VoteSessionResultsData resultSetRowToEntity(ResultSet resultSet) throws Exception {
 		final int dbId = resultSet.getInt("id");
 		final int siteId = resultSet.getInt("g_id");
 		final String title = resultSet.getString("votetitle");
@@ -47,10 +47,10 @@ public class RadaVotesBrowseService extends AbstractDataBrowseService<VoteResult
 		final int skipped = resultSet.getInt("skipped");
 		final int total = resultSet.getInt("total");
 
-		return new VoteResultsData(dbId, siteId, title, result, date, votedYes, votedNo, abstained, skipped, total, null);
+		return new VoteSessionResultsData(dbId, siteId, title, result, date, votedYes, votedNo, abstained, skipped, total, null);
 	}
 
-	public static class RadaVotesViewAdaptor implements ViewAdaptor<VoteResultsData> {
+	public static class RadaVotesViewAdaptor implements ViewAdaptor<VoteSessionResultsData> {
 
 		@Override
 		public int getFieldsCount(boolean fullView) {
@@ -66,7 +66,7 @@ public class RadaVotesBrowseService extends AbstractDataBrowseService<VoteResult
 		}
 
 		@Override
-		public String getFieldValue(VoteResultsData item, int fieldIndex, boolean fullView) {
+		public String getFieldValue(VoteSessionResultsData item, int fieldIndex, boolean fullView) {
 			String result;
 			switch (fieldIndex) {
 				case 0:
