@@ -33,8 +33,8 @@ import x.mvmn.radawatch.gui.FetchPanel;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
 import x.mvmn.radawatch.model.radavotes.VoteResultsData;
-import x.mvmn.radawatch.service.analyze.presdecrees.PresidentialDecreesTitlesAnalyzer;
-import x.mvmn.radawatch.service.analyze.radavotes.VotingTitlesAnalyzer;
+import x.mvmn.radawatch.service.analyze.presdecrees.PresidentialDecreesTitlesExtractor;
+import x.mvmn.radawatch.service.analyze.radavotes.RadaVotesTitlesExtractor;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
@@ -219,8 +219,8 @@ public class RadaWatch {
 		JTabbedPane analyzeSubtabs = new JTabbedPane();
 		tabAnalyze.add(analyzeSubtabs, BorderLayout.CENTER);
 		{
-			analyzeSubtabs.addTab("Analyze Rada Votes Titles", new TitlesAnalysisPanel(new VotingTitlesAnalyzer(storageService), mainWindow));
-			analyzeSubtabs.addTab("Analyze Presidential Decrees Titles", new TitlesAnalysisPanel(new PresidentialDecreesTitlesAnalyzer(storageService),
+			analyzeSubtabs.addTab("Analyze Rada Votes Titles", new TitlesAnalysisPanel(new RadaVotesTitlesExtractor(storageService), mainWindow));
+			analyzeSubtabs.addTab("Analyze Presidential Decrees Titles", new TitlesAnalysisPanel(new PresidentialDecreesTitlesExtractor(storageService),
 					mainWindow));
 		}
 

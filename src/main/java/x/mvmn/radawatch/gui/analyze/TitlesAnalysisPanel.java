@@ -18,17 +18,18 @@ import javax.swing.SwingUtilities;
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
 import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
 import net.sourceforge.jdatepicker.impl.UtilDateModel;
-import x.mvmn.radawatch.service.analyze.TitlesAnalyzer;
+import x.mvmn.radawatch.service.analyze.TitlesExtractor;
 import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper;
 import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.TextNode;
+import x.mvmn.radawatch.service.db.DataBrowseQuery;
 
 public class TitlesAnalysisPanel extends JPanel {
 
 	private static final long serialVersionUID = -1709665611976801927L;
 
-	protected final TitlesAnalyzer titlesAnalyzer;
+	protected final TitlesExtractor titlesAnalyzer;
 
-	public TitlesAnalysisPanel(final TitlesAnalyzer titlesAnalyzer, final Component parentComponent) {
+	public TitlesAnalysisPanel(final TitlesExtractor titlesAnalyzer, final Component parentComponent) {
 		super(new BorderLayout());
 		// TODO: Refactor
 		this.titlesAnalyzer = titlesAnalyzer;
@@ -61,7 +62,7 @@ public class TitlesAnalysisPanel extends JPanel {
 						try {
 							final Date fromDate = (Date) datePickerFrom.getModel().getValue();
 							final Date toDate = (Date) datePickerTo.getModel().getValue();
-							List<String> titles = titlesAnalyzer.getTitles(fromDate, toDate, tfTitleFilter.getText());
+							final List<String> titles = titlesAnalyzer.getTitles(new DataBrowseQuery(tfTitleFilter.getText(), null, null, fromDate, toDate));
 							final TextNode rootNode = TitlesAnalyzisHelper.mapTitlesToTreeNodes(titles);
 							// TitlesAnalyzisHelper.mapTitles(titles);
 							final TitlesTree titlesTree = new TitlesTree(rootNode.getChildren());
