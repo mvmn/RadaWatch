@@ -39,6 +39,7 @@ import x.mvmn.radawatch.service.analyze.radavotes.RadaVotesTitlesExtractor;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesBrowseService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
+import x.mvmn.radawatch.service.db.radavotes.RadaVotesBrowseService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
 import x.mvmn.radawatch.service.parse.presdecrees.PredisentialDecreesParser;
 import x.mvmn.radawatch.service.parse.radavotes.VoteResultsParser;
@@ -233,6 +234,8 @@ public class RadaWatch {
 			tabBrowse.add(tabBrowseSubtabs, BorderLayout.CENTER);
 			// tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), votesFetchController.getView());
 
+			tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), new DataBrowser<VoteResultsData>("", new RadaVotesBrowseService(storageService), -1,
+					new RadaVotesBrowseService.RadaVotesViewAdaptor(), null));
 			tabBrowseSubtabs.addTab(presDecreesFetchController.getDataTitle(), new DataBrowser<PresidentialDecree>("Presidential decrees",
 					new PresidentialDecreesBrowseService(storageService), -1, new PresidentialDecreesBrowseService.PresidentialDecreesViewAdaptor(), null));
 		}
