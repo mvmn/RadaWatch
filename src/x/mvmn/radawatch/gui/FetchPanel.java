@@ -1,16 +1,17 @@
 package x.mvmn.radawatch.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 
-public class FetchPanel extends JPanel {
+import x.mvmn.radawatch.model.Entity;
+import x.mvmn.radawatch.service.db.DataStorageService;
+
+public class FetchPanel<T extends Entity> extends JPanel {
 
 	private static final long serialVersionUID = 7474169631564428495L;
 
@@ -30,25 +31,26 @@ public class FetchPanel extends JPanel {
 	protected volatile boolean inProgress = false;
 	protected final DBStatsPanel<?> dbStatsPanel;
 
-	public FetchPanel(final String dataTitle, final DBStatsPanel<?> dbStatsPanel) {
+	public FetchPanel(final String dataTitle, final DataStorageService<T> storageService) {
 		super(new BorderLayout());
 		this.dataTitle = dataTitle;
-		this.dbStatsPanel = dbStatsPanel;
+		this.dbStatsPanel = new DBStatsPanel<T>(storageService);
 		fetchProgressPanel = new FetchProgressPanel("Fetch progress for " + dataTitle);
-		btnFetch = new JButton("Fetch " + dataTitle + " data");
-		btnStop = new JButton("Stop fetching " + dataTitle);
-		btnDbTablesReset = new JButton("Re-create DB tables for " + dataTitle);
+		btnFetch = new JButton("Fetch data");
+		btnStop = new JButton("Stop fetching");
+		btnDbTablesReset = new JButton("Re-create DB tables");
 		btnFetch.setActionCommand(ACT_COMMAND_FETCH);
 		btnStop.setActionCommand(ACT_COMMAND_STOP);
 		btnDbTablesReset.setActionCommand(ACT_COMMAND_RESET_DB_TABLES);
-		Component mainComponent = new JScrollPane(txaFetchLog);
-		if (dbStatsPanel != null) {
-			final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainComponent, dbStatsPanel);
-			splitPane.setDividerLocation(0.5f);
-			splitPane.setResizeWeight(0.5f);
-			mainComponent = splitPane;
-		}
-		this.add(mainComponent, BorderLayout.CENTER);
+		// final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, new JScrollPane(txaFetchLog), dbStatsPanel);
+
+		// splitPane.setDividerLocation(0.7f);
+		// splitPane.setResizeWeight(0.5f);
+		// this.add(splitPane, BorderLayout.CENTER);
+		JPanel fetchStats = new JPanel(new BorderLayout());
+		fetchStats.add(new JScrollPane(txaFetchLog), BorderLayout.CENTER);
+		fetchStats.add(dbStatsPanel, BorderLayout.EAST);
+		this.add(fetchStats, BorderLayout.CENTER);
 		this.add(fetchProgressPanel, BorderLayout.NORTH);
 		final JPanel buttonsPanel = new JPanel(new BorderLayout());
 		buttonsPanel.add(btnDbTablesReset, BorderLayout.WEST);

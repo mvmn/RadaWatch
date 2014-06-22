@@ -1,6 +1,7 @@
 package x.mvmn.radawatch.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -69,6 +71,7 @@ public class DBStatsPanel<T extends Entity> extends JPanel {
 
 	public DBStatsPanel(final DataStorageService<T> storageService) {
 		super(new BorderLayout());
+		this.setPreferredSize(new Dimension(300, 600));
 		this.storageService = storageService;
 
 		btnRefresh.addActionListener(new ActionListener() {
@@ -85,8 +88,17 @@ public class DBStatsPanel<T extends Entity> extends JPanel {
 		});
 
 		this.add(new JScrollPane(statsTable), BorderLayout.CENTER);
-		this.add(new JLabel("DB stats"), BorderLayout.NORTH);
+		JLabel topLabel = new JLabel("DB stats", JLabel.CENTER);
+		topLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		this.add(topLabel, BorderLayout.NORTH);
 		this.add(btnRefresh, BorderLayout.SOUTH);
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				DBStatsPanel.this.refresh();
+			}
+		});
 	}
 
 	protected List<TupleOfTwo<String, String>> getCurrentData() {

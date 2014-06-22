@@ -17,14 +17,15 @@ import x.mvmn.radawatch.service.parse.ItemsByPagedLinksParser;
 public class FetchController<T extends Entity> implements ActionListener {
 
 	protected final Component parentView;
-	protected final FetchPanel fetchPanel;
+	protected final FetchPanel<T> fetchPanel;
 
 	protected final ItemsByPagedLinksParser<T> parser;
 	protected final DataStorageService<T> storage;
 
 	protected volatile FetchJob<T> fetchJob = null;
 
-	public FetchController(final ItemsByPagedLinksParser<T> parser, final DataStorageService<T> storage, final FetchPanel fetchPanel, final Component parentView) {
+	public FetchController(final ItemsByPagedLinksParser<T> parser, final DataStorageService<T> storage, final FetchPanel<T> fetchPanel,
+			final Component parentView) {
 		this.parser = parser;
 		this.storage = storage;
 		this.fetchPanel = fetchPanel;
@@ -107,7 +108,7 @@ public class FetchController<T extends Entity> implements ActionListener {
 		return parentView;
 	}
 
-	public FetchPanel getView() {
+	public FetchPanel<T> getView() {
 		return fetchPanel;
 	}
 

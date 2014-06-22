@@ -29,7 +29,6 @@ import org.h2.tools.Script;
 import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
-import x.mvmn.radawatch.gui.DBStatsPanel;
 import x.mvmn.radawatch.gui.FetchPanel;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
@@ -42,6 +41,7 @@ import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
 import x.mvmn.radawatch.service.parse.presdecrees.PredisentialDecreesParser;
 import x.mvmn.radawatch.service.parse.radavotes.VoteResultsParser;
 import x.mvmn.radawatch.swing.EmptyWindowListener;
+import x.mvmn.radawatch.swing.SwingHelper;
 
 public class RadaWatch {
 	public static void main(String args[]) {
@@ -62,9 +62,9 @@ public class RadaWatch {
 	private final RadaVotesStorageService rvStorage = new RadaVotesStorageService(storageService);
 	private final PresidentialDecreesStorageService pdStorage = new PresidentialDecreesStorageService(storageService);
 	private final FetchController<VoteResultsData> votesFetchController = new FetchController<VoteResultsData>(new VoteResultsParser(), rvStorage,
-			new FetchPanel("Rada Votes", new DBStatsPanel<VoteResultsData>(rvStorage)), mainWindow);
+			new FetchPanel<VoteResultsData>("Rada Votes", rvStorage), mainWindow);
 	private final FetchController<PresidentialDecree> presDecreesFetchController = new FetchController<PresidentialDecree>(new PredisentialDecreesParser(),
-			pdStorage, new FetchPanel("Presidential Decrees", new DBStatsPanel<PresidentialDecree>(pdStorage)), mainWindow);
+			pdStorage, new FetchPanel<PresidentialDecree>("Presidential Decrees", pdStorage), mainWindow);
 
 	public RadaWatch() {
 		mainWindow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -241,6 +241,8 @@ public class RadaWatch {
 			mainWindow.getContentPane().add(btnPanel, BorderLayout.SOUTH);
 		}
 		mainWindow.pack();
+		SwingHelper.resizeToScreenProportions(mainWindow, 0.7d);
+		SwingHelper.moveToScreenCenter(mainWindow);
 		mainWindow.setVisible(true);
 	}
 
