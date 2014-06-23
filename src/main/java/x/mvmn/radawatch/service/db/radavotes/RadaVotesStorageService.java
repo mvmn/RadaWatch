@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Map;
 
 import org.h2.util.JdbcUtils;
 
@@ -142,5 +143,20 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteSess
 			}
 		}
 		return SQL_TABLES_DEFINITIONS[index];
+	}
+
+	@Override
+	public Map<String, String> getStats() throws Exception {
+		Map<String, String> result = super.getStats();
+
+		result.put(
+				"Inconsistent votes for faction recs:",
+				String.valueOf(dbService
+						.execSelectCount("select count(*) from  votesessionfaction where totalmembers  != (select count(*) from individualvote where votesessionfactionid= votesessionfaction.id)")));
+		result.put(
+				"Inconsistent faction sums for votes recs:",
+				String.valueOf(dbService
+						.execSelectCount("select count(*) from  votesession where total  != (select sum(totalmembers-absent) from votesessionfaction where votesessionid = votesession.id)")));
+		return result;
 	}
 }

@@ -1,6 +1,6 @@
 package x.mvmn.radawatch.service.db;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import x.mvmn.radawatch.model.Entity;
@@ -38,11 +38,11 @@ public abstract class AbstractDataStorageService<T extends Entity> implements Da
 	}
 
 	public Map<String, String> getStats() throws Exception {
-		final Map<String, String> results = new HashMap<String, String>();
+		final Map<String, String> results = new LinkedHashMap<String, String>();
 
 		for (final String tableName : getTablesNames()) {
 			int count = dbService.execSelectCount("select count(*) from " + tableName);
-			results.put(tableName, String.valueOf(count));
+			results.put("DB Table rows: " + tableName, String.valueOf(count));
 		}
 
 		return results;

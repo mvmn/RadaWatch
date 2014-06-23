@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Map;
 
 import org.h2.util.JdbcUtils;
 
@@ -65,4 +66,16 @@ public class PresidentialDecreesStorageService extends AbstractDataStorageServic
 		return result;
 	}
 
+	@Override
+	public Map<String, String> getStats() throws Exception {
+		Map<String, String> result = super.getStats();
+
+		for (final String countByType : dbService
+				.execSelectOneColumn("select concat(decreetype, ':#delim#:', count(*)) from presidentialdecree group by decreetype order by decreetype")) {
+			final String[] res = countByType.split(":#delim#:");
+			result.put("Decrees of type \"" + res[0] + "\"", res[1]);
+		}
+
+		return result;
+	}
 }
