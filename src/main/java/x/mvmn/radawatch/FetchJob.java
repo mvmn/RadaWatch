@@ -50,7 +50,7 @@ class FetchJob<T extends Entity> implements Runnable {
 					fetchLog.append("Parsing pages count... ");
 				}
 			});
-			final int totalPagesCount = parser.parseOutTotalPagesCount(); // TODO: move off EDT
+			final int totalPagesCount = parser.parseOutTotalPagesCount();
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					fetchLog.append(String.format("%s pages found.\n", totalPagesCount));

@@ -172,13 +172,18 @@ public class DataBrowser<T extends Entity> extends JPanel {
 						@SuppressWarnings("unchecked")
 						T item = ((DataBrowserTableModel<T>) mainTable.getModel()).getItemAt(row);
 						try {
-							// TODO: move off EDT
 							item = dataBrowseService.fetchItem(item.getDbId());
 							SwingHelper.enframeComponent(new ItemDetailView<T>(item, viewAdaptor, subItemsBrowser),
 									dataTitle + " - " + String.valueOf(item.getDbId())).setVisible(true);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						} catch (final Exception ex) {
+							ex.printStackTrace();
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									JOptionPane.showMessageDialog(DataBrowser.this, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
+											JOptionPane.ERROR_MESSAGE);
+								}
+							});
 						}
 					}
 				}

@@ -105,13 +105,6 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteSess
 		}
 	}
 
-	// public List<VoteResultsData> getVoteResults(final Integer offset, final Integer count) {
-	// List<VoteResultsData> result = null;
-	// // TODO: implement
-	//
-	// return result;
-	// }
-
 	@Override
 	public boolean checkExists(int meetingId) throws Exception {
 		boolean result = true;

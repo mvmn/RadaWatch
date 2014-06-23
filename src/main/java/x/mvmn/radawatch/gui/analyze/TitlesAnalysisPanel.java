@@ -27,7 +27,7 @@ public class TitlesAnalysisPanel extends JPanel {
 
 	public TitlesAnalysisPanel(final TitlesExtractor titlesAnalyzer, final Component parentComponent) {
 		super(new BorderLayout());
-		// TODO: Refactor
+
 		this.titlesAnalyzer = titlesAnalyzer;
 		final JButton btnAnalyzeTitles = new JButton("Analyze titles");
 
