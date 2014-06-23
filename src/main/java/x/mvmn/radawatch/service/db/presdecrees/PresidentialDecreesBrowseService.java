@@ -121,4 +121,9 @@ public class PresidentialDecreesBrowseService extends AbstractDataBrowseService<
 		}
 		return new PresidentialDecree(dbId, siteId, decreeType, title, date, numCode, fullText);
 	}
+
+	@Override
+	protected String getParentIdColumnName() {
+		return null;
+	}
 }

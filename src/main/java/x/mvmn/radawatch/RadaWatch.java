@@ -33,13 +33,17 @@ import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.gui.fetch.FetchPanel;
 import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
+import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
+import x.mvmn.radawatch.model.radavotes.VoteSessionPerFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
 import x.mvmn.radawatch.service.analyze.presdecrees.PresidentialDecreesTitlesExtractor;
 import x.mvmn.radawatch.service.analyze.radavotes.RadaVotesTitlesExtractor;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesBrowseService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
-import x.mvmn.radawatch.service.db.radavotes.RadaVotesBrowseService;
+import x.mvmn.radawatch.service.db.radavotes.RadaIndividualVotesBrowseService;
+import x.mvmn.radawatch.service.db.radavotes.RadaVoteSessionPerFactionResultsBrowseService;
+import x.mvmn.radawatch.service.db.radavotes.RadaVoteSessionResultsBrowseService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
 import x.mvmn.radawatch.service.parse.presdecrees.PredisentialDecreesParser;
 import x.mvmn.radawatch.service.parse.radavotes.VoteResultsParser;
@@ -234,10 +238,20 @@ public class RadaWatch {
 			tabBrowse.add(tabBrowseSubtabs, BorderLayout.CENTER);
 			// tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), votesFetchController.getView());
 
-			tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), new DataBrowser<VoteSessionResultsData>("",
-					new RadaVotesBrowseService(storageService), -1, new RadaVotesBrowseService.RadaVotesViewAdaptor(), null));
-			tabBrowseSubtabs.addTab(presDecreesFetchController.getDataTitle(), new DataBrowser<PresidentialDecree>("Presidential decrees",
-					new PresidentialDecreesBrowseService(storageService), -1, new PresidentialDecreesBrowseService.PresidentialDecreesViewAdaptor(), null));
+			{
+				DataBrowser<IndividualDeputyVoteData> individualVotesBrowser = new DataBrowser<IndividualDeputyVoteData>("Deputy vote ",
+						new RadaIndividualVotesBrowseService(storageService), -1, new RadaIndividualVotesBrowseService.IndividualDeputyVoteViewAdaptor(), null);
+				DataBrowser<VoteSessionPerFactionData> votesPerFactionsBrowser = new DataBrowser<VoteSessionPerFactionData>("Vote Session Results Per Faction",
+						new RadaVoteSessionPerFactionResultsBrowseService(storageService), -1,
+						new RadaVoteSessionPerFactionResultsBrowseService.RadaVotesPerFactionViewAdaptor(), individualVotesBrowser);
+				tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), new DataBrowser<VoteSessionResultsData>("Rada votes",
+						new RadaVoteSessionResultsBrowseService(storageService), -1, new RadaVoteSessionResultsBrowseService.RadaVotesViewAdaptor(),
+						votesPerFactionsBrowser));
+			}
+			{
+				tabBrowseSubtabs.addTab(presDecreesFetchController.getDataTitle(), new DataBrowser<PresidentialDecree>("Presidential decrees",
+						new PresidentialDecreesBrowseService(storageService), -1, new PresidentialDecreesBrowseService.PresidentialDecreesViewAdaptor(), null));
+			}
 		}
 
 		{

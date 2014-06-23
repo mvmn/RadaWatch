@@ -14,4 +14,8 @@ public interface DataBrowseService<T extends Entity> {
 
 	public List<T> fetchItems(int parentItemDbId, DataBrowseQuery query, boolean fetchFullData) throws Exception;
 
+	public boolean supportsDateFilter();
+
+	public boolean supportsTitleFilter();
+
 }

@@ -60,8 +60,8 @@ public class DataBrowser<T extends Entity> extends JPanel {
 			} else {
 				subItemsBrowser.setParentEntityId(item.getDbId());
 				final JTabbedPane tabPane = new JTabbedPane();
-				tabPane.add("Item details", new JScrollPane(detailsPanel));
-				tabPane.add("SubItem", subItemsBrowser);
+				tabPane.add("Details", new JScrollPane(detailsPanel));
+				tabPane.add(subItemsBrowser.getDataTitle(), subItemsBrowser);
 				mainComponent = tabPane;
 			}
 			this.add(mainComponent, BorderLayout.CENTER);
@@ -116,18 +116,22 @@ public class DataBrowser<T extends Entity> extends JPanel {
 
 	private volatile int parentEntityId;
 	private final DataBrowseService<T> dataBrowseService;
-	private final FilterPanel filterPanel = new FilterPanel();
+	private final FilterPanel filterPanel;
 	private final JButton btnLoadData = new JButton("Update");
 	private final JTable mainTable = new JTable();
 	private final JLabel itemsCountLabel = new JLabel("Results: -");
 	private final ViewAdaptor<T> viewAdaptor;
+	private final String dataTitle;
 
 	public DataBrowser(final String dataTitle, final DataBrowseService<T> dataBrowseService, final int parentEntityId, final ViewAdaptor<T> viewAdaptor,
 			final DataBrowser<? extends Entity> subItemsBrowser) {
 		super(new BorderLayout());
+		this.dataTitle = dataTitle;
 		this.dataBrowseService = dataBrowseService;
 		this.parentEntityId = parentEntityId;
 		this.viewAdaptor = viewAdaptor;
+
+		this.filterPanel = new FilterPanel(dataBrowseService.supportsDateFilter(), dataBrowseService.supportsTitleFilter());
 
 		this.add(filterPanel, BorderLayout.NORTH);
 		JPanel panel = new JPanel(new BorderLayout());
@@ -226,5 +230,9 @@ public class DataBrowser<T extends Entity> extends JPanel {
 
 	public void setParentEntityId(int parentEntityId) {
 		this.parentEntityId = parentEntityId;
+	}
+
+	public String getDataTitle() {
+		return dataTitle;
 	}
 }

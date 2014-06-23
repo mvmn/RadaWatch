@@ -8,9 +8,9 @@ import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
 import x.mvmn.radawatch.service.db.AbstractDataBrowseService;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
-public class RadaVotesBrowseService extends AbstractDataBrowseService<VoteSessionResultsData> {
+public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseService<VoteSessionResultsData> {
 
-	public RadaVotesBrowseService(final DataBaseConnectionService dbService) {
+	public RadaVoteSessionResultsBrowseService(final DataBaseConnectionService dbService) {
 		super(dbService);
 	}
 
@@ -105,5 +105,10 @@ public class RadaVotesBrowseService extends AbstractDataBrowseService<VoteSessio
 			return result;
 		}
 
+	}
+
+	@Override
+	protected String getParentIdColumnName() {
+		return null;
 	}
 }

@@ -20,15 +20,24 @@ public class FilterPanel extends JPanel {
 	private final JTextField tfTitleFilter = new JTextField();
 
 	public FilterPanel() {
-		super(new BorderLayout());
-		this.add(datePickerFrom, BorderLayout.WEST);
-		this.add(datePickerTo, BorderLayout.EAST);
+		this(true, true);
+	}
 
-		final JPanel titleFilterPanel = new JPanel(new BorderLayout());
-		titleFilterPanel.add(new JLabel("<== Date FROM", JLabel.CENTER), BorderLayout.WEST);
-		titleFilterPanel.add(new JLabel("Date TO ==>", JLabel.CENTER), BorderLayout.EAST);
-		titleFilterPanel.add(tfTitleFilter, BorderLayout.CENTER);
-		this.add(titleFilterPanel, BorderLayout.CENTER);
+	public FilterPanel(final boolean enableDatesFilters, final boolean enableTitleFilter) {
+		super(new BorderLayout());
+		final JPanel middlePanel = new JPanel(new BorderLayout());
+		if (enableTitleFilter) {
+			middlePanel.add(tfTitleFilter, BorderLayout.CENTER);
+		}
+
+		if (enableDatesFilters) {
+			this.add(datePickerFrom, BorderLayout.WEST);
+			this.add(datePickerTo, BorderLayout.EAST);
+			middlePanel.add(new JLabel("<== Date FROM", JLabel.CENTER), BorderLayout.WEST);
+			middlePanel.add(new JLabel("Date TO ==>", JLabel.CENTER), BorderLayout.EAST);
+		}
+
+		this.add(middlePanel, BorderLayout.CENTER);
 	}
 
 	public Date getDateFrom() {

@@ -18,6 +18,17 @@ public class IndividualDeputyVoteData extends Entity {
 		public int getId() {
 			return this.id;
 		}
+
+		public static VoteType valueById(final String id) {
+			VoteType result = null;
+			for (VoteType candidate : VoteType.values()) {
+				if (id.equals(String.valueOf(candidate.id))) {
+					result = candidate;
+					break;
+				}
+			}
+			return result;
+		}
 	}
 
 	private static final Map<String, IndividualDeputyVoteData.VoteType> mapVoteNameToVoteType;
@@ -39,9 +50,15 @@ public class IndividualDeputyVoteData extends Entity {
 	public IndividualDeputyVoteData(final int dbId, final String name, final String vote) {
 		super(dbId);
 		this.name = name;
-		this.vote = mapVoteNameToVoteType.get(vote.toLowerCase().replaceAll("\\*", ""));
-		if (this.vote == null) {
+		IndividualDeputyVoteData.VoteType voteVal = mapVoteNameToVoteType.get(vote.toLowerCase().replaceAll("\\*", ""));
+		if (voteVal == null) {
+			voteVal = IndividualDeputyVoteData.VoteType.valueById(vote);
+		}
+
+		if (voteVal == null) {
 			throw new RuntimeException("Unexpected vote value: " + vote);
+		} else {
+			this.vote = voteVal;
 		}
 	}
 

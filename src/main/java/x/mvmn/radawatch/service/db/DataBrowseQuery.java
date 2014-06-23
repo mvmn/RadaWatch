@@ -1,6 +1,7 @@
 package x.mvmn.radawatch.service.db;
 
 import java.sql.Date;
+import java.util.Arrays;
 
 import x.mvmn.lang.date.DatesHelper;
 
@@ -48,11 +49,24 @@ public class DataBrowseQuery {
 		return generateWhereClause(titleColumnName, dateColumnName, true);
 	}
 
-	public String generateWhereClause(final String titleColumnName, final String dateColumnName, final boolean includeWhereKeyword) {
-		String titleCondition = (searchPhrase != null && searchPhrase.trim().length() > 0 && !searchPhrase.trim().equals("%")) ? " " + titleColumnName
-				+ " like '%" + searchPhrase.trim().replaceAll("'", "''") + "%' " : null;
-		String dateConditions = generateDateClause(dateColumnName);
-		return generateWhereFromClauses(includeWhereKeyword, titleCondition, dateConditions);
+	public String generateWhereClause(final String titleColumnName, final String dateColumnName, String... additionalClauses) {
+		return generateWhereClause(titleColumnName, dateColumnName, true, additionalClauses);
+	}
+
+	public String generateWhereClause(final String titleColumnName, final String dateColumnName, final boolean includeWhereKeyword, String... additionalClauses) {
+		final String titleCondition = (titleColumnName != null && searchPhrase != null && searchPhrase.trim().length() > 0 && !searchPhrase.trim().equals("%")) ? " "
+				+ titleColumnName + " like '%" + searchPhrase.trim().replaceAll("'", "''") + "%' "
+				: null;
+		final String dateConditions = generateDateClause(dateColumnName);
+		final String[] allClauses;
+		if (additionalClauses != null && additionalClauses.length > 0) {
+			allClauses = Arrays.copyOf(additionalClauses, additionalClauses.length + 2);
+			allClauses[additionalClauses.length] = titleCondition;
+			allClauses[additionalClauses.length + 1] = dateConditions;
+		} else {
+			allClauses = new String[] { titleCondition, dateConditions };
+		}
+		return generateWhereFromClauses(includeWhereKeyword, allClauses);
 	}
 
 	protected String generateWhereFromClauses(final boolean includeWhereKeyword, String... clauses) {
@@ -76,14 +90,16 @@ public class DataBrowseQuery {
 
 	protected String generateDateClause(final String dateColumnName) {
 		String result = "";
-		if (fromDate != null) {
-			result += String.format(" %s>='%s'", dateColumnName, fromDate.toString());
-			if (toDate != null) {
-				result += " AND ";
+		if (dateColumnName != null) {
+			if (fromDate != null) {
+				result += String.format(" %s>='%s' ", dateColumnName, fromDate.toString());
+				if (toDate != null) {
+					result += " AND ";
+				}
 			}
-		}
-		if (toDate != null) {
-			result += String.format(" %s<'%s'", dateColumnName, toDate.toString());
+			if (toDate != null) {
+				result += String.format(" %s<'%s' ", dateColumnName, toDate.toString());
+			}
 		}
 		return result;
 	}

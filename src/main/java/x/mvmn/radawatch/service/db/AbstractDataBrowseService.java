@@ -25,6 +25,8 @@ public abstract class AbstractDataBrowseService<T extends Entity> implements Dat
 		return "id";
 	}
 
+	protected abstract String getParentIdColumnName();
+
 	protected abstract String getTitleColumnName();
 
 	protected abstract String getDateColumnName();
@@ -34,27 +36,47 @@ public abstract class AbstractDataBrowseService<T extends Entity> implements Dat
 	protected abstract T resultSetRowToEntity(final ResultSet resultSet) throws Exception;
 
 	@Override
+	public boolean supportsDateFilter() {
+		return getDateColumnName() != null;
+	}
+
+	@Override
+	public boolean supportsTitleFilter() {
+		return getTitleColumnName() != null;
+	}
+
+	@Override
 	public T fetchItem(int itemDbId) throws Exception {
 		return queryForItem("select * from " + getTableName() + " where " + getIdColumnName() + " = " + itemDbId);
 	}
 
 	@Override
 	public int countItems(int parentItemDbId, DataBrowseQuery query) throws Exception {
-		return dbService.execSelectCount("select count(*) from (select * from " + getTableName() + " "
-				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName()) + " " + query.generateLimitClause() + ")");
+		return dbService.execSelectCount("select count(*) from (select * from "
+				+ getTableName()
+				+ " "
+				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "=" + parentItemDbId
+						: null) + " " + query.generateLimitClause() + ")");
 	}
 
 	@Override
 	public List<T> fetchItems(int parentItemDbId, DataBrowseQuery query) throws Exception {
-		return queryForItems("select " + getShortColumnsList() + " from " + getTableName() + " "
-				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName()) + " ORDER BY " + getDateColumnName() + " DESC "
-				+ query.generateLimitClause());
+		return queryForItems("select "
+				+ getShortColumnsList()
+				+ " from "
+				+ getTableName()
+				+ " "
+				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "=" + parentItemDbId
+						: null) + " ORDER BY " + getDateColumnName() + " DESC " + query.generateLimitClause());
 	}
 
 	@Override
 	public List<T> fetchItems(int parentItemDbId, DataBrowseQuery query, boolean fetchFullData) throws Exception {
-		return queryForItems("select * from " + getTableName() + " " + query.generateWhereClause(getTitleColumnName(), getDateColumnName()) + " ORDER BY "
-				+ getIdColumnName() + " DESC " + query.generateLimitClause());
+		return queryForItems("select * from "
+				+ getTableName()
+				+ " "
+				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "=" + parentItemDbId
+						: null) + " ORDER BY " + getIdColumnName() + " DESC " + query.generateLimitClause());
 	}
 
 	protected T queryForItem(final String query) throws Exception {
