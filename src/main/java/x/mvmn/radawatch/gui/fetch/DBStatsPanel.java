@@ -93,12 +93,11 @@ public class DBStatsPanel<T extends Entity> extends JPanel {
 		this.add(topLabel, BorderLayout.NORTH);
 		this.add(btnRefresh, BorderLayout.SOUTH);
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
+		new Thread() {
 			public void run() {
 				DBStatsPanel.this.refresh();
 			}
-		});
+		}.start();
 	}
 
 	protected List<TupleOfTwo<String, String>> getCurrentData() {
