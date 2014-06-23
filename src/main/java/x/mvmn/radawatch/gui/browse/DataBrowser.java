@@ -52,7 +52,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 				JTextArea textArea = new JTextArea(viewAdaptor.getFieldValue(item, i, true));
 				textArea.setEditable(false);
 				textArea.setBorder(BorderFactory.createTitledBorder(viewAdaptor.getFieldName(i, true)));
-				detailsPanel.add(new JScrollPane(textArea));
+				detailsPanel.add(textArea);
 			}
 			final Component mainComponent;
 			if (subItemsBrowser == null) {
