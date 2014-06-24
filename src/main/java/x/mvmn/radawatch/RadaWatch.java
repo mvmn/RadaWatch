@@ -29,6 +29,7 @@ import org.h2.tools.Script;
 import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
+import x.mvmn.lang.StringDisplay;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.gui.fetch.FetchPanel;
@@ -36,7 +37,6 @@ import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
 import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionPerFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
-import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.StringDisplay;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesBrowseService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;

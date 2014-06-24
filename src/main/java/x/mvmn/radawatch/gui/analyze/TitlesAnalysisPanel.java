@@ -14,12 +14,10 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
+import x.mvmn.lang.StringDisplay;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper;
-import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.LeafTreeNode;
-import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.StringDisplay;
-import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.TreeNode;
 import x.mvmn.radawatch.service.db.DataBrowseQuery;
 import x.mvmn.radawatch.swing.DefaultMouseListener;
 
@@ -56,17 +54,17 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 									new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(), filterPanel.getDateTo()));
 							// final List<String> titles = titlesAnalyzer.getTitles(new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel
 							// .getDateFrom(), filterPanel.getDateTo()));
-							final TreeNode<T> rootNode = TitlesAnalyzisHelper.mapTitlesToTreeNodes(items, itemStringDisplay);
+							final TitlesTree.TreeNode<T> rootNode = TitlesAnalyzisHelper.mapItemsByTitlesToTreeNodes(items, itemStringDisplay);
 							final TitlesTree<T> titlesTree = new TitlesTree<T>(rootNode);
-							titlesTree.getTreeComponent().addMouseListener(new DefaultMouseListener() {
+							titlesTree.addMouseListener(new DefaultMouseListener() {
 								@Override
 								public void mouseClicked(final MouseEvent e) {
 									if (e.getClickCount() == 2) {
-										TreePath selPath = titlesTree.getTreeComponent().getPathForLocation(e.getX(), e.getY());
+										TreePath selPath = titlesTree.getPathForLocation(e.getX(), e.getY());
 										Object lastPathComponent = selPath.getLastPathComponent();
-										if (lastPathComponent instanceof LeafTreeNode) {
+										if (lastPathComponent instanceof TitlesTree.LeafTreeNode) {
 											@SuppressWarnings("unchecked")
-											LeafTreeNode<T> leafTreeNode = (LeafTreeNode<T>) lastPathComponent;
+											TitlesTree.LeafTreeNode<T> leafTreeNode = (TitlesTree.LeafTreeNode<T>) lastPathComponent;
 											dataBrowser.displayDetails(leafTreeNode.getValue().getDbId());
 										}
 									}
