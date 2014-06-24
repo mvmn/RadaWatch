@@ -36,8 +36,7 @@ import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
 import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionPerFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
-import x.mvmn.radawatch.service.analyze.presdecrees.PresidentialDecreesTitlesExtractor;
-import x.mvmn.radawatch.service.analyze.radavotes.RadaVotesTitlesExtractor;
+import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.StringDisplay;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesBrowseService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
@@ -227,11 +226,6 @@ public class RadaWatch {
 
 		JTabbedPane analyzeSubtabs = new JTabbedPane();
 		tabAnalyze.add(analyzeSubtabs, BorderLayout.CENTER);
-		{
-			analyzeSubtabs.addTab("Analyze Rada Votes Titles", new TitlesAnalysisPanel(new RadaVotesTitlesExtractor(storageService), mainWindow));
-			analyzeSubtabs.addTab("Analyze Presidential Decrees Titles", new TitlesAnalysisPanel(new PresidentialDecreesTitlesExtractor(storageService),
-					mainWindow));
-		}
 
 		{
 			JTabbedPane tabBrowseSubtabs = new JTabbedPane();
@@ -239,18 +233,41 @@ public class RadaWatch {
 			// tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), votesFetchController.getView());
 
 			{
-				DataBrowser<IndividualDeputyVoteData> individualVotesBrowser = new DataBrowser<IndividualDeputyVoteData>("Deputy vote ",
+				final DataBrowser<IndividualDeputyVoteData> individualVotesBrowser = new DataBrowser<IndividualDeputyVoteData>("Deputy vote ",
 						new RadaIndividualVotesBrowseService(storageService), -1, new RadaIndividualVotesBrowseService.IndividualDeputyVoteViewAdaptor(), null);
-				DataBrowser<VoteSessionPerFactionData> votesPerFactionsBrowser = new DataBrowser<VoteSessionPerFactionData>("Vote Session Results Per Faction",
-						new RadaVoteSessionPerFactionResultsBrowseService(storageService), -1,
+				final DataBrowser<VoteSessionPerFactionData> votesPerFactionsBrowser = new DataBrowser<VoteSessionPerFactionData>(
+						"Vote Session Results Per Faction", new RadaVoteSessionPerFactionResultsBrowseService(storageService), -1,
 						new RadaVoteSessionPerFactionResultsBrowseService.RadaVotesPerFactionViewAdaptor(), individualVotesBrowser);
-				tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), new DataBrowser<VoteSessionResultsData>("Rada votes",
+				final DataBrowser<VoteSessionResultsData> voteSessionsDataBrowser = new DataBrowser<VoteSessionResultsData>("Rada votes",
 						new RadaVoteSessionResultsBrowseService(storageService), -1, new RadaVoteSessionResultsBrowseService.RadaVotesViewAdaptor(),
-						votesPerFactionsBrowser));
+						votesPerFactionsBrowser);
+				tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), voteSessionsDataBrowser);
+				analyzeSubtabs.addTab("Analyze Rada Votes Titles", new TitlesAnalysisPanel<VoteSessionResultsData>(voteSessionsDataBrowser,
+						new StringDisplay<VoteSessionResultsData>() {
+							public String getStringDisplay(VoteSessionResultsData item) {
+								final StringBuilder result = new StringBuilder(item.getTitle());
+								result.append(" /").append(item.getDate().toString()).append(" / ")
+										.append(item.getResult().booleanValue() ? "<прийнято> " : "<НЕ прийнято> ");
+								result.append(String.valueOf(item.getVotedYes())).append("/").append(String.valueOf(item.getVotedNo()));
+								result.append(" (").append(String.valueOf(item.getTotal())).append(")");
+
+								return result.toString();
+							}
+						}, mainWindow));
 			}
 			{
-				tabBrowseSubtabs.addTab(presDecreesFetchController.getDataTitle(), new DataBrowser<PresidentialDecree>("Presidential decrees",
-						new PresidentialDecreesBrowseService(storageService), -1, new PresidentialDecreesBrowseService.PresidentialDecreesViewAdaptor(), null));
+				final DataBrowser<PresidentialDecree> presidentialDecreesDataBrowser = new DataBrowser<PresidentialDecree>("Presidential decrees",
+						new PresidentialDecreesBrowseService(storageService), -1, new PresidentialDecreesBrowseService.PresidentialDecreesViewAdaptor(), null);
+				tabBrowseSubtabs.addTab(presDecreesFetchController.getDataTitle(), presidentialDecreesDataBrowser);
+				analyzeSubtabs.addTab("Analyze Presidential Decrees Titles", new TitlesAnalysisPanel<PresidentialDecree>(presidentialDecreesDataBrowser,
+						new StringDisplay<PresidentialDecree>() {
+							@Override
+							public String getStringDisplay(PresidentialDecree item) {
+								// concat(decreetype,': ', title, '. /', reldate,'/ ', numcode) ";
+								return new StringBuilder(item.getType()).append(": ").append(item.getTitle()).append(". /").append(item.getDate().toString())
+										.append("/ ").append(item.getNumberCode()).toString();
+							}
+						}, mainWindow));
 			}
 		}
 

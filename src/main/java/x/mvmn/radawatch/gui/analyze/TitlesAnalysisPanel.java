@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -11,24 +12,29 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreePath;
 
+import x.mvmn.radawatch.gui.browse.DataBrowser;
+import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper;
-import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.TextNode;
-import x.mvmn.radawatch.service.analyze.TitlesExtractor;
+import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.LeafTreeNode;
+import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.StringDisplay;
+import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper.TreeNode;
 import x.mvmn.radawatch.service.db.DataBrowseQuery;
+import x.mvmn.radawatch.swing.DefaultMouseListener;
 
-public class TitlesAnalysisPanel extends JPanel {
+public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 
 	private static final long serialVersionUID = -1709665611976801927L;
 
-	protected final TitlesExtractor titlesAnalyzer;
+	protected final DataBrowser<T> dataBrowser;
 
 	protected final FilterPanel filterPanel;
 
-	public TitlesAnalysisPanel(final TitlesExtractor titlesAnalyzer, final Component parentComponent) {
+	public TitlesAnalysisPanel(final DataBrowser<T> dataBrowser, final StringDisplay<T> itemStringDisplay, final Component parentComponent) {
 		super(new BorderLayout());
 
-		this.titlesAnalyzer = titlesAnalyzer;
+		this.dataBrowser = dataBrowser;
 		final JButton btnAnalyzeTitles = new JButton("Analyze titles");
 
 		filterPanel = new FilterPanel();
@@ -46,10 +52,26 @@ public class TitlesAnalysisPanel extends JPanel {
 				new Thread() {
 					public void run() {
 						try {
-							final List<String> titles = titlesAnalyzer.getTitles(new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel
-									.getDateFrom(), filterPanel.getDateTo()));
-							final TextNode rootNode = TitlesAnalyzisHelper.mapTitlesToTreeNodes(titles);
-							final TitlesTree titlesTree = new TitlesTree(rootNode.getChildren());
+							List<T> items = dataBrowser.getDataBrowseService().fetchItems(-1,
+									new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(), filterPanel.getDateTo()));
+							// final List<String> titles = titlesAnalyzer.getTitles(new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel
+							// .getDateFrom(), filterPanel.getDateTo()));
+							final TreeNode<T> rootNode = TitlesAnalyzisHelper.mapTitlesToTreeNodes(items, itemStringDisplay);
+							final TitlesTree<T> titlesTree = new TitlesTree<T>(rootNode);
+							titlesTree.getTreeComponent().addMouseListener(new DefaultMouseListener() {
+								@Override
+								public void mouseClicked(final MouseEvent e) {
+									if (e.getClickCount() == 2) {
+										TreePath selPath = titlesTree.getTreeComponent().getPathForLocation(e.getX(), e.getY());
+										Object lastPathComponent = selPath.getLastPathComponent();
+										if (lastPathComponent instanceof LeafTreeNode) {
+											@SuppressWarnings("unchecked")
+											LeafTreeNode<T> leafTreeNode = (LeafTreeNode<T>) lastPathComponent;
+											dataBrowser.displayDetails(leafTreeNode.getValue().getDbId());
+										}
+									}
+								}
+							});
 
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override

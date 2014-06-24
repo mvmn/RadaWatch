@@ -6,7 +6,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -26,6 +25,7 @@ import x.mvmn.radawatch.gui.analyze.FilterPanel;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.db.DataBrowseQuery;
 import x.mvmn.radawatch.service.db.DataBrowseService;
+import x.mvmn.radawatch.swing.DefaultMouseListener;
 import x.mvmn.radawatch.swing.SwingHelper;
 
 public class DataBrowser<T extends Entity> extends JPanel {
@@ -59,6 +59,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 				mainComponent = new JScrollPane(detailsPanel);
 			} else {
 				subItemsBrowser.setParentEntityId(item.getDbId());
+				subItemsBrowser.triggerDataUpdate();
 				final JTabbedPane tabPane = new JTabbedPane();
 				tabPane.add("Details", new JScrollPane(detailsPanel));
 				tabPane.add(subItemsBrowser.getDataTitle(), subItemsBrowser);
@@ -122,6 +123,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 	private final JLabel itemsCountLabel = new JLabel("Results: -");
 	private final ViewAdaptor<T> viewAdaptor;
 	private final String dataTitle;
+	private final DataBrowser<? extends Entity> subItemsBrowser;
 
 	public DataBrowser(final String dataTitle, final DataBrowseService<T> dataBrowseService, final int parentEntityId, final ViewAdaptor<T> viewAdaptor,
 			final DataBrowser<? extends Entity> subItemsBrowser) {
@@ -130,6 +132,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		this.dataBrowseService = dataBrowseService;
 		this.parentEntityId = parentEntityId;
 		this.viewAdaptor = viewAdaptor;
+		this.subItemsBrowser = subItemsBrowser;
 
 		this.filterPanel = new FilterPanel(dataBrowseService.supportsDateFilter(), dataBrowseService.supportsTitleFilter());
 
@@ -147,23 +150,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 			}
 		});
 
-		mainTable.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseReleased(MouseEvent arg0) {
-			}
-
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
-			}
-
+		mainTable.addMouseListener(new DefaultMouseListener() {
 			@Override
 			public void mouseClicked(MouseEvent mouseEvent) {
 				if (mouseEvent.getClickCount() == 2) {
@@ -171,24 +158,29 @@ public class DataBrowser<T extends Entity> extends JPanel {
 					if (row > -1) {
 						@SuppressWarnings("unchecked")
 						T item = ((DataBrowserTableModel<T>) mainTable.getModel()).getItemAt(row);
-						try {
-							item = dataBrowseService.fetchItem(item.getDbId());
-							SwingHelper.enframeComponent(new ItemDetailView<T>(item, viewAdaptor, subItemsBrowser),
-									dataTitle + " - " + String.valueOf(item.getDbId())).setVisible(true);
-						} catch (final Exception ex) {
-							ex.printStackTrace();
-							SwingUtilities.invokeLater(new Runnable() {
-								@Override
-								public void run() {
-									JOptionPane.showMessageDialog(DataBrowser.this, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
-											JOptionPane.ERROR_MESSAGE);
-								}
-							});
-						}
+						displayDetails(item.getDbId());
 					}
 				}
 			}
 		});
+	}
+
+	public void displayDetails(int itemDbId) {
+		try {
+			// TODO: consider moving off EDT
+			final T item = dataBrowseService.fetchItem(itemDbId);
+			SwingHelper.enframeComponent(new ItemDetailView<T>(item, viewAdaptor, subItemsBrowser), dataTitle + " - " + String.valueOf(item.getDbId()))
+					.setVisible(true);
+		} catch (final Exception ex) {
+			ex.printStackTrace();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					JOptionPane.showMessageDialog(DataBrowser.this, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			});
+		}
 	}
 
 	public void triggerDataUpdate() {
@@ -239,5 +231,9 @@ public class DataBrowser<T extends Entity> extends JPanel {
 
 	public String getDataTitle() {
 		return dataTitle;
+	}
+
+	public DataBrowseService<T> getDataBrowseService() {
+		return dataBrowseService;
 	}
 }
