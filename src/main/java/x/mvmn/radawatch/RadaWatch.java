@@ -14,15 +14,10 @@ import java.sql.Connection;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-
-import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
-import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
-import net.sourceforge.jdatepicker.impl.UtilDateModel;
 
 import org.h2.tools.RunScript;
 import org.h2.tools.Script;
@@ -33,11 +28,13 @@ import x.mvmn.lang.StringDisplay;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.gui.fetch.FetchPanel;
+import x.mvmn.radawatch.gui.stats.StatsPanel;
 import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
 import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionPerFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
+import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesAggregationService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesBrowseService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaIndividualVotesBrowseService;
@@ -178,50 +175,7 @@ public class RadaWatch {
 		// ----- //
 		{
 			// TODO: refactor
-			final JButton btnGenCharts = new JButton("Generate charts");
-			final JDatePickerImpl datePickerFrom = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
-			final JDatePickerImpl datePickerTo = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
-			final JPanel datesPanel = new JPanel(new BorderLayout());
-			datesPanel.add(datePickerFrom, BorderLayout.WEST);
-			datesPanel.add(datePickerTo, BorderLayout.EAST);
-			datesPanel.add(new JLabel("<== Date FROM | Date TO ==>", JLabel.CENTER), BorderLayout.CENTER);
-			tabStats.add(btnGenCharts, BorderLayout.SOUTH);
-			tabStats.add(datesPanel, BorderLayout.NORTH);
-			final JPanel resultsPanel = new JPanel(new BorderLayout());
-			tabStats.add(resultsPanel, BorderLayout.CENTER);
-			btnGenCharts.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent arg0) {
-					btnGenCharts.setEnabled(false);
-					new Thread() {
-						public void run() {
-							try {
-
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										btnGenCharts.setEnabled(true);
-										resultsPanel.removeAll();
-										// resultsPanel.add(new JScrollPane(titlesTree), BorderLayout.CENTER);
-										resultsPanel.validate();
-
-									}
-								});
-							} catch (final Exception ex) {
-								ex.printStackTrace();
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										btnGenCharts.setEnabled(true);
-										JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred",
-												JOptionPane.ERROR_MESSAGE);
-									}
-								});
-							}
-						}
-					}.start();
-				}
-			});
+			tabStats.add(new StatsPanel(new PresidentialDecreesAggregationService(storageService)), BorderLayout.CENTER);
 		}
 
 		JTabbedPane analyzeSubtabs = new JTabbedPane();

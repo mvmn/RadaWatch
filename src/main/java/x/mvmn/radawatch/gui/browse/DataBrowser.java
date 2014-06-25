@@ -236,4 +236,12 @@ public class DataBrowser<T extends Entity> extends JPanel {
 	public DataBrowseService<T> getDataBrowseService() {
 		return dataBrowseService;
 	}
+
+	public boolean supportsTitleFilter() {
+		return dataBrowseService.supportsTitleFilter();
+	}
+
+	public boolean supportsDateFilter() {
+		return dataBrowseService.supportsDateFilter();
+	}
 }

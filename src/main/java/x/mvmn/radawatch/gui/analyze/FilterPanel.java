@@ -28,10 +28,6 @@ public class FilterPanel extends JPanel implements DateIntervalListener {
 	private final JButton btnClearToDate = new JButton("X");
 	private final JButton btnClearTitleFilter = new JButton("X");
 
-	public FilterPanel() {
-		this(true, true);
-	}
-
 	public FilterPanel(final boolean enableDatesFilters, final boolean enableTitleFilter) {
 		super(new BorderLayout());
 		if (enableTitleFilter) {
@@ -76,9 +72,8 @@ public class FilterPanel extends JPanel implements DateIntervalListener {
 					((UtilDateModel) datePickerTo.getModel()).setValue(null);
 				}
 			});
+			this.add(new DateIntervalPickerPanel(this, false), BorderLayout.NORTH);
 		}
-
-		this.add(new DateIntervalPickerPanel(this, false), BorderLayout.NORTH);
 	}
 
 	protected UtilDateModel getDateFromModel() {

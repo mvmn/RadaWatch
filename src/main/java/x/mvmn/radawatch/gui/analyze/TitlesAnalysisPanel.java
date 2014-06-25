@@ -35,7 +35,7 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 		this.dataBrowser = dataBrowser;
 		final JButton btnAnalyzeTitles = new JButton("Analyze titles");
 
-		filterPanel = new FilterPanel();
+		filterPanel = new FilterPanel(dataBrowser.supportsDateFilter(), dataBrowser.supportsTitleFilter());
 
 		this.add(btnAnalyzeTitles, BorderLayout.SOUTH);
 		this.add(filterPanel, BorderLayout.NORTH);
