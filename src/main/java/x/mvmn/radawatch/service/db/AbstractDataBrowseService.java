@@ -11,25 +11,11 @@ import org.h2.util.JdbcUtils;
 import x.mvmn.lang.collections.CollectionsHelper;
 import x.mvmn.radawatch.model.Entity;
 
-public abstract class AbstractDataBrowseService<T extends Entity> implements DataBrowseService<T> {
-
-	protected final DataBaseConnectionService dbService;
+public abstract class AbstractDataBrowseService<T extends Entity> extends AbstractDBDataReadService implements DataBrowseService<T> {
 
 	public AbstractDataBrowseService(final DataBaseConnectionService dbService) {
-		this.dbService = dbService;
+		super(dbService);
 	}
-
-	protected abstract String getTableName();
-
-	protected String getIdColumnName() {
-		return "id";
-	}
-
-	protected abstract String getParentIdColumnName();
-
-	protected abstract String getTitleColumnName();
-
-	protected abstract String getDateColumnName();
 
 	protected abstract String getShortColumnsList();
 

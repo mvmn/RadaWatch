@@ -11,7 +11,7 @@ import java.util.Map;
 
 import org.h2.util.JdbcUtils;
 
-public abstract class AbstractDataAggregationService implements DataAggregationService {
+public abstract class AbstractDataAggregationService extends AbstractDBDataReadService implements DataAggregationService {
 
 	public static final String FIELDNAME_TOTAL_COUNT = "agg_totalcount";
 	public static final String FIELDNAME_INTERVAL_HOUR = "ivl_hour";
@@ -21,23 +21,9 @@ public abstract class AbstractDataAggregationService implements DataAggregationS
 	public static final String FIELDNAME_INTERVAL_QUARTER = "ivl_quarter";
 	public static final String FIELDNAME_INTERVAL_YEAR = "ivl_year";
 
-	protected final DataBaseConnectionService dbService;
-
 	public AbstractDataAggregationService(final DataBaseConnectionService dbService) {
-		this.dbService = dbService;
+		super(dbService);
 	}
-
-	protected abstract String getTableName();
-
-	protected String getIdColumnName() {
-		return "id";
-	}
-
-	protected abstract String getParentIdColumnName();
-
-	protected abstract String getTitleColumnName();
-
-	protected abstract String getDateColumnName();
 
 	protected abstract String metricNameToColumnDef(final String metricName);
 
