@@ -118,7 +118,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 	private volatile int parentEntityId;
 	private final DataBrowseService<T> dataBrowseService;
 	private final FilterPanel filterPanel;
-	private final JButton btnLoadData = new JButton("Update");
+	private final JButton btnLoadData = new JButton("Load data");
 	private final JTable mainTable = new JTable();
 	private final JLabel itemsCountLabel = new JLabel("Results: -");
 	private final ViewAdaptor<T> viewAdaptor;
