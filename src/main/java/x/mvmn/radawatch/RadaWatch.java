@@ -40,6 +40,7 @@ import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService
 import x.mvmn.radawatch.service.db.radavotes.RadaIndividualVotesBrowseService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVoteSessionPerFactionResultsBrowseService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVoteSessionResultsBrowseService;
+import x.mvmn.radawatch.service.db.radavotes.RadaVotesAggregationService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVotesStorageService;
 import x.mvmn.radawatch.service.parse.presdecrees.PredisentialDecreesParser;
 import x.mvmn.radawatch.service.parse.radavotes.VoteResultsParser;
@@ -172,10 +173,11 @@ public class RadaWatch {
 			}
 		});
 
-		// ----- //
 		{
-			// TODO: refactor
-			tabStats.add(new StatsPanel(new PresidentialDecreesAggregationService(storageService)), BorderLayout.CENTER);
+			JTabbedPane statsTabs = new JTabbedPane();
+			tabStats.add(statsTabs, BorderLayout.CENTER);
+			statsTabs.addTab("Rada votes", new StatsPanel(new RadaVotesAggregationService(storageService)));
+			statsTabs.addTab("Presidential decrees", new StatsPanel(new PresidentialDecreesAggregationService(storageService)));
 		}
 
 		JTabbedPane analyzeSubtabs = new JTabbedPane();

@@ -105,7 +105,7 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 	}
 
 	protected String sqlProperName(final String name) {
-		return name.replaceAll("[^A-Za-z0-9_]", "_");
+		return name.replaceAll("[^A-Za-z0-9_]", "_").toLowerCase();
 	}
 
 	protected String buildQuery(final List<String> metrics, final AggregationInterval aggregationInterval, final DataBrowseQuery filters,
@@ -114,8 +114,8 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 
 		if (metrics != null) {
 			for (final String metricName : metrics) {
-				final String columnConditionDef = metricNameToColumnDef(metricName);
-				query.append(", count(").append(columnConditionDef).append(") as ").append(sqlProperName(metricName));
+				final String columnAggregationDef = metricNameToColumnDef(metricName);
+				query.append(", ").append(columnAggregationDef).append(" as ").append(sqlProperName(metricName));
 			}
 		}
 

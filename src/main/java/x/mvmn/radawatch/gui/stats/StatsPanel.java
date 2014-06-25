@@ -74,8 +74,9 @@ public class StatsPanel extends JPanel {
 				new Thread() {
 					public void run() {
 						try {
-							final Map<Date, Map<String, Integer>> results = daService.getAggregatedCounts(null, selectedAggregationInterval,
-									new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(), filterPanel.getDateTo()));
+							final Map<Date, Map<String, Integer>> results = daService.getAggregatedCounts(daService.getAvailableMetrics(),
+									selectedAggregationInterval, new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(),
+											filterPanel.getDateTo()));
 							final StringBuilder resultText = new StringBuilder();
 							for (Map.Entry<Date, Map<String, Integer>> byDateEntries : results.entrySet()) {
 								final Date key = byDateEntries.getKey();
