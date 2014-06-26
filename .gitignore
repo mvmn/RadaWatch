@@ -21,3 +21,4 @@ SimpleEventBus-API/
 SimpleEventBus/
 
 /target
+/dependency-reduced-pom.xml
