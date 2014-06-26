@@ -53,7 +53,7 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 				final Date date = figureOutDateFromIntervalParts(resultSet, aggregationInterval);
 				final Map<String, Integer> metricsValues = new TreeMap<String, Integer>();
 				result.put(date, metricsValues);
-				for (final String metricName : getAvailableMetrics()) {
+				for (final String metricName : metrics) {
 					metricsValues.put(metricName, resultSet.getInt(sqlProperName(metricName)));
 				}
 				metricsValues.put("", resultSet.getInt(FIELDNAME_TOTAL_COUNT));
@@ -68,6 +68,7 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 
 	private Date figureOutDateFromIntervalParts(final ResultSet resultSet, final AggregationInterval aggregationInterval) throws Exception {
 		Calendar calendar = Calendar.getInstance();
+		calendar.setFirstDayOfWeek(Calendar.MONDAY);
 
 		int year = -1;
 		int month = -1;
@@ -96,9 +97,17 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 				year = resultSet.getInt(FIELDNAME_INTERVAL_YEAR);
 		}
 
-		calendar.set(year > -1 ? year : 0, month > -1 ? (month - 1) : 0, day > -1 ? day : 1, hour > -1 ? hour : 0, 0, 0);
+		calendar.set(Calendar.YEAR, year > -1 ? year : 0);
+		calendar.set(Calendar.MONTH, month > -1 ? month - 1 : 0);
+		calendar.set(Calendar.DAY_OF_MONTH, day > -1 ? day : 1);
+		calendar.set(Calendar.HOUR_OF_DAY, hour > -1 ? hour : 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.getTime();
 		if (week > -1) {
 			calendar.set(Calendar.WEEK_OF_YEAR, week);
+			calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
 		}
 
 		return calendar.getTime();
@@ -121,26 +130,33 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 
 		StringBuilder aggregationIntervalsDefs = new StringBuilder();
 		StringBuilder aggregationIntervalsGroupingDefs = new StringBuilder();
+		StringBuilder aggregationIntervalsOrder = new StringBuilder();
 		switch (aggregationInterval) {
 			case HOUR:
 				aggregationIntervalsDefs.append(", HOUR(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_HOUR);
 				aggregationIntervalsGroupingDefs.append(", HOUR(").append(getDateColumnName()).append(")");
+				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_HOUR);
 			case DAY:
 				aggregationIntervalsDefs.append(", DAY_OF_MONTH(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_DAY);
 				aggregationIntervalsGroupingDefs.append(", DAY_OF_MONTH(").append(getDateColumnName()).append(")");
+				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_DAY);
 			case WEEK:
 				aggregationIntervalsDefs.append(", WEEK(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_WEEK);
 				aggregationIntervalsGroupingDefs.append(", WEEK(").append(getDateColumnName()).append(")");
+				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_WEEK);
 			case MONTH:
 				aggregationIntervalsDefs.append(", MONTH(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_MONTH);
 				aggregationIntervalsGroupingDefs.append(", MONTH(").append(getDateColumnName()).append(")");
+				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_MONTH);
 			case QUARTER:
 				aggregationIntervalsDefs.append(", QUARTER(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_QUARTER);
 				aggregationIntervalsGroupingDefs.append(", QUARTER(").append(getDateColumnName()).append(")");
+				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_QUARTER);
 			default:
 			case YEAR:
 				aggregationIntervalsDefs.append(", YEAR(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_YEAR);
 				aggregationIntervalsGroupingDefs.append(", YEAR(").append(getDateColumnName()).append(")");
+				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_YEAR);
 		}
 
 		query.append(aggregationIntervalsDefs.toString());
@@ -157,7 +173,7 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 				query.append(filters.generateWhereClause(getTitleColumnName(), getDateColumnName(), additionalClauses)).append(" ");
 			}
 			query.append(" group by ").append(aggregationIntervalsGroupingDefs.toString().substring(1));
-
+			query.append(" order by ").append(aggregationIntervalsOrder.toString().substring(1));
 			if (filters != null) {
 				query.append(filters.generateLimitClause());
 			}

@@ -39,7 +39,7 @@ public class RadaVotesAggregationService extends AbstractDataAggregationService 
 	}
 
 	@Override
-	public List<String> getAvailableMetrics() {
+	public List<String> getSupportedMetrics() {
 		return AVAILABLE_METRICS;
 	}
 

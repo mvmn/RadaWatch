@@ -10,7 +10,7 @@ public interface DataAggregationService {
 		YEAR, QUARTER, MONTH, WEEK, DAY, HOUR
 	}
 
-	public List<String> getAvailableMetrics();
+	public List<String> getSupportedMetrics();
 
 	public Map<Date, Map<String, Integer>> getAggregatedCounts(List<String> metrics, AggregationInterval aggregationInterval) throws Exception;
 

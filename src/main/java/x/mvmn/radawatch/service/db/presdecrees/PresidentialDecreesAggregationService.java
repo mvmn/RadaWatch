@@ -13,7 +13,7 @@ public class PresidentialDecreesAggregationService extends AbstractDataAggregati
 	}
 
 	@Override
-	public List<String> getAvailableMetrics() {
+	public List<String> getSupportedMetrics() {
 		return Collections.emptyList();
 	}
 
