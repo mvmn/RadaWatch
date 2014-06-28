@@ -39,11 +39,26 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 	protected final JTable replacementsTable = new JTable(replacementsTableModel);
 
 	protected static final String[][] DEFAULT_REPLACEMENTS = new String[][] {
+			new String[] { "i", "і" },
+			new String[] { "o", "о" },
+			new String[] { "a", "а" },
+			new String[] { "e", "е" },
+			new String[] { "y", "у" },
+			new String[] { "прзеидента", "президента" },
+			new String[] { "^указ президента( україни)?( \\d+/\\d{4})?:", "указ президента україни:" },
+			new String[] { "^розпорядження( президента)?( україни)?:", "розпорядження президента україни:" },
+			new String[] { "м. Києва", "м.Києва" },
+			new String[] { "м. Севастополя", "м.Севастополя" },
+			new String[] { "в місті Києві державної адміністрації", "державної адміністрації м.Києва" },
+			new String[] { "адміністрації в Автономній Республіці Крим", "адміністрації Автономної Республіки Крим" },
 			new String[] { "\\bадміністрації(\\p{Lu})", "адміністрації $1" },
-			new String[] { "\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\s+області", "області $1" },
-			new String[] { "\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\s+районної(\\s+в місті [\\p{L}]+)?\\s+державної\\s+адміністрації",
-					"<НАЗВА> райдержадміністрації$2" }, new String[] { "\\b(\\p{Lu}\\.\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\b", "<І.Прізвище>" },
-			new String[] { "\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|)\\s+\\p{Lu}\\.\\p{Lu}\\.)", "<Прізвища І.П.>" } };
+			new String[] {
+					"\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\s+(\\p{L}+)(\\s+в\\s+місті\\s+\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))?\\s+державної\\s+адміністрації(\\s+\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|)\\s+області|\\s+м.\\s*\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|)|\\s+Автономної\\s+Республіки\\s+Крим)?",
+					"держадміністрації $2 $3$4 $1" },
+			new String[] { "\\b(\\p{Lu}\\.\\s*\\p{Lu}\\.\\s*\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\b", "<Прізвище-ініціали>" },
+			new String[] { "\\b(\\p{Lu}\\.\\s*\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\b", "<Прізвище-ініціали>" },
+			new String[] { "\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|)\\s+\\p{Lu}\\.\\s*\\p{Lu}\\.)", "<Прізвище-ініціали>" },
+			new String[] { "\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\s+області", "області $1" } };
 
 	public TitlesAnalysisPanel(final DataBrowser<T> dataBrowser, final StringDisplay<T> itemStringDisplay, final Component parentComponent) {
 		super(new BorderLayout());
