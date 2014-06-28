@@ -127,8 +127,10 @@ public class StatsPanel extends JPanel {
 							{
 								CategoryPlot plot = ((CategoryPlot) chart.getPlot());
 								plot.getDomainAxis().setCategoryLabelPositions(CategoryLabelPositions.DOWN_90);
-								plot.getRenderer().setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
-								plot.getRenderer().setSeriesItemLabelsVisible(0, true);
+								for (int i = 0; i < mainDataset.getColumnCount(); i++) {
+									plot.getRenderer().setSeriesItemLabelGenerator(i, new StandardCategoryItemLabelGenerator());
+									plot.getRenderer().setSeriesItemLabelsVisible(i, true);
+								}
 								((BarRenderer) plot.getRenderer()).setItemMargin(0.5d / mainDataset.getColumnCount());
 							}
 							final ChartPanel chartPanel = new ChartPanel(chart);
