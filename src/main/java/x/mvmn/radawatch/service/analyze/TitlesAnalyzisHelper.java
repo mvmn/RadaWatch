@@ -10,7 +10,7 @@ public class TitlesAnalyzisHelper {
 		final TitlesTree.AgregableGroupTreeNode<T> rootNode = new TitlesTree.AgregableGroupTreeNode<T>(null, "Всі");
 		for (T item : items) {
 			TitlesTree.AgregableGroupTreeNode<T> currentNode = rootNode;
-			String title = display.getStringDisplay(item);
+			final String title = display.getStringDisplay(item);
 			for (String val : title.split(" ")) {
 				currentNode = currentNode.getOrCreateSubgroup(val);
 			}

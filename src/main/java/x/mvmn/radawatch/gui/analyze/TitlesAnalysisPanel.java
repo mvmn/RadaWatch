@@ -50,7 +50,7 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 				new Thread() {
 					public void run() {
 						try {
-							List<T> items = dataBrowser.getDataBrowseService().fetchItems(-1,
+							final List<T> items = dataBrowser.getDataBrowseService().fetchItems(-1,
 									new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(), filterPanel.getDateTo()));
 							// final List<String> titles = titlesAnalyzer.getTitles(new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel
 							// .getDateFrom(), filterPanel.getDateTo()));

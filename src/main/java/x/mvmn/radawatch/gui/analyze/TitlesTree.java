@@ -1,7 +1,9 @@
 package x.mvmn.radawatch.gui.analyze;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,7 +24,7 @@ public class TitlesTree<T extends Entity> extends JTree {
 	public static interface TreeNode<T extends Entity> {
 		public boolean isLeaf();
 
-		public List<TreeNode<T>> getChildren();
+		public Collection<TreeNode<T>> getChildren();
 
 		public T getValue();
 	}
@@ -60,16 +62,41 @@ public class TitlesTree<T extends Entity> extends JTree {
 	}
 
 	public static class AgregableGroupTreeNode<T extends Entity> implements TitlesTree.TreeNode<T> {
+		protected Comparator<TitlesTree.TreeNode<T>> comparatorOfNodeGroupsByDeepChildCounts = new Comparator<TitlesTree.TreeNode<T>>() {
+			@Override
+			public int compare(final TreeNode<T> o1, final TreeNode<T> o2) {
+				final int val1;
+				final int val2;
+
+				if (o1 != null && o1 instanceof AgregableGroupTreeNode) {
+					final AgregableGroupTreeNode<T> g1 = (AgregableGroupTreeNode<T>) o1;
+					val1 = g1.getDeepChildrenCount();
+				} else {
+					val1 = -1;
+				}
+				if (o2 != null && o2 instanceof AgregableGroupTreeNode) {
+					final AgregableGroupTreeNode<T> g2 = (AgregableGroupTreeNode<T>) o2;
+					val2 = g2.getDeepChildrenCount();
+				} else {
+					val2 = -1;
+				}
+
+				return val2 - val1;
+			}
+		};
 
 		protected String key;
+		protected String groupName;
 		protected List<TitlesTree.TreeNode<T>> children = new ArrayList<TitlesTree.TreeNode<T>>();
+
 		protected Map<String, AgregableGroupTreeNode<T>> subgroupsMap = new HashMap<String, AgregableGroupTreeNode<T>>();
 		protected int deepChildrenCount = 0;
 		protected AgregableGroupTreeNode<T> parentGroup = null;
 
 		public AgregableGroupTreeNode(final AgregableGroupTreeNode<T> parentGroup, final String groupName) {
 			this.parentGroup = parentGroup;
-			this.key = groupName;
+			this.groupName = groupName;
+			this.key = groupName.toLowerCase();
 		}
 
 		@Override
@@ -84,20 +111,23 @@ public class TitlesTree<T extends Entity> extends JTree {
 
 		public void addLeaf(final TitlesTree.LeafTreeNode<T> leafNode) {
 			children.add(leafNode);
+			Collections.sort(children, comparatorOfNodeGroupsByDeepChildCounts);
 			increaseDeepChildrenCount();
 		}
 
 		public void increaseDeepChildrenCount() {
 			this.deepChildrenCount++;
 			if (this.parentGroup != null) {
+				Collections.sort(this.parentGroup.children, comparatorOfNodeGroupsByDeepChildCounts);
 				this.parentGroup.increaseDeepChildrenCount();
 			}
 		}
 
-		public AgregableGroupTreeNode<T> getOrCreateSubgroup(final String key) {
+		public AgregableGroupTreeNode<T> getOrCreateSubgroup(final String groupName) {
+			final String key = groupName.toLowerCase();
 			AgregableGroupTreeNode<T> treeNode = subgroupsMap.get(key);
 			if (treeNode == null) {
-				treeNode = new AgregableGroupTreeNode<T>(this, key);
+				treeNode = new AgregableGroupTreeNode<T>(this, groupName);
 				subgroupsMap.put(key, treeNode);
 				children.add(treeNode);
 			}
@@ -115,20 +145,12 @@ public class TitlesTree<T extends Entity> extends JTree {
 				for (final AgregableGroupTreeNode<T> subgroup : subgroupsMap.values()) {
 					subgroup.parentGroup = this;
 				}
-				this.setKey(this.getKey() + " " + soleSubgroup.getKey());
+				this.setGroupName(this.getGroupName() + " " + soleSubgroup.getGroupName());
 			}
 		}
 
-		public String getKey() {
-			return key;
-		}
-
-		public void setKey(String key) {
-			this.key = key;
-		}
-
 		public String toString() {
-			return key + " [" + deepChildrenCount + "]";
+			return groupName + " [" + deepChildrenCount + "]";
 		}
 
 		public int getDeepChildrenCount() {
@@ -138,6 +160,15 @@ public class TitlesTree<T extends Entity> extends JTree {
 		@Override
 		public T getValue() {
 			return null;
+		}
+
+		public String getGroupName() {
+			return groupName;
+		}
+
+		public void setGroupName(final String groupName) {
+			this.key = groupName.toLowerCase();
+			this.groupName = groupName;
 		}
 	}
 
