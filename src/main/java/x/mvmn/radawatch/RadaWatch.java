@@ -25,6 +25,7 @@ import org.h2.util.IOUtils;
 import org.h2.util.JdbcUtils;
 
 import x.mvmn.lang.StringDisplay;
+import x.mvmn.radawatch.gui.analyze.DeputeesStatsPanel;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.gui.fetch.FetchPanel;
@@ -33,6 +34,7 @@ import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
 import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionPerFactionData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
+import x.mvmn.radawatch.service.analyze.DeputeesStatsAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesAggregationService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesBrowseService;
@@ -178,6 +180,7 @@ public class RadaWatch {
 			tabStats.add(statsTabs, BorderLayout.CENTER);
 			statsTabs.addTab("Rada votes", new StatsPanel(new RadaVotesAggregationService(storageService)));
 			statsTabs.addTab("Presidential decrees", new StatsPanel(new PresidentialDecreesAggregationService(storageService)));
+			statsTabs.addTab("Deputees stats", new DeputeesStatsPanel(new DeputeesStatsAnalyzer(storageService)));
 		}
 
 		JTabbedPane analyzeSubtabs = new JTabbedPane();
