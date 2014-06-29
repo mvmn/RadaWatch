@@ -20,6 +20,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import x.mvmn.radawatch.gui.analyze.FilterPanel;
 import x.mvmn.radawatch.model.Entity;
@@ -36,7 +37,9 @@ public class DataBrowser<T extends Entity> extends JPanel {
 
 		public String getFieldName(int fieldIndex, boolean fullView);
 
-		public String getFieldValue(T item, int fieldIndex, boolean fullView);
+		public Object getFieldValue(T item, int fieldIndex, boolean fullView);
+
+		public Class<?> getFieldType(int fieldIndex, boolean fullView);
 	}
 
 	public static class ItemDetailView<E extends Entity> extends JPanel {
@@ -49,7 +52,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 
 			for (int i = 0; i < fieldsCount; i++) {
 				// detailsPanel.add(new JLabel(viewAdaptor.getFieldName(i, true)));
-				JTextArea textArea = new JTextArea(viewAdaptor.getFieldValue(item, i, true));
+				JTextArea textArea = new JTextArea(viewAdaptor.getFieldValue(item, i, true).toString());
 				textArea.setEditable(false);
 				textArea.setBorder(BorderFactory.createTitledBorder(viewAdaptor.getFieldName(i, true)));
 				detailsPanel.add(textArea);
@@ -86,7 +89,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 
 		@Override
 		public Class<?> getColumnClass(int columnIndex) {
-			return String.class;
+			return viewAdaptor.getFieldType(columnIndex, false);
 		}
 
 		@Override
@@ -157,7 +160,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 					int row = mainTable.rowAtPoint(mouseEvent.getPoint());
 					if (row > -1) {
 						@SuppressWarnings("unchecked")
-						T item = ((DataBrowserTableModel<T>) mainTable.getModel()).getItemAt(row);
+						T item = ((DataBrowserTableModel<T>) mainTable.getModel()).getItemAt(mainTable.convertRowIndexToModel(row));
 						displayDetails(item.getDbId());
 					}
 				}
@@ -198,6 +201,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 						public void run() {
 							itemsCountLabel.setText("Results: " + String.valueOf(itemsCount));
 							mainTable.setModel(tableModel);
+							mainTable.setRowSorter(new TableRowSorter<TableModel>(tableModel));
 						}
 					});
 				} catch (final Exception loadException) {

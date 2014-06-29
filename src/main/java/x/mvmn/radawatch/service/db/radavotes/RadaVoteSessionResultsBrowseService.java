@@ -66,14 +66,14 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 		}
 
 		@Override
-		public String getFieldValue(VoteSessionResultsData item, int fieldIndex, boolean fullView) {
-			String result;
+		public Object getFieldValue(VoteSessionResultsData item, int fieldIndex, boolean fullView) {
+			Object result;
 			switch (fieldIndex) {
 				case 0:
-					result = String.valueOf(item.getDbId());
+					result = item.getDbId();
 				break;
 				case 1:
-					result = String.valueOf(item.getGlobalId());
+					result = item.getGlobalId();
 				break;
 				case 2:
 					result = item.getTitle();
@@ -82,27 +82,38 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 					result = item.getResult().booleanValue() ? "Passed" : "Failed";
 				break;
 				case 4:
-					result = item.getDate().toString();
+					result = item.getDate();
 				break;
 				case 5:
-					result = String.valueOf(item.getVotedYes());
+					result = item.getVotedYes();
 				break;
 				case 6:
-					result = String.valueOf(item.getVotedNo());
+					result = item.getVotedNo();
 				break;
 				case 7:
-					result = String.valueOf(item.getAbstained());
+					result = item.getAbstained();
 				break;
 				case 8:
-					result = String.valueOf(item.getSkipped());
+					result = item.getSkipped();
 				break;
 				case 9:
-					result = String.valueOf(item.getTotal());
+					result = item.getTotal();
 				break;
 				default:
 					result = item.getTitle();
 			}
 			return result;
+		}
+
+		@Override
+		public Class<?> getFieldType(int fieldIndex, boolean fullView) {
+			if (fieldIndex > 1 && fieldIndex < 4) {
+				return String.class;
+			} else if (fieldIndex == 4) {
+				return Date.class;
+			} else {
+				return Integer.class;
+			}
 		}
 
 	}

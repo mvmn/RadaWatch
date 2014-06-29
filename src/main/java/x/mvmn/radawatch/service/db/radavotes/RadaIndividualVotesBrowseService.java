@@ -54,6 +54,7 @@ public class RadaIndividualVotesBrowseService extends AbstractDataBrowseService<
 		}
 
 		private static final String[] FIELD_NAMES = new String[] { "DB ID", "Name", "Vote" };
+		private static final Class<?>[] FIELD_TYPES = new Class<?>[] { Integer.class, String.class, String.class };
 
 		@Override
 		public String getFieldName(int fieldIndex, boolean fullView) {
@@ -61,11 +62,11 @@ public class RadaIndividualVotesBrowseService extends AbstractDataBrowseService<
 		}
 
 		@Override
-		public String getFieldValue(IndividualDeputyVoteData item, int fieldIndex, boolean fullView) {
-			String result;
+		public Object getFieldValue(IndividualDeputyVoteData item, int fieldIndex, boolean fullView) {
+			Object result;
 			switch (fieldIndex) {
 				case 0:
-					result = String.valueOf(item.getDbId());
+					result = item.getDbId();
 				break;
 				case 1:
 					result = item.getName();
@@ -79,6 +80,10 @@ public class RadaIndividualVotesBrowseService extends AbstractDataBrowseService<
 			return result;
 		}
 
+		@Override
+		public Class<?> getFieldType(int fieldIndex, boolean fullView) {
+			return FIELD_TYPES[fieldIndex];
+		}
 	}
 
 }

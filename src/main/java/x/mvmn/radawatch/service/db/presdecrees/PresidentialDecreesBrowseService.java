@@ -10,6 +10,10 @@ import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
 public class PresidentialDecreesBrowseService extends AbstractDataBrowseService<PresidentialDecree> {
 
+	private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Site ID", "Date", "Numcode", "Type", "Title", "Full text" };
+	private static final Class<?>[] COLUMN_TYPES = new Class<?>[] { Integer.class, Integer.class, Date.class, String.class, String.class, String.class,
+			String.class };
+
 	public static class PresidentialDecreesViewAdaptor implements ViewAdaptor<PresidentialDecree> {
 
 		@Override
@@ -19,47 +23,21 @@ public class PresidentialDecreesBrowseService extends AbstractDataBrowseService<
 
 		@Override
 		public String getFieldName(int fieldIndex, final boolean fullView) {
-			final String result;
-			switch (fieldIndex) {
-				case 0:
-					result = "DB ID";
-				break;
-				case 1:
-					result = "Site ID";
-				break;
-				case 2:
-					result = "Date";
-				break;
-				case 3:
-					result = "Numcode";
-				break;
-				case 4:
-					result = "Type";
-				break;
-				case 5:
-					result = "Title";
-				break;
-				case 6:
-					result = "Full text";
-				break;
-				default:
-					result = "Title";
-			}
-			return result;
+			return COLUMN_NAMES[fieldIndex];
 		}
 
 		@Override
-		public String getFieldValue(PresidentialDecree item, int fieldIndex, final boolean fullView) {
-			final String result;
+		public Object getFieldValue(PresidentialDecree item, int fieldIndex, final boolean fullView) {
+			final Object result;
 			switch (fieldIndex) {
 				case 0:
-					result = String.valueOf(item.getDbId());
+					result = item.getDbId();
 				break;
 				case 1:
-					result = String.valueOf(item.getSiteId());
+					result = item.getSiteId();
 				break;
 				case 2:
-					result = item.getDate().toString();
+					result = item.getDate();
 				break;
 				case 3:
 					result = item.getNumberCode();
@@ -78,6 +56,11 @@ public class PresidentialDecreesBrowseService extends AbstractDataBrowseService<
 			}
 
 			return result;
+		}
+
+		@Override
+		public Class<?> getFieldType(int fieldIndex, boolean fullView) {
+			return COLUMN_TYPES[fieldIndex];
 		}
 	};
 

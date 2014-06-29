@@ -62,37 +62,42 @@ public class RadaVoteSessionPerFactionResultsBrowseService extends AbstractDataB
 		}
 
 		@Override
-		public String getFieldValue(VoteSessionPerFactionData item, int fieldIndex, boolean fullView) {
-			final String result;
+		public Object getFieldValue(VoteSessionPerFactionData item, int fieldIndex, boolean fullView) {
+			final Object result;
 			switch (fieldIndex) {
 				case 0:
-					result = String.valueOf(item.getDbId());
+					result = item.getDbId();
 				break;
 				case 1:
 					result = item.getTitle();
 				break;
 				case 2:
-					result = String.valueOf(item.getSize());
+					result = item.getSize();
 				break;
 				case 3:
-					result = String.valueOf(item.getVotedYes());
+					result = item.getVotedYes();
 				break;
 				case 4:
-					result = String.valueOf(item.getVotedNo());
+					result = item.getVotedNo();
 				break;
 				case 5:
-					result = String.valueOf(item.getAbstained());
+					result = item.getAbstained();
 				break;
 				case 6:
-					result = String.valueOf(item.getSkipped());
+					result = item.getSkipped();
 				break;
 				case 7:
-					result = String.valueOf(item.getAbsent());
+					result = item.getAbsent();
 				break;
 				default:
 					result = item.getTitle();
 			}
 			return result;
+		}
+
+		@Override
+		public Class<?> getFieldType(int fieldIndex, boolean fullView) {
+			return fieldIndex == 1 ? String.class : Integer.class;
 		}
 	}
 
