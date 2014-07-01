@@ -1,7 +1,8 @@
 package x.mvmn.radawatch.service.db.radavotes;
 
-import java.sql.Date;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 import x.mvmn.radawatch.gui.browse.DataBrowser.ViewAdaptor;
 import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
@@ -40,7 +41,7 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 		final int siteId = resultSet.getInt("g_id");
 		final String title = resultSet.getString("votetitle");
 		final boolean result = resultSet.getBoolean("votepassed");
-		final Date date = resultSet.getDate("votedate");
+		final Timestamp date = resultSet.getTimestamp("votedate");
 		final int votedYes = resultSet.getInt("votedyes");
 		final int votedNo = resultSet.getInt("votedno");
 		final int abstained = resultSet.getInt("abstained");
@@ -82,7 +83,7 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 					result = item.getResult().booleanValue() ? "Passed" : "Failed";
 				break;
 				case 4:
-					result = item.getDate();
+					result = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(item.getDate());
 				break;
 				case 5:
 					result = item.getVotedYes();
@@ -107,10 +108,8 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 
 		@Override
 		public Class<?> getFieldType(int fieldIndex, boolean fullView) {
-			if (fieldIndex > 1 && fieldIndex < 4) {
+			if (fieldIndex > 1 && fieldIndex < 5) {
 				return String.class;
-			} else if (fieldIndex == 4) {
-				return Date.class;
 			} else {
 				return Integer.class;
 			}
