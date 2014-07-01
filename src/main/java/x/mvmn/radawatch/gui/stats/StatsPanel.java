@@ -127,7 +127,7 @@ public class StatsPanel extends JPanel {
 							{
 								CategoryPlot plot = ((CategoryPlot) chart.getPlot());
 								plot.getDomainAxis().setCategoryLabelPositions(CategoryLabelPositions.DOWN_90);
-								for (int i = 0; i < mainDataset.getColumnCount(); i++) {
+								for (int i = 0; i < mainDataset.getRowCount(); i++) {
 									plot.getRenderer().setSeriesItemLabelGenerator(i, new StandardCategoryItemLabelGenerator());
 									plot.getRenderer().setSeriesItemLabelsVisible(i, true);
 								}
