@@ -58,8 +58,8 @@ public class DeputeesStatsPanel extends JPanel {
 	public void update() {
 		btnUpdate.setEnabled(false);
 		this.remove(resultsContainer);
-		if (resultsContainer.getTabCount() > 1) {
-			resultsContainer.removeTabAt(1);
+		while (resultsContainer.getTabCount() > 0) {
+			resultsContainer.removeTabAt(0);
 		}
 		resultsContainer.addTab("Table", new JScrollPane(tblResults));
 		this.add(lblLoading, BorderLayout.CENTER);
