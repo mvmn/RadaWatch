@@ -28,6 +28,7 @@ public class DeputeeFactionParticipationPanel extends JPanel {
 
 	protected final JButton btnUpdate = new JButton("Refresh");
 	protected final JTable tblResults = new JTable();
+	protected final JScrollPane tableContainer = new JScrollPane(tblResults);
 	protected final JTextArea txaLoadingLog = new JTextArea();
 	protected final JScrollPane txaLoadingLogContainer = new JScrollPane(txaLoadingLog);
 
@@ -49,7 +50,7 @@ public class DeputeeFactionParticipationPanel extends JPanel {
 
 	public void update() {
 		btnUpdate.setEnabled(false);
-		this.remove(tblResults);
+		this.remove(tableContainer);
 		txaLoadingLog.setText("Loading data...\n");
 		this.add(txaLoadingLogContainer, BorderLayout.CENTER);
 		this.invalidate();
@@ -146,7 +147,7 @@ public class DeputeeFactionParticipationPanel extends JPanel {
 						public void run() {
 							btnUpdate.setEnabled(true);
 							DeputeeFactionParticipationPanel.this.remove(txaLoadingLogContainer);
-							DeputeeFactionParticipationPanel.this.add(new JScrollPane(tblResults), BorderLayout.CENTER);
+							DeputeeFactionParticipationPanel.this.add(tableContainer, BorderLayout.CENTER);
 							DeputeeFactionParticipationPanel.this.invalidate();
 							DeputeeFactionParticipationPanel.this.revalidate();
 							DeputeeFactionParticipationPanel.this.repaint();
