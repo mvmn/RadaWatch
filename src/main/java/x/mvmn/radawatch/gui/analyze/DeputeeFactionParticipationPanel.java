@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -28,7 +28,8 @@ public class DeputeeFactionParticipationPanel extends JPanel {
 
 	protected final JButton btnUpdate = new JButton("Refresh");
 	protected final JTable tblResults = new JTable();
-	protected final JLabel lblLoading = new JLabel("Loading data...", JLabel.CENTER);
+	protected final JTextArea txaLoadingLog = new JTextArea();
+	protected final JScrollPane txaLoadingLogContainer = new JScrollPane(txaLoadingLog);
 
 	private static final String[] COLUMN_NAMES = new String[] { "Deputy", "Faction", "From", "To" };
 
@@ -49,14 +50,15 @@ public class DeputeeFactionParticipationPanel extends JPanel {
 	public void update() {
 		btnUpdate.setEnabled(false);
 		this.remove(tblResults);
-		this.add(lblLoading, BorderLayout.CENTER);
+		txaLoadingLog.setText("Loading data...\n");
+		this.add(txaLoadingLogContainer, BorderLayout.CENTER);
 		this.invalidate();
 		this.revalidate();
 		this.repaint();
 		new Thread() {
 			public void run() {
 				try {
-					final List<DeputyFactionParticipation> results = analyzer.getData();
+					final List<DeputyFactionParticipation> results = analyzer.getData(txaLoadingLog);
 					final TableModel tableModel = new TableModel() {
 
 						private final CopyOnWriteArrayList<TableModelListener> listeners = new CopyOnWriteArrayList<TableModelListener>();
@@ -142,9 +144,9 @@ public class DeputeeFactionParticipationPanel extends JPanel {
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
-							DeputeeFactionParticipationPanel.this.remove(lblLoading);
-							DeputeeFactionParticipationPanel.this.add(new JScrollPane(tblResults), BorderLayout.CENTER);
 							btnUpdate.setEnabled(true);
+							DeputeeFactionParticipationPanel.this.remove(txaLoadingLogContainer);
+							DeputeeFactionParticipationPanel.this.add(new JScrollPane(tblResults), BorderLayout.CENTER);
 							DeputeeFactionParticipationPanel.this.invalidate();
 							DeputeeFactionParticipationPanel.this.revalidate();
 							DeputeeFactionParticipationPanel.this.repaint();

@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+
 import org.h2.util.JdbcUtils;
 
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
@@ -44,6 +47,11 @@ public class DeputeesFactionsParticipationAnalyzer {
 		public Date getEndDate() {
 			return endDate;
 		}
+
+		public String toString() {
+			return new StringBuilder(deputy).append(", ").append(faction).append(": ").append(startDate != null ? startDate.toString() : " -- ").append(" to ")
+					.append(endDate != null ? endDate.toString() : " -- ").toString();
+		}
 	}
 
 	protected final DataBaseConnectionService dbService;
@@ -52,7 +60,7 @@ public class DeputeesFactionsParticipationAnalyzer {
 		this.dbService = dbService;
 	}
 
-	public List<DeputyFactionParticipation> getData() throws Exception {
+	public List<DeputyFactionParticipation> getData(final JTextArea log) throws Exception {
 		List<DeputyFactionParticipation> result = new ArrayList<DeputyFactionParticipation>();
 
 		Connection conn = null;
@@ -65,6 +73,12 @@ public class DeputeesFactionsParticipationAnalyzer {
 			conn = dbService.getConnection();
 			stmt = conn.createStatement();
 			for (final String deputyName : deputeesNames) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						log.append("Loading faction participations for deputy " + deputyName + "\n");
+					}
+				});
 				String lastFaction = null;
 				Date lastDate = null;
 				boolean gotResult;
@@ -76,7 +90,7 @@ public class DeputeesFactionsParticipationAnalyzer {
 					if (lastFaction != null) {
 						query += " AND NOT(title = ?) ";
 					}
-					query += " GROUP BY title ";
+					query += " GROUP BY title order by mindate ";
 					final PreparedStatement pstmt = conn.prepareStatement(query);
 					stmt = pstmt;
 					pstmt.setString(1, deputyName);
@@ -109,8 +123,15 @@ public class DeputeesFactionsParticipationAnalyzer {
 						}
 						rs2.close();
 						pstmt2.close();
-						result.add(new DeputyFactionParticipation(deputyName, lastFaction, lastDate.after(earliestRecordDate) ? lastDate : null,
-								endDate != null && endDate.before(latestRecordDate) ? endDate : null));
+						final DeputyFactionParticipation dfp = new DeputyFactionParticipation(deputyName, lastFaction,
+								lastDate.after(earliestRecordDate) ? lastDate : null, endDate != null && endDate.before(latestRecordDate) ? endDate : null);
+						result.add(dfp);
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								log.append(" - " + dfp + "\n");
+							}
+						});
 					} else {
 						gotResult = false;
 					}
@@ -125,5 +146,4 @@ public class DeputeesFactionsParticipationAnalyzer {
 
 		return result;
 	}
-
 }
