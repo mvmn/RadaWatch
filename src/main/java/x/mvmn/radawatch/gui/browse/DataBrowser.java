@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -22,6 +23,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.plot.CategoryPlot;
+
+import x.mvmn.radawatch.gui.ChartHelper;
 import x.mvmn.radawatch.gui.analyze.FilterPanel;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.db.DataBrowseQuery;
@@ -127,6 +132,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 	private final ViewAdaptor<T> viewAdaptor;
 	private final String dataTitle;
 	private final DataBrowser<? extends Entity> subItemsBrowser;
+	private final JTabbedPane tabPane = new JTabbedPane();
 
 	public DataBrowser(final String dataTitle, final DataBrowseService<T> dataBrowseService, final int parentEntityId, final ViewAdaptor<T> viewAdaptor,
 			final DataBrowser<? extends Entity> subItemsBrowser) {
@@ -140,8 +146,8 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		this.filterPanel = new FilterPanel(dataBrowseService.supportsDateFilter(), dataBrowseService.supportsTitleFilter());
 
 		this.add(filterPanel, BorderLayout.NORTH);
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(new JScrollPane(mainTable), BorderLayout.CENTER);
+		final JPanel panel = new JPanel(new BorderLayout());
+		panel.add(tabPane, BorderLayout.CENTER);
 		panel.add(itemsCountLabel, BorderLayout.SOUTH);
 		this.add(panel, BorderLayout.CENTER);
 		this.add(btnLoadData, BorderLayout.SOUTH);
@@ -188,6 +194,9 @@ public class DataBrowser<T extends Entity> extends JPanel {
 
 	public void triggerDataUpdate() {
 		btnLoadData.setEnabled(false);
+		while (tabPane.getTabCount() > 0) {
+			tabPane.removeTabAt(0);
+		}
 		new Thread() {
 			public void run() {
 				try {
@@ -196,12 +205,26 @@ public class DataBrowser<T extends Entity> extends JPanel {
 					final int itemsCount = dataBrowseService.countItems(parentEntityId, dbQuery);
 					final List<T> items = dataBrowseService.fetchItems(parentEntityId, dbQuery);
 					final TableModel tableModel = new DataBrowserTableModel<T>(items, viewAdaptor);
+					final ChartPanel chartPanel = ChartHelper.fromTableModel(tableModel, "Vote", "");
+					ChartHelper.updateCategoryChartRenderParameters(chartPanel, DataBrowser.this);
+
+					final CategoryPlot plot = (CategoryPlot) chartPanel.getChart().getPlot();
+					final JPanel panel = new JPanel(new BorderLayout());
+					panel.add(new JScrollPane(chartPanel), BorderLayout.CENTER);
+					final JPanel checkboxesPanel = new JPanel(new GridLayout(plot.getDataset().getRowCount(), 1));
+					panel.add(new JScrollPane(checkboxesPanel), BorderLayout.EAST);
+					for (final JCheckBox checkBox : ChartHelper.generateRowsToggleCheckboxes(plot, chartPanel, DataBrowser.this)) {
+						checkboxesPanel.add(checkBox);
+					}
+
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							itemsCountLabel.setText("Results: " + String.valueOf(itemsCount));
 							mainTable.setModel(tableModel);
 							mainTable.setRowSorter(new TableRowSorter<TableModel>(tableModel));
+							tabPane.add("Table", new JScrollPane(mainTable));
+							tabPane.add("Chart", panel);
 						}
 					});
 				} catch (final Exception loadException) {

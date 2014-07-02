@@ -176,18 +176,8 @@ public class DeputeesStatsPanel extends JPanel {
 							panel.add(new JScrollPane(chartPanel), BorderLayout.CENTER);
 							final JPanel checkboxesPanel = new JPanel(new GridLayout(plot.getDataset().getRowCount(), 1));
 							panel.add(new JScrollPane(checkboxesPanel), BorderLayout.EAST);
-							for (int datasetRowIndex = 0; datasetRowIndex < plot.getDataset().getRowCount(); datasetRowIndex++) {
-								final JCheckBox checkBox = new JCheckBox(plot.getDataset().getRowKey(datasetRowIndex).toString());
-								checkBox.setSelected(true);
+							for (final JCheckBox checkBox : ChartHelper.generateRowsToggleCheckboxes(plot, chartPanel, DeputeesStatsPanel.this)) {
 								checkboxesPanel.add(checkBox);
-								final int finalRowIndex = datasetRowIndex;
-								checkBox.addActionListener(new ActionListener() {
-									@Override
-									public void actionPerformed(ActionEvent evt) {
-										plot.getRenderer().setSeriesVisible(finalRowIndex, checkBox.isSelected());
-										ChartHelper.updateCategoryChartRenderParameters(chartPanel, DeputeesStatsPanel.this);
-									}
-								});
 							}
 
 							resultsContainer.addTab("Chart", panel);

@@ -1,9 +1,12 @@
 package x.mvmn.radawatch.gui;
 
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JCheckBox;
 import javax.swing.table.TableModel;
 
 import org.jfree.chart.ChartFactory;
@@ -78,5 +81,23 @@ public final class ChartHelper {
 		chartPanel.invalidate();
 		chartPanel.revalidate();
 		chartPanel.repaint();
+	}
+
+	public static List<JCheckBox> generateRowsToggleCheckboxes(final CategoryPlot plot, final ChartPanel chartPanel, final Container container) {
+		final List<JCheckBox> result = new ArrayList<JCheckBox>();
+		for (int datasetRowIndex = 0; datasetRowIndex < plot.getDataset().getRowCount(); datasetRowIndex++) {
+			final JCheckBox checkBox = new JCheckBox(plot.getDataset().getRowKey(datasetRowIndex).toString());
+			checkBox.setSelected(true);
+			result.add(checkBox);
+			final int finalRowIndex = datasetRowIndex;
+			checkBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					plot.getRenderer().setSeriesVisible(finalRowIndex, checkBox.isSelected());
+					ChartHelper.updateCategoryChartRenderParameters(chartPanel, container);
+				}
+			});
+		}
+		return result;
 	}
 }
