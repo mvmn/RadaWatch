@@ -1,6 +1,7 @@
 package x.mvmn.radawatch.gui;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DateFormat;
@@ -10,6 +11,7 @@ import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -42,6 +44,14 @@ public class DateIntervalPickerPanel extends JTabbedPane {
 
 	private enum IntervalType {
 		DAY, WEEK, MONTH, YEAR
+	}
+
+	private static final Integer[] INTS_OPTIONS;
+	static {
+		INTS_OPTIONS = new Integer[96];
+		for (int i = 0; i < INTS_OPTIONS.length; i++) {
+			INTS_OPTIONS[i] = new Integer(i + 5);
+		}
 	}
 
 	protected IntervalNavPanel currentIntervalPanel;
@@ -86,8 +96,10 @@ public class DateIntervalPickerPanel extends JTabbedPane {
 
 		private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-		private JButton btnPrev = new JButton("<<");
-		private JButton btnNext = new JButton(">>");
+		private JButton btnPrevCustom = new JButton("<< ...");
+		private JButton btnNextCustom = new JButton("... >>");
+		private JButton btnPrev = new JButton("<< 1");
+		private JButton btnNext = new JButton("1 >>");
 		private JButton btnCurrent = new JButton("Current");
 
 		private final IntervalType intervalType;
@@ -98,20 +110,26 @@ public class DateIntervalPickerPanel extends JTabbedPane {
 		private int intervalOffset = 0;
 
 		public IntervalNavPanel(final IntervalType intervalType, final boolean displayLabel) {
-			super(new BorderLayout());
+			super(new GridLayout(1, 5));
 			this.intervalType = intervalType;
 
+			btnPrevCustom.setActionCommand("inpac_prev_c");
+			btnNextCustom.setActionCommand("inpac_next_c");
 			btnPrev.setActionCommand("inpac_prev");
 			btnNext.setActionCommand("inpac_next");
 			btnCurrent.setActionCommand("inpac_current");
 
+			btnPrevCustom.addActionListener(this);
+			btnNextCustom.addActionListener(this);
 			btnPrev.addActionListener(this);
 			btnNext.addActionListener(this);
 			btnCurrent.addActionListener(this);
 
-			this.add(btnPrev, BorderLayout.WEST);
-			this.add(btnNext, BorderLayout.EAST);
-			this.add(btnCurrent, BorderLayout.CENTER);
+			this.add(btnPrevCustom);
+			this.add(btnPrev);
+			this.add(btnCurrent);
+			this.add(btnNext);
+			this.add(btnNextCustom);
 
 			if (displayLabel) {
 				currentIntervalLabel = new JLabel("", JLabel.CENTER);
@@ -190,6 +208,20 @@ public class DateIntervalPickerPanel extends JTabbedPane {
 			} else if (actEvent.getActionCommand().equals("inpac_current")) {
 				intervalOffset = 0;
 				updateModel();
+			} else if (actEvent.getActionCommand().equals("inpac_prev_c")) {
+				final Object selection = JOptionPane.showInputDialog(DateIntervalPickerPanel.this, "How many?", "Previous " + currentIntervalLabel,
+						JOptionPane.QUESTION_MESSAGE, null, INTS_OPTIONS, INTS_OPTIONS[0]);
+				if (selection != null) {
+					intervalOffset -= (Integer) selection;
+					updateModel();
+				}
+			} else if (actEvent.getActionCommand().equals("inpac_next_c")) {
+				final Object selection = JOptionPane.showInputDialog(DateIntervalPickerPanel.this, "How many?", "Next " + currentIntervalLabel,
+						JOptionPane.QUESTION_MESSAGE, null, INTS_OPTIONS, INTS_OPTIONS[0]);
+				if (selection != null) {
+					intervalOffset += (Integer) selection;
+					updateModel();
+				}
 			}
 		}
 
