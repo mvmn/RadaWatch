@@ -131,18 +131,18 @@ public class StatsPanel extends JPanel {
 									plot.getRenderer().setSeriesItemLabelGenerator(i, new StandardCategoryItemLabelGenerator());
 									plot.getRenderer().setSeriesItemLabelsVisible(i, true);
 								}
-								((BarRenderer) plot.getRenderer()).setItemMargin(0.5d / mainDataset.getColumnCount());
+								((BarRenderer) plot.getRenderer()).setItemMargin(0.5d / mainDataset.getRowCount());
 							}
 							final ChartPanel chartPanel = new ChartPanel(chart);
 							final Component newChartPanelHolder = new JScrollPane(chartPanel);
 
 							int oneBarWidth = (int) (getGraphics().getFontMetrics().getHeight() * 1.2);
-							if (oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount() > middlePanel.getPreferredSize().width) {
-								chartPanel.setMinimumDrawWidth(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount());
-								chartPanel.setMaximumDrawWidth(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount());
-								chartPanel.setPreferredSize(new java.awt.Dimension(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount(),
-										(int) newChartPanelHolder.getPreferredSize().height));
-							}
+							// if (oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount() > middlePanel.getPreferredSize().width) {
+							chartPanel.setMinimumDrawWidth(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount());
+							chartPanel.setMaximumDrawWidth(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount());
+							chartPanel.setPreferredSize(new java.awt.Dimension(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount(),
+									(int) newChartPanelHolder.getPreferredSize().height));
+							// }
 
 							SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
