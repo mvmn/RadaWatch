@@ -1,22 +1,29 @@
 package x.mvmn.radawatch.gui.analyze;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.plot.CategoryPlot;
+
+import x.mvmn.radawatch.gui.ChartHelper;
 import x.mvmn.radawatch.service.analyze.DeputeesStatsAnalyzer;
 import x.mvmn.radawatch.service.analyze.DeputeesStatsAnalyzer.DeputyStats;
 
@@ -25,13 +32,13 @@ public class DeputeesStatsPanel extends JPanel {
 
 	protected final DeputeesStatsAnalyzer analyzer;
 
-	protected JButton btnUpdate = new JButton("Refresh");
-	protected JTable tblResults = new JTable();
-	protected JScrollPane tblResultsContainer = new JScrollPane(tblResults);
-	protected JLabel lblLoading = new JLabel("Loading data...", JLabel.CENTER);
+	protected final JButton btnUpdate = new JButton("Refresh");
+	protected final JTable tblResults = new JTable();
+	protected final JTabbedPane resultsContainer = new JTabbedPane();
+	protected final JLabel lblLoading = new JLabel("Loading data...", JLabel.CENTER);
 
-	private static final String[] COLUMN_NAMES = new String[] { "Deputy name", "Factions", "Total votings records", "'For' votes", "%", "'Against' votes", "%",
-			"Abstained", "%", "Skipped", "%", "Absent", "%" };
+	private static final String[] COLUMN_NAMES = new String[] { "Deputy name", "Factions", "Total votings records", "'For' votes", "'For' votes %",
+			"'Against' votes", "'Against' votes %", "Abstained", "Abstained %", "Skipped", "Skipped %", "Absent", "Absent %" };
 
 	public DeputeesStatsPanel(final DeputeesStatsAnalyzer analyzer) {
 		super(new BorderLayout());
@@ -50,7 +57,11 @@ public class DeputeesStatsPanel extends JPanel {
 
 	public void update() {
 		btnUpdate.setEnabled(false);
-		this.remove(tblResultsContainer);
+		this.remove(resultsContainer);
+		if (resultsContainer.getTabCount() > 1) {
+			resultsContainer.removeTabAt(1);
+		}
+		resultsContainer.addTab("Table", new JScrollPane(tblResults));
 		this.add(lblLoading, BorderLayout.CENTER);
 		this.invalidate();
 		this.revalidate();
@@ -152,11 +163,34 @@ public class DeputeesStatsPanel extends JPanel {
 							return index < 1 ? String.class : Integer.class;
 						}
 					};
+					final ChartPanel chartPanel = ChartHelper.fromTableModel(dataModel, "Deputy", "");
+					ChartHelper.updateCategoryChartRenderParameters(chartPanel, DeputeesStatsPanel.this);
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							tblResults.setModel(dataModel);
 							tblResults.setRowSorter(new TableRowSorter<TableModel>(dataModel));
+
+							final CategoryPlot plot = (CategoryPlot) chartPanel.getChart().getPlot();
+							final JPanel panel = new JPanel(new BorderLayout());
+							panel.add(new JScrollPane(chartPanel), BorderLayout.CENTER);
+							final JPanel checkboxesPanel = new JPanel(new GridLayout(plot.getDataset().getRowCount(), 1));
+							panel.add(new JScrollPane(checkboxesPanel), BorderLayout.EAST);
+							for (int datasetRowIndex = 0; datasetRowIndex < plot.getDataset().getRowCount(); datasetRowIndex++) {
+								final JCheckBox checkBox = new JCheckBox(plot.getDataset().getRowKey(datasetRowIndex).toString());
+								checkBox.setSelected(true);
+								checkboxesPanel.add(checkBox);
+								final int finalRowIndex = datasetRowIndex;
+								checkBox.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent evt) {
+										plot.getRenderer().setSeriesVisible(finalRowIndex, checkBox.isSelected());
+										ChartHelper.updateCategoryChartRenderParameters(chartPanel, DeputeesStatsPanel.this);
+									}
+								});
+							}
+
+							resultsContainer.addTab("Chart", panel);
 						}
 					});
 
@@ -174,7 +208,7 @@ public class DeputeesStatsPanel extends JPanel {
 						@Override
 						public void run() {
 							DeputeesStatsPanel.this.remove(lblLoading);
-							DeputeesStatsPanel.this.add(tblResultsContainer, BorderLayout.CENTER);
+							DeputeesStatsPanel.this.add(resultsContainer, BorderLayout.CENTER);
 							btnUpdate.setEnabled(true);
 							DeputeesStatsPanel.this.invalidate();
 							DeputeesStatsPanel.this.revalidate();
