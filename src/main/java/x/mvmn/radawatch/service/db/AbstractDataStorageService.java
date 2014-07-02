@@ -41,7 +41,7 @@ public abstract class AbstractDataStorageService<T extends Entity> implements Da
 		final Map<String, String> results = new LinkedHashMap<String, String>();
 
 		for (final String tableName : getTablesNames()) {
-			int count = dbService.execSelectCount("select count(*) from " + tableName);
+			int count = dbService.execSelectOneInt("select count(*) from " + tableName);
 			results.put("DB Table rows: " + tableName, String.valueOf(count));
 		}
 

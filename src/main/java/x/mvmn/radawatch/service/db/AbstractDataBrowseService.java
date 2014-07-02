@@ -38,7 +38,7 @@ public abstract class AbstractDataBrowseService<T extends Entity> extends Abstra
 
 	@Override
 	public int countItems(int parentItemDbId, DataBrowseQuery query) throws Exception {
-		return dbService.execSelectCount("select count(*) from (select * from "
+		return dbService.execSelectOneInt("select count(*) from (select * from "
 				+ getTableName()
 				+ " "
 				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "=" + parentItemDbId

@@ -145,11 +145,11 @@ public class RadaVotesStorageService extends AbstractDataStorageService<VoteSess
 		result.put(
 				"Inconsistent votes for faction recs:",
 				String.valueOf(dbService
-						.execSelectCount("select count(*) from  votesessionfaction where totalmembers  != (select count(*) from individualvote where votesessionfactionid= votesessionfaction.id)")));
+						.execSelectOneInt("select count(*) from  votesessionfaction where totalmembers  != (select count(*) from individualvote where votesessionfactionid= votesessionfaction.id)")));
 		result.put(
 				"Inconsistent faction sums for votes recs:",
 				String.valueOf(dbService
-						.execSelectCount("select count(*) from  votesession where total  != (select sum(totalmembers-absent) from votesessionfaction where votesessionid = votesession.id)")));
+						.execSelectOneInt("select count(*) from  votesession where total  != (select sum(totalmembers-absent) from votesessionfaction where votesessionid = votesession.id)")));
 		return result;
 	}
 }

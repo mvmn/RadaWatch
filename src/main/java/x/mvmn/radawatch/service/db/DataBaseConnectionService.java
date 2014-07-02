@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +52,51 @@ public class DataBaseConnectionService {
 		}
 	}
 
-	public int execSelectCount(String sqlStatement) throws SQLException {
+	public Timestamp execSelectOneDate(String sqlStatement) throws SQLException {
+		Timestamp result = null;
+		Connection connection = null;
+		try {
+			connection = getConnection();
+			Statement stmt = connection.createStatement();
+			ResultSet resultSet = stmt.executeQuery(sqlStatement);
+			if (resultSet != null && resultSet.next()) {
+				result = resultSet.getTimestamp(1);
+			}
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (Exception connectionClosingException) {
+					connectionClosingException.printStackTrace();
+				}
+			}
+		}
+		return result;
+	}
+
+	public String execSelectOneString(String sqlStatement) throws SQLException {
+		String result = null;
+		Connection connection = null;
+		try {
+			connection = getConnection();
+			Statement stmt = connection.createStatement();
+			ResultSet resultSet = stmt.executeQuery(sqlStatement);
+			if (resultSet != null && resultSet.next()) {
+				result = resultSet.getString(1);
+			}
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (Exception connectionClosingException) {
+					connectionClosingException.printStackTrace();
+				}
+			}
+		}
+		return result;
+	}
+
+	public int execSelectOneInt(String sqlStatement) throws SQLException {
 		int result = 0;
 		Connection connection = null;
 		try {
