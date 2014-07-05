@@ -72,11 +72,15 @@ public class DeputeesFactionsParticipationAnalyzer {
 			final Date latestRecordDate = dbService.execSelectOneDate("select max(votedate) from VOTESESSION");
 			conn = dbService.getConnection();
 			stmt = conn.createStatement();
+			int deputeeIndex = 0;
+			final int totalDeputeesCount = deputeesNames.size();
 			for (final String deputyName : deputeesNames) {
+				deputeeIndex++;
+				final int finalDeputeeIndex = deputeeIndex;
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						log.append("Loading faction participations for deputy " + deputyName + "\n");
+						log.append(String.format("Loading faction participations for deputy %s (%s/%s)\n", deputyName, finalDeputeeIndex, totalDeputeesCount));
 					}
 				});
 				String lastFaction = null;
