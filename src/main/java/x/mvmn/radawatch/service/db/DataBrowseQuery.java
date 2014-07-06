@@ -54,9 +54,15 @@ public class DataBrowseQuery {
 	}
 
 	public String generateWhereClause(final String titleColumnName, final String dateColumnName, final boolean includeWhereKeyword, String... additionalClauses) {
-		final String titleCondition = (titleColumnName != null && searchPhrase != null && searchPhrase.trim().length() > 0 && !searchPhrase.trim().equals("%")) ? " "
-				+ titleColumnName + " like '%" + searchPhrase.trim().replaceAll("'", "''") + "%' "
-				: null;
+		String titleCondition = null;
+		if (titleColumnName != null && searchPhrase != null && searchPhrase.trim().length() > 0 && !searchPhrase.trim().equals("%")) {
+			final String searchPhraseEscaped = searchPhrase.replaceAll("'", "''");
+			titleCondition = " (";
+			for (final String searchPhraseToken : searchPhraseEscaped.split("\\|")) {
+				titleCondition += " (" + titleColumnName + " like '%" + searchPhraseToken.trim() + "%') OR ";
+			}
+			titleCondition += " (0=1)) "; // (x OR y OR ... OR n OR (0=1)) should be same as (x OR y OR ... OR n)
+		}
 		final String dateConditions = generateDateClause(dateColumnName);
 		final String[] allClauses;
 		if (additionalClauses != null && additionalClauses.length > 0) {
