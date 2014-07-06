@@ -27,12 +27,15 @@ public class RadaFactionsVotesAggregationService extends AbstractDataAggregation
 		availableMetrics.add("Average absent");
 		metricsToSql.put("Average absent", "avg(votesessionfaction.absent)");
 		availableMetrics.add("Average present %");
-		metricsToSql.put("Average present %", "avg(((votesessionfaction.totalmembers-votesessionfaction.absent)*100)/votesessionfaction.totalmembers)");
+		metricsToSql
+				.put("Average present %",
+						"case avg(votesessionfaction.totalmembers) when 0 then 0 else avg(((votesessionfaction.totalmembers-votesessionfaction.absent)*100))/avg(votesessionfaction.totalmembers) end case");
 		availableMetrics.add("Average for-votes");
 		metricsToSql.put("Average for-votes", "avg(votesessionfaction.votedyes)");
 		availableMetrics.add("Average for-votes % of present");
 		metricsToSql
-				.put("Average for-votes % of present", "avg((votesessionfaction.votedyes*100)/(votesessionfaction.totalmembers-votesessionfaction.absent))");
+				.put("Average for-votes % of present",
+						"case avg(votesessionfaction.totalmembers-votesessionfaction.absent) when 0 then 0 else avg((votesessionfaction.votedyes*100))/avg(votesessionfaction.totalmembers-votesessionfaction.absent) end case");
 		availableMetrics.add("Average against-votes");
 		metricsToSql.put("Average against-votes", "avg(votesessionfaction.votedno)");
 		availableMetrics.add("Average abstained");
@@ -49,6 +52,11 @@ public class RadaFactionsVotesAggregationService extends AbstractDataAggregation
 	}
 
 	@Override
+	protected String metricNameToColumnDef(final String metricName) {
+		return METRICS_TO_SQL.get(metricName);
+	}
+
+	@Override
 	public boolean supportsDateFilter() {
 		return true;
 	}
@@ -56,11 +64,6 @@ public class RadaFactionsVotesAggregationService extends AbstractDataAggregation
 	@Override
 	public boolean supportsTitleFilter() {
 		return true;
-	}
-
-	@Override
-	protected String metricNameToColumnDef(final String metricName) {
-		return METRICS_TO_SQL.get(metricName);
 	}
 
 	@Override

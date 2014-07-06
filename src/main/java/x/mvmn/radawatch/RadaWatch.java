@@ -42,6 +42,7 @@ import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesAggregationSer
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesBrowseService;
 import x.mvmn.radawatch.service.db.presdecrees.PresidentialDecreesStorageService;
 import x.mvmn.radawatch.service.db.radavotes.RadaFactionsVotesAggregationService;
+import x.mvmn.radawatch.service.db.radavotes.RadaIndividualVotesAggregationService;
 import x.mvmn.radawatch.service.db.radavotes.RadaIndividualVotesBrowseService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVoteSessionPerFactionResultsBrowseService;
 import x.mvmn.radawatch.service.db.radavotes.RadaVoteSessionResultsBrowseService;
@@ -183,6 +184,7 @@ public class RadaWatch {
 			tabStats.add(statsTabs, BorderLayout.CENTER);
 			statsTabs.addTab("Rada votes", new StatsPanel(new RadaVotesAggregationService(storageService)));
 			statsTabs.addTab("Rada votes by Factions", new StatsPanel(new RadaFactionsVotesAggregationService(storageService)));
+			statsTabs.addTab("Rada votes by Deputees", new StatsPanel(new RadaIndividualVotesAggregationService(storageService)));
 			statsTabs.addTab("Presidential decrees", new StatsPanel(new PresidentialDecreesAggregationService(storageService)));
 			statsTabs.addTab("Deputees stats", new DeputeesStatsPanel(new DeputeesStatsAnalyzer(storageService)));
 			statsTabs.addTab("Deputees factions", new DeputeeFactionParticipationPanel(new DeputeesFactionsParticipationAnalyzer(storageService)));
