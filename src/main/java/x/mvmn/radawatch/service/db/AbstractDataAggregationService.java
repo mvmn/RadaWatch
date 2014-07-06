@@ -5,15 +5,15 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TreeMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.h2.util.JdbcUtils;
 
 public abstract class AbstractDataAggregationService extends AbstractDBDataReadService implements DataAggregationService {
 
-	public static final String FIELDNAME_TOTAL_COUNT = "agg_totalcount";
+	// public static final String FIELDNAME_TOTAL_COUNT = "agg_totalcount";
 	public static final String FIELDNAME_INTERVAL_HOUR = "ivl_hour";
 	public static final String FIELDNAME_INTERVAL_DAY = "ivl_day";
 	public static final String FIELDNAME_INTERVAL_WEEK = "ivl_week";
@@ -28,20 +28,24 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 	protected abstract String metricNameToColumnDef(final String metricName);
 
 	@Override
-	public Map<Date, Map<String, Integer>> getAggregatedCounts(final List<String> metrics, final AggregationInterval aggregationInterval) throws Exception {
+	public Map<String, Map<Date, Map<String, Integer>>> getAggregatedCounts(final List<String> metrics, final AggregationInterval aggregationInterval)
+			throws Exception {
 		return getAggregatedCounts(metrics, aggregationInterval, null);
 	}
 
 	@Override
-	public Map<Date, Map<String, Integer>> getAggregatedCounts(final List<String> metrics, final AggregationInterval aggregationInterval,
+	public Map<String, Map<Date, Map<String, Integer>>> getAggregatedCounts(final List<String> metrics, final AggregationInterval aggregationInterval,
 			final DataBrowseQuery filters) throws Exception {
 		return getAggregatedCounts(metrics, aggregationInterval, filters, -1);
 	}
 
 	@Override
-	public Map<Date, Map<String, Integer>> getAggregatedCounts(final List<String> metrics, final AggregationInterval aggregationInterval,
+	public Map<String, Map<Date, Map<String, Integer>>> getAggregatedCounts(final List<String> metrics, final AggregationInterval aggregationInterval,
 			final DataBrowseQuery filters, final int parentItemDbId) throws Exception {
-		Map<Date, Map<String, Integer>> result = new TreeMap<Date, Map<String, Integer>>();
+		if (metrics == null || metrics.size() < 1) {
+			return null;
+		}
+		final Map<String, Map<Date, Map<String, Integer>>> result = new TreeMap<String, Map<Date, Map<String, Integer>>>();
 		Connection conn = null;
 		Statement stmt = null;
 		try {
@@ -51,12 +55,28 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 			ResultSet resultSet = stmt.executeQuery(queryStr);
 			while (resultSet.next()) {
 				final Date date = figureOutDateFromIntervalParts(resultSet, aggregationInterval);
+				final StringBuilder otherAggregations = new StringBuilder();
+				for (final String aggregationField : getAdditionalAggregations().split(",")) {
+					final String fieldName = aggregationField.trim();
+					if (fieldName.length() > 0) {
+						otherAggregations.append(fieldName).append("=").append(resultSet.getString(fieldName)).append("; ");
+					}
+				}
+				String aggregationDisplayName = otherAggregations.toString().trim();
+				if (aggregationDisplayName.length() > 0) {
+					aggregationDisplayName = " " + aggregationDisplayName;
+				}
+				Map<Date, Map<String, Integer>> perDateMap = result.get(aggregationDisplayName);
+				if (perDateMap == null) {
+					perDateMap = new TreeMap<Date, Map<String, Integer>>();
+					result.put(aggregationDisplayName, perDateMap);
+				}
 				final Map<String, Integer> metricsValues = new TreeMap<String, Integer>();
-				result.put(date, metricsValues);
+				perDateMap.put(date, metricsValues);
 				for (final String metricName : metrics) {
 					metricsValues.put(metricName, resultSet.getInt(sqlProperName(metricName)));
 				}
-				metricsValues.put("", resultSet.getInt(FIELDNAME_TOTAL_COUNT));
+				// metricsValues.put("", resultSet.getInt(FIELDNAME_TOTAL_COUNT));
 			}
 			resultSet.close();
 		} finally {
@@ -119,12 +139,18 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 
 	protected String buildQuery(final List<String> metrics, final AggregationInterval aggregationInterval, final DataBrowseQuery filters,
 			final int parentItemDbId) {
-		StringBuilder query = new StringBuilder("select count(*) as ").append(FIELDNAME_TOTAL_COUNT);
+		StringBuilder query = new StringBuilder("select ").append(getAdditionalAggregations());// count(*) as ").append(FIELDNAME_TOTAL_COUNT)
 
 		if (metrics != null) {
+			boolean first = getAdditionalAggregations().trim().length() == 0;
 			for (final String metricName : metrics) {
 				final String columnAggregationDef = metricNameToColumnDef(metricName);
-				query.append(", ").append(columnAggregationDef).append(" as ").append(sqlProperName(metricName));
+				if (first) {
+					first = false;
+				} else {
+					query.append(", ");
+				}
+				query.append(columnAggregationDef).append(" as ").append(sqlProperName(metricName));
 			}
 		}
 
@@ -159,6 +185,10 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_YEAR);
 		}
 
+		if (getAdditionalAggregations().trim().length() > 0) {
+			aggregationIntervalsGroupingDefs.append(", ").append(getAdditionalAggregations());
+		}
+
 		query.append(aggregationIntervalsDefs.toString());
 
 		query.append(" from ").append(getTableName()).append(" ");
@@ -180,5 +210,9 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 		}
 
 		return query.toString();
+	}
+
+	protected String getAdditionalAggregations() {
+		return "";
 	}
 }

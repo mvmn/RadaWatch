@@ -2,11 +2,10 @@ package x.mvmn.radawatch.gui.stats;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -50,13 +49,17 @@ public class StatsPanel extends JPanel {
 
 	protected volatile AggregationInterval selectedAggregationInterval = AggregationInterval.YEAR;
 
-	protected final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
 	protected final List<JCheckBox> metricsCheckboxes = new ArrayList<JCheckBox>();
 
 	protected final JPanel middlePanel = new JPanel(new BorderLayout());
 
 	protected volatile Component currentChartPanelHolder = null;
+
+	protected volatile ChartPanel chartPanel = null;
+
+	protected final JButton btnMoreHeightForChart = new JButton("Height +");
+
+	protected final JCheckBox cbGroupingAsColumns = new JCheckBox("Groups as columns");
 
 	public StatsPanel(final DataAggregationService daService) {
 		super(new BorderLayout());
@@ -66,6 +69,20 @@ public class StatsPanel extends JPanel {
 
 		this.add(middlePanel, BorderLayout.CENTER);
 		this.add(performAggregation, BorderLayout.SOUTH);
+
+		this.btnMoreHeightForChart.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				final ChartPanel chartPanel = StatsPanel.this.chartPanel;
+				if (chartPanel != null) {
+					final Dimension oldPrefSize = chartPanel.getPreferredSize();
+					chartPanel.setPreferredSize(new Dimension(oldPrefSize.width, oldPrefSize.height + 100));
+					chartPanel.invalidate();
+					chartPanel.revalidate();
+					chartPanel.repaint();
+				}
+			}
+		});
 
 		if (daService.getSupportedMetrics() != null && daService.getSupportedMetrics().size() > 0) {
 			JPanel metricSelectionPanel = new JPanel(new GridLayout(daService.getSupportedMetrics().size(), 1));
@@ -80,6 +97,9 @@ public class StatsPanel extends JPanel {
 
 		final JPanel intervalSelectionPanel = new JPanel(new GridLayout(AggregationInterval.values().length, 1));
 		middlePanel.add(new JScrollPane(intervalSelectionPanel), BorderLayout.WEST);
+		middlePanel.add(btnMoreHeightForChart, BorderLayout.SOUTH);
+		middlePanel.add(cbGroupingAsColumns, BorderLayout.NORTH);
+
 		intervalSelectionPanel.setBorder(BorderFactory.createTitledBorder("Group by"));
 		final ButtonGroup buttonGroup = new ButtonGroup();
 		for (final AggregationInterval interval : AggregationInterval.values()) {
@@ -101,46 +121,57 @@ public class StatsPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				performAggregation.setEnabled(false);
+				final boolean groupsAsColumns = cbGroupingAsColumns.isSelected();
 				new Thread() {
 					public void run() {
 						try {
 							final AggregationInterval interval = selectedAggregationInterval;
 							final List<String> metrics = getEnabledMetrics();
-							final Map<Date, Map<String, Integer>> results = daService.getAggregatedCounts(metrics, interval,
-									new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(), filterPanel.getDateTo()));
+							final Map<String, Map<Date, Map<String, Integer>>> results = daService.getAggregatedCounts(metrics, interval, new DataBrowseQuery(
+									filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(), filterPanel.getDateTo()));
 
 							final DefaultCategoryDataset mainDataset = new DefaultCategoryDataset();
-							if (results.size() > 0) {
+
+							if (results != null && results.size() > 0) {
 								final Date lastDate = filterPanel.getDateTo() != null ? filterPanel.getDateTo() : getMaxDate(results);
 								Date date = moveToBeginnigOfInterval(filterPanel.getDateFrom() != null ? filterPanel.getDateFrom() : getMinDate(results),
 										interval);
 								while (date.before(lastDate)) {
-									final Map<String, Integer> valuesForDate = results.get(date);
-									mainDataset.addValue(valuesForDate != null ? valuesForDate.get("") : 0, "Total", dateFormat.format(date));
-									for (final String metricName : metrics) {
-										mainDataset.addValue(valuesForDate != null ? valuesForDate.get(metricName) : 0, metricName, dateFormat.format(date));
+									for (final Map.Entry<String, Map<Date, Map<String, Integer>>> entry : results.entrySet()) {
+										final String aggregationName = entry.getKey();
+										final Map<String, Integer> valuesForDateAndAggregation = entry.getValue().get(date);
+										// mainDataset.addValue(valuesForDateAndAggregation != null ? valuesForDateAndAggregation.get("") : 0, "Total",
+										// dateFormat.format(date) + aggregationName);
+										for (final String metricName : metrics) {
+											final String entryName = (groupsAsColumns ? "" : aggregationName + " ") + interval.getDateFormat().format(date);
+											final String columnName = (metricName.equals("") ? "Total" : metricName) + (groupsAsColumns ? aggregationName : "");
+											mainDataset.addValue(valuesForDateAndAggregation != null ? valuesForDateAndAggregation.get(metricName) : 0,
+													columnName, entryName);
+										}
 									}
+
 									date = advanceDateByInterval(date, interval, 1);
 								}
 							}
-							JFreeChart chart = ChartFactory.createBarChart("", "Date", "Value", mainDataset, PlotOrientation.VERTICAL, true, true, false);
+							final JFreeChart chart = ChartFactory.createBarChart("", "Date", "Value", mainDataset, PlotOrientation.VERTICAL, true, true, false);
 							{
-								CategoryPlot plot = ((CategoryPlot) chart.getPlot());
+								final CategoryPlot plot = ((CategoryPlot) chart.getPlot());
 								plot.getDomainAxis().setCategoryLabelPositions(CategoryLabelPositions.DOWN_90);
+								plot.getDomainAxis().setMaximumCategoryLabelLines(mainDataset.getRowCount() + 1);
 								for (int i = 0; i < mainDataset.getRowCount(); i++) {
 									plot.getRenderer().setSeriesItemLabelGenerator(i, new StandardCategoryItemLabelGenerator());
 									plot.getRenderer().setSeriesItemLabelsVisible(i, true);
 								}
-								((BarRenderer) plot.getRenderer()).setItemMargin(0.5d / mainDataset.getRowCount());
+								((BarRenderer) plot.getRenderer()).setItemMargin(0.5d / (mainDataset.getRowCount() + 1));
 							}
 							final ChartPanel chartPanel = new ChartPanel(chart);
 							final Component newChartPanelHolder = new JScrollPane(chartPanel);
 
 							int oneBarWidth = (int) (getGraphics().getFontMetrics().getHeight() * 1.2);
 							// if (oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount() > middlePanel.getPreferredSize().width) {
-							chartPanel.setMinimumDrawWidth(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount());
-							chartPanel.setMaximumDrawWidth(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount());
-							chartPanel.setPreferredSize(new java.awt.Dimension(oneBarWidth * mainDataset.getColumnCount() * mainDataset.getRowCount(),
+							chartPanel.setMinimumDrawWidth(oneBarWidth * mainDataset.getColumnCount() * (mainDataset.getRowCount() + 1));
+							chartPanel.setMaximumDrawWidth(oneBarWidth * mainDataset.getColumnCount() * (mainDataset.getRowCount() + 1));
+							chartPanel.setPreferredSize(new java.awt.Dimension(oneBarWidth * mainDataset.getColumnCount() * (mainDataset.getRowCount() + 1),
 									(int) newChartPanelHolder.getPreferredSize().height));
 							// }
 
@@ -150,6 +181,7 @@ public class StatsPanel extends JPanel {
 										middlePanel.remove(currentChartPanelHolder);
 									}
 									middlePanel.add(newChartPanelHolder, BorderLayout.CENTER);
+									StatsPanel.this.chartPanel = chartPanel;
 									currentChartPanelHolder = newChartPanelHolder;
 									middlePanel.invalidate();
 									middlePanel.revalidate();
@@ -172,25 +204,29 @@ public class StatsPanel extends JPanel {
 		});
 	}
 
-	protected Date getMinDate(Map<Date, Map<String, Integer>> results) {
+	protected Date getMinDate(Map<String, Map<Date, Map<String, Integer>>> results) {
 		Date result = null;
-		final Iterator<Date> iterator = results.keySet().iterator();
-		while (iterator.hasNext()) {
-			Date newDate = iterator.next();
-			if (result == null || result.after(newDate)) {
-				result = newDate;
+		for (Map<Date, ?> value : results.values()) {
+			final Iterator<Date> iterator = value.keySet().iterator();
+			while (iterator.hasNext()) {
+				Date newDate = iterator.next();
+				if (result == null || result.after(newDate)) {
+					result = newDate;
+				}
 			}
 		}
 		return result;
 	}
 
-	protected Date getMaxDate(Map<Date, Map<String, Integer>> results) {
+	protected Date getMaxDate(Map<String, Map<Date, Map<String, Integer>>> results) {
 		Date result = null;
-		final Iterator<Date> iterator = results.keySet().iterator();
-		while (iterator.hasNext()) {
-			Date newDate = iterator.next();
-			if (result == null || result.before(newDate)) {
-				result = newDate;
+		for (Map<Date, ?> value : results.values()) {
+			final Iterator<Date> iterator = value.keySet().iterator();
+			while (iterator.hasNext()) {
+				Date newDate = iterator.next();
+				if (result == null || result.before(newDate)) {
+					result = newDate;
+				}
 			}
 		}
 		return result;

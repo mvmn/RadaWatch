@@ -20,14 +20,20 @@ public class RadaVotesAggregationService extends AbstractDataAggregationService 
 	static {
 		List<String> availableMetrics = new ArrayList<String>();
 		Map<String, String> metricsToSql = new HashMap<String, String>();
+		availableMetrics.add("Total votes");
+		metricsToSql.put("Total votes", "count(*)");
 		availableMetrics.add("Votes passed");
 		metricsToSql.put("Votes passed", "sum(votepassed)");
 		availableMetrics.add("Votes failed");
 		metricsToSql.put("Votes failed", "sum(not votepassed)");
 		availableMetrics.add("Average attendance");
 		metricsToSql.put("Average attendance", "avg(total)");
+		availableMetrics.add("Average attendance %");
+		metricsToSql.put("Average attendance %", "avg((total*100)/450)");
 		availableMetrics.add("Average for-votes");
 		metricsToSql.put("Average for-votes", "avg(votedyes)");
+		availableMetrics.add("Average for-votes % of present");
+		metricsToSql.put("Average for-votes % of present", "avg((votedyes*100)/total)");
 		availableMetrics.add("Average against-votes");
 		metricsToSql.put("Average against-votes", "avg(votedno)");
 		availableMetrics.add("Average abstained");
