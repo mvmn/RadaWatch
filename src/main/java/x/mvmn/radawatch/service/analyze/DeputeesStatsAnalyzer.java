@@ -69,7 +69,7 @@ public class DeputeesStatsAnalyzer {
 		}
 	}
 
-	private static final String SQL = "select name,  count(*) as totalvotings,  sum(voted=1) as votedfor,  sum(voted=2) as votedagainst, sum(voted=3) as abstained,  sum(voted=4) as skipped, sum(voted=5) as absent, count(distinct VOTESESSIONFACTION.title) as totalfactions from INDIVIDUALVOTE  left join VOTESESSIONFACTION on VOTESESSIONFACTION.ID = INDIVIDUALVOTE.VOTESESSIONFACTIONID group by name";
+	private static final String SQL = "select name, count(*) as totalvotings, sum(voted=1) as votedfor, sum(voted=2) as votedagainst, sum(voted=3) as abstained, sum(voted=4) as skipped, sum(voted=5) as absent, count(distinct VOTESESSIONFACTION.title) as totalfactions from INDIVIDUALVOTE  left join VOTESESSIONFACTION on VOTESESSIONFACTION.ID = INDIVIDUALVOTE.VOTESESSIONFACTIONID group by name";
 
 	protected final DataBaseConnectionService dbService;
 

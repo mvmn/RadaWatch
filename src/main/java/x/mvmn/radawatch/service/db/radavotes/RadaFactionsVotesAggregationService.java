@@ -72,7 +72,7 @@ public class RadaFactionsVotesAggregationService extends AbstractDataAggregation
 	}
 
 	@Override
-	protected String getAdditionalAggregations() {
+	public String getAdditionalAggregations() {
 		return " title ";
 	}
 

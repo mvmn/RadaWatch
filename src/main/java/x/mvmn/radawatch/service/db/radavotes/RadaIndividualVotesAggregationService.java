@@ -81,7 +81,7 @@ public class RadaIndividualVotesAggregationService extends AbstractDataAggregati
 	}
 
 	@Override
-	protected String getAdditionalAggregations() {
+	public String getAdditionalAggregations() {
 		return " name ";
 	}
 }

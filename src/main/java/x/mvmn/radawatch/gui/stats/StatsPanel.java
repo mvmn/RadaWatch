@@ -34,6 +34,7 @@ import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import x.mvmn.radawatch.gui.analyze.FilterPanel;
+import x.mvmn.radawatch.service.db.AbstractDataAggregationService;
 import x.mvmn.radawatch.service.db.DataAggregationService;
 import x.mvmn.radawatch.service.db.DataAggregationService.AggregationInterval;
 import x.mvmn.radawatch.service.db.DataBrowseQuery;
@@ -61,7 +62,7 @@ public class StatsPanel extends JPanel {
 
 	protected final JCheckBox cbGroupingAsColumns = new JCheckBox("Groups as columns");
 
-	public StatsPanel(final DataAggregationService daService) {
+	public StatsPanel(final AbstractDataAggregationService daService) {
 		super(new BorderLayout());
 		this.daService = daService;
 		this.filterPanel = new FilterPanel(daService.supportsDateFilter(), daService.supportsTitleFilter());
@@ -98,7 +99,9 @@ public class StatsPanel extends JPanel {
 		final JPanel intervalSelectionPanel = new JPanel(new GridLayout(AggregationInterval.values().length, 1));
 		middlePanel.add(new JScrollPane(intervalSelectionPanel), BorderLayout.WEST);
 		middlePanel.add(btnMoreHeightForChart, BorderLayout.SOUTH);
-		middlePanel.add(cbGroupingAsColumns, BorderLayout.NORTH);
+		if (daService.getAdditionalAggregations().trim().length() > 0) {
+			middlePanel.add(cbGroupingAsColumns, BorderLayout.NORTH);
+		}
 
 		intervalSelectionPanel.setBorder(BorderFactory.createTitledBorder("Group by"));
 		final ButtonGroup buttonGroup = new ButtonGroup();

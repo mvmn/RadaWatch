@@ -212,7 +212,7 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 		return query.toString();
 	}
 
-	protected String getAdditionalAggregations() {
+	public String getAdditionalAggregations() {
 		return "";
 	}
 }
