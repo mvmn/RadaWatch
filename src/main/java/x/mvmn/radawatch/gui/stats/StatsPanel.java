@@ -43,24 +43,16 @@ public class StatsPanel extends JPanel {
 	private static final long serialVersionUID = -5460048410145768494L;
 
 	protected final DataAggregationService daService;
-
 	protected final FilterPanel filterPanel;
-
-	protected final JButton performAggregation = new JButton("Perform");
-
+	protected final JButton performAggregation = new JButton("Load data and build graph");
 	protected volatile AggregationInterval selectedAggregationInterval = AggregationInterval.YEAR;
-
 	protected final List<JCheckBox> metricsCheckboxes = new ArrayList<JCheckBox>();
-
 	protected final JPanel middlePanel = new JPanel(new BorderLayout());
-
 	protected volatile Component currentChartPanelHolder = null;
-
 	protected volatile ChartPanel chartPanel = null;
-
-	protected final JButton btnMoreHeightForChart = new JButton("Height +");
-
-	protected final JCheckBox cbGroupingAsColumns = new JCheckBox("Groups as columns");
+	protected final JButton btnMoreHeightForChart = new JButton("Increase graph height");
+	protected final JCheckBox cbGroupingAsColumns = new JCheckBox("Present sub-groups as columns");
+	protected final JCheckBox cbGapelessChronology = new JCheckBox("Gapeless chronology in graph", true);
 
 	public StatsPanel(final AbstractDataAggregationService daService) {
 		super(new BorderLayout());
@@ -93,15 +85,22 @@ public class StatsPanel extends JPanel {
 				metricsCheckboxes.add(metricCheckBox);
 				metricSelectionPanel.add(metricCheckBox);
 			}
-			middlePanel.add(new JScrollPane(metricSelectionPanel), BorderLayout.EAST);
+			if (daService.getSupportedMetrics().size() > 1) {
+				// Don't show metrics selection if there's just one metric
+				middlePanel.add(new JScrollPane(metricSelectionPanel), BorderLayout.EAST);
+			}
 		}
 
 		final JPanel intervalSelectionPanel = new JPanel(new GridLayout(AggregationInterval.values().length, 1));
 		middlePanel.add(new JScrollPane(intervalSelectionPanel), BorderLayout.WEST);
-		middlePanel.add(btnMoreHeightForChart, BorderLayout.SOUTH);
+		JPanel topPanel = new JPanel(new BorderLayout());
+		topPanel.add(btnMoreHeightForChart, BorderLayout.CENTER);
+		topPanel.add(cbGapelessChronology, BorderLayout.EAST);
 		if (daService.getAdditionalAggregations().trim().length() > 0) {
-			middlePanel.add(cbGroupingAsColumns, BorderLayout.NORTH);
+			topPanel.add(cbGroupingAsColumns, BorderLayout.WEST);
 		}
+
+		middlePanel.add(topPanel, BorderLayout.NORTH);
 
 		intervalSelectionPanel.setBorder(BorderFactory.createTitledBorder("Group by"));
 		final ButtonGroup buttonGroup = new ButtonGroup();
@@ -126,6 +125,7 @@ public class StatsPanel extends JPanel {
 				performAggregation.setEnabled(false);
 				final boolean groupsAsColumns = cbGroupingAsColumns.isSelected();
 				new Thread() {
+
 					public void run() {
 						try {
 							final AggregationInterval interval = selectedAggregationInterval;
@@ -136,24 +136,45 @@ public class StatsPanel extends JPanel {
 							final DefaultCategoryDataset mainDataset = new DefaultCategoryDataset();
 
 							if (results != null && results.size() > 0) {
-								final Date lastDate = filterPanel.getDateTo() != null ? filterPanel.getDateTo() : getMaxDate(results);
-								Date date = moveToBeginnigOfInterval(filterPanel.getDateFrom() != null ? filterPanel.getDateFrom() : getMinDate(results),
-										interval);
-								while (date.before(lastDate)) {
+								if (cbGapelessChronology.isSelected()) {
+									final Date lastDate = filterPanel.getDateTo() != null ? filterPanel.getDateTo() : getMaxDate(results);
+									Date date = moveToBeginnigOfInterval(filterPanel.getDateFrom() != null ? filterPanel.getDateFrom() : getMinDate(results),
+											interval);
+									while (date.before(lastDate)) {
+										for (final Map.Entry<String, Map<Date, Map<String, Integer>>> entry : results.entrySet()) {
+											final String aggregationName = entry.getKey();
+											final Map<String, Integer> valuesForDateAndAggregation = entry.getValue().get(date);
+											// mainDataset.addValue(valuesForDateAndAggregation != null ? valuesForDateAndAggregation.get("") : 0, "Total",
+											// dateFormat.format(date) + aggregationName);
+											for (final String metricName : metrics) {
+												final String entryName = (groupsAsColumns ? "" : aggregationName + " ") + interval.getDateFormat().format(date);
+												final String columnName = (metricName.equals("") ? "Total" : metricName)
+														+ (groupsAsColumns ? aggregationName : "");
+												mainDataset.addValue(valuesForDateAndAggregation != null ? valuesForDateAndAggregation.get(metricName) : 0,
+														columnName, entryName);
+											}
+										}
+
+										date = advanceDateByInterval(date, interval, 1);
+									}
+								} else {
 									for (final Map.Entry<String, Map<Date, Map<String, Integer>>> entry : results.entrySet()) {
 										final String aggregationName = entry.getKey();
-										final Map<String, Integer> valuesForDateAndAggregation = entry.getValue().get(date);
-										// mainDataset.addValue(valuesForDateAndAggregation != null ? valuesForDateAndAggregation.get("") : 0, "Total",
-										// dateFormat.format(date) + aggregationName);
-										for (final String metricName : metrics) {
-											final String entryName = (groupsAsColumns ? "" : aggregationName + " ") + interval.getDateFormat().format(date);
-											final String columnName = (metricName.equals("") ? "Total" : metricName) + (groupsAsColumns ? aggregationName : "");
-											mainDataset.addValue(valuesForDateAndAggregation != null ? valuesForDateAndAggregation.get(metricName) : 0,
-													columnName, entryName);
+										for (Map.Entry<Date, Map<String, Integer>> valuesForDateAndAggregationEntry : entry.getValue().entrySet()) {
+											Date date = valuesForDateAndAggregationEntry.getKey();
+											Map<String, Integer> valuesForDateAndAggregation = valuesForDateAndAggregationEntry.getValue();
+											// final Map<String, Integer> valuesForDateAndAggregation = entry.getValue().get(date);
+											// mainDataset.addValue(valuesForDateAndAggregation != null ? valuesForDateAndAggregation.get("") : 0, "Total",
+											// dateFormat.format(date) + aggregationName);
+											for (final String metricName : metrics) {
+												final String entryName = (groupsAsColumns ? "" : aggregationName + " ") + interval.getDateFormat().format(date);
+												final String columnName = (metricName.equals("") ? "Total" : metricName)
+														+ (groupsAsColumns ? aggregationName : "");
+												mainDataset.addValue(valuesForDateAndAggregation != null ? valuesForDateAndAggregation.get(metricName) : 0,
+														columnName, entryName);
+											}
 										}
 									}
-
-									date = advanceDateByInterval(date, interval, 1);
 								}
 							}
 							final JFreeChart chart = ChartFactory.createBarChart("", "Date", "Value", mainDataset, PlotOrientation.VERTICAL, true, true, false);

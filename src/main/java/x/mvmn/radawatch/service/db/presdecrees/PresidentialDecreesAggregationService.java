@@ -1,5 +1,6 @@
 package x.mvmn.radawatch.service.db.presdecrees;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,14 +13,21 @@ public class PresidentialDecreesAggregationService extends AbstractDataAggregati
 		super(dbService);
 	}
 
+	private static final List<String> SUPPORTED_METRICS;
+	static {
+		List<String> supportedMetrics = new ArrayList<String>(1);
+		supportedMetrics.add("Count");
+		SUPPORTED_METRICS = Collections.unmodifiableList(supportedMetrics);
+	}
+
 	@Override
 	public List<String> getSupportedMetrics() {
-		return Collections.emptyList();
+		return SUPPORTED_METRICS;
 	}
 
 	@Override
 	protected String metricNameToColumnDef(String metricName) {
-		return null;
+		return " count(*) ";
 	}
 
 	@Override
