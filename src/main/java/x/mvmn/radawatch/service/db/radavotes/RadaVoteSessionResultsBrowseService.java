@@ -55,11 +55,11 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 
 		@Override
 		public int getFieldsCount(boolean fullView) {
-			return 10;
+			return 11;
 		}
 
-		private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Site ID", "Title", "Passed", "Date", "Yes votes", "No votes", "Abstained",
-				"Skipped", "Total" };
+		private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Site ID", "Title", "Passed", "Date", "Yes votes", "Yes votes % of present",
+				"No votes", "Abstained", "Skipped", "Total" };
 
 		@Override
 		public String getFieldName(int fieldIndex, boolean fullView) {
@@ -89,15 +89,18 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 					result = item.getVotedYes();
 				break;
 				case 6:
-					result = item.getVotedNo();
+					result = (int) (((double) item.getVotedYes()) * 100 / ((double) item.getTotal()));
 				break;
 				case 7:
-					result = item.getAbstained();
+					result = item.getVotedNo();
 				break;
 				case 8:
-					result = item.getSkipped();
+					result = item.getAbstained();
 				break;
 				case 9:
+					result = item.getSkipped();
+				break;
+				case 10:
 					result = item.getTotal();
 				break;
 				default:
