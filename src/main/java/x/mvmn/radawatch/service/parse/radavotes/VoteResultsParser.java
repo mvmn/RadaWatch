@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
 import x.mvmn.radawatch.model.radavotes.VoteSessionPerFactionData;
@@ -18,7 +19,9 @@ import x.mvmn.radawatch.service.parse.AbstractJSoupItemsByPagedLinksParser;
 
 public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<VoteSessionResultsData> {
 
-	private static final String PAGE_URL_STR_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
+	private static final String PAGE_URL_STR_PATTERN = "http://rada.gov.ua/news/hpz8/page/%s";
+	// private static final String PAGE_URL_STR_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
+
 	private static final String ITEM_URL_STR_PATTERN = "http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=%s";
 
 	private static final Pattern DATE_REGEX_PATTERN = Pattern.compile(".*[^\\d](\\d{1,2}.\\d{1,2}.\\d{4}\\s+\\d{1,2}:\\d{1,2})([^\\d].*|$)");
@@ -33,8 +36,15 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 
 	@Override
 	public int parseOutTotalPagesCount() throws Exception {
-		Document document = get(String.format(PAGE_URL_STR_PATTERN, 1));
-		return Integer.parseInt(document.select(".pages li:not(:contains(наступна))").last().text());
+		final Document document = get(String.format(PAGE_URL_STR_PATTERN, 1));
+		final int result;
+		final Elements pagination = document.select(".pages li:not(:contains(наступна))");
+		if (pagination != null && pagination.size() > 0) {
+			result = Integer.parseInt(pagination.last().text());
+		} else {
+			result = 1;
+		}
+		return result;
 	}
 
 	@Override
@@ -44,9 +54,12 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 		for (Element link : document.select(".archieve_block .news_item .details a")) {
 			String href = link.attr("href");
 			Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href);
-			idMatcher.find();
-			int id = Integer.parseInt(idMatcher.group(1));
-			result.add(new ItemLinkData<VoteSessionResultsData>(href, id));
+			if (idMatcher.find()) {
+				int id = Integer.parseInt(idMatcher.group(1));
+				result.add(new ItemLinkData<VoteSessionResultsData>(href, id));
+			} else {
+				System.err.println("Unrecognized link at votes list page - ignored: " + link.outerHtml());
+			}
 		}
 		return result;
 	}
