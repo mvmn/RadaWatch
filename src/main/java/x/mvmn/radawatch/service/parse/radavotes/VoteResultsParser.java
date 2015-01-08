@@ -20,9 +20,10 @@ import x.mvmn.radawatch.service.parse.AbstractJSoupItemsByPagedLinksParser;
 public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<VoteSessionResultsData> {
 
 	private static final String PAGE_URL_STR_PATTERN = "http://rada.gov.ua/news/hpz8/page/%s";
-	// private static final String PAGE_URL_STR_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
+	private static final String ARCHIVE_PAGE_URL_STR_PATTERN = "http://iportal.rada.gov.ua/news/hpz/page/%s";
 
 	private static final String ITEM_URL_STR_PATTERN = "http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_golos?g_id=%s";
+	private static final String ARCHIVE_ITEM_URL_STR_PATTERN = "http://w1.c1.rada.gov.ua/pls/radan_gs09/ns_arh_golos?g_id=%s&n_skl=7";
 
 	private static final Pattern DATE_REGEX_PATTERN = Pattern.compile(".*[^\\d](\\d{1,2}.\\d{1,2}.\\d{4}\\s+\\d{1,2}:\\d{1,2})([^\\d].*|$)");
 	private static final Pattern TOTALS_REGEX_PATTERN = Pattern
@@ -34,9 +35,15 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 
 	private final DateFormat siteDateFormat = new SimpleDateFormat("d.M.yyyy HH:mm");
 
+	private final boolean useArchive;
+
+	public VoteResultsParser(final boolean useArchive) {
+		this.useArchive = useArchive;
+	}
+
 	@Override
 	public int parseOutTotalPagesCount() throws Exception {
-		final Document document = get(String.format(PAGE_URL_STR_PATTERN, 1));
+		final Document document = get(String.format(useArchive ? ARCHIVE_PAGE_URL_STR_PATTERN : PAGE_URL_STR_PATTERN, 1));
 		final int result;
 		final Elements pagination = document.select(".pages li:not(:contains(наступна))");
 		if (pagination != null && pagination.size() > 0) {
@@ -49,13 +56,16 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 
 	@Override
 	public List<ItemLinkData<VoteSessionResultsData>> parseOutItemsLinksData(final int pageNumber) throws Exception {
-		List<ItemLinkData<VoteSessionResultsData>> result = new ArrayList<ItemLinkData<VoteSessionResultsData>>();
-		Document document = get(String.format(PAGE_URL_STR_PATTERN, pageNumber));
+		final List<ItemLinkData<VoteSessionResultsData>> result = new ArrayList<ItemLinkData<VoteSessionResultsData>>();
+		final Document document = get(String.format(useArchive ? ARCHIVE_PAGE_URL_STR_PATTERN : PAGE_URL_STR_PATTERN, pageNumber));
 		for (Element link : document.select(".archieve_block .news_item .details a")) {
 			String href = link.attr("href");
 			Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href);
 			if (idMatcher.find()) {
 				int id = Integer.parseInt(idMatcher.group(1));
+				if (useArchive) {
+					id = id * 100 + 7;
+				}
 				result.add(new ItemLinkData<VoteSessionResultsData>(href, id));
 			} else {
 				System.err.println("Unrecognized link at votes list page - ignored: " + link.outerHtml());
@@ -75,7 +85,7 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 		List<VoteSessionPerFactionData> factions = new ArrayList<VoteSessionPerFactionData>();
 		final int globalId = id;
 
-		Document document = get(String.format(ITEM_URL_STR_PATTERN, id));
+		Document document = get(String.format(useArchive ? ARCHIVE_ITEM_URL_STR_PATTERN : ITEM_URL_STR_PATTERN, id));
 		final String title = document.select(".head_gol font[color=Black]").text().trim();
 		String resultStr = document.select(".head_gol font[color=Red]").text().trim().toLowerCase()
 				+ document.select(".head_gol font[color=Green]").text().trim().toLowerCase();

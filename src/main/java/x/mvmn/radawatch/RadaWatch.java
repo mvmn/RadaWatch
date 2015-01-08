@@ -71,8 +71,10 @@ public class RadaWatch {
 	private final JButton btnRestoreDb = new JButton("Restore DB");
 	private final RadaVotesStorageService rvStorage = new RadaVotesStorageService(storageService);
 	private final PresidentialDecreesStorageService pdStorage = new PresidentialDecreesStorageService(storageService);
-	private final FetchController<VoteSessionResultsData> votesFetchController = new FetchController<VoteSessionResultsData>(new VoteResultsParser(),
-			rvStorage, new FetchPanel<VoteSessionResultsData>("Rada Votes", rvStorage), mainWindow);
+	private final FetchController<VoteSessionResultsData> votesFetchController = new FetchController<VoteSessionResultsData>(new VoteResultsParser(false),
+			rvStorage, new FetchPanel<VoteSessionResultsData>("Rada Votes VIII", rvStorage), mainWindow);
+	private final FetchController<VoteSessionResultsData> votesFetchControllerSeven = new FetchController<VoteSessionResultsData>(new VoteResultsParser(true),
+			rvStorage, new FetchPanel<VoteSessionResultsData>("Rada Votes VII", rvStorage), mainWindow);
 	private final FetchController<PresidentialDecree> presDecreesFetchController = new FetchController<PresidentialDecree>(new PredisentialDecreesParser(),
 			pdStorage, new FetchPanel<PresidentialDecree>("Presidential Decrees", pdStorage), mainWindow);
 
@@ -114,6 +116,7 @@ public class RadaWatch {
 							btnRestoreDb.setEnabled(false);
 							btnBackupDb.setEnabled(false);
 							votesFetchController.setControlsEnabled(false);
+							votesFetchControllerSeven.setControlsEnabled(false);
 							presDecreesFetchController.setControlsEnabled(false);
 							new Thread() {
 								public void run() {
@@ -131,6 +134,7 @@ public class RadaWatch {
 												btnRestoreDb.setEnabled(true);
 												btnBackupDb.setEnabled(true);
 												votesFetchController.setControlsEnabled(true);
+												votesFetchControllerSeven.setControlsEnabled(true);
 												presDecreesFetchController.setControlsEnabled(true);
 
 												JOptionPane.showMessageDialog(mainWindow, "Script " + fileToLoadFrom.getPath() + " executed successfully",
@@ -145,6 +149,7 @@ public class RadaWatch {
 												btnRestoreDb.setEnabled(true);
 												btnBackupDb.setEnabled(true);
 												votesFetchController.setControlsEnabled(true);
+												votesFetchControllerSeven.setControlsEnabled(true);
 												presDecreesFetchController.setControlsEnabled(true);
 
 												JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(),
@@ -207,7 +212,7 @@ public class RadaWatch {
 				final DataBrowser<VoteSessionResultsData> voteSessionsDataBrowser = new DataBrowser<VoteSessionResultsData>("Rada votes",
 						new RadaVoteSessionResultsBrowseService(storageService), -1, new RadaVoteSessionResultsBrowseService.RadaVotesViewAdaptor(),
 						votesPerFactionsBrowser);
-				tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), voteSessionsDataBrowser);
+				tabBrowseSubtabs.addTab("Rada votes", voteSessionsDataBrowser);
 				analyzeSubtabs.addTab("Analyze Rada Votes Titles", new TitlesAnalysisPanel<VoteSessionResultsData>(voteSessionsDataBrowser,
 						new StringDisplay<VoteSessionResultsData>() {
 							public String getStringDisplay(VoteSessionResultsData item) {
@@ -241,6 +246,7 @@ public class RadaWatch {
 			JTabbedPane tabFetchSubtabs = new JTabbedPane();
 			tabFetch.add(tabFetchSubtabs, BorderLayout.CENTER);
 			tabFetchSubtabs.addTab(votesFetchController.getDataTitle(), votesFetchController.getView());
+			tabFetchSubtabs.addTab(votesFetchControllerSeven.getDataTitle(), votesFetchControllerSeven.getView());
 			tabFetchSubtabs.addTab(presDecreesFetchController.getDataTitle(), presDecreesFetchController.getView());
 		}
 
