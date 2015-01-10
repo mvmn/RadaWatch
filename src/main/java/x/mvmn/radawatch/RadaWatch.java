@@ -1,30 +1,20 @@
 package x.mvmn.radawatch;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.sql.Connection;
 
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-
-import org.h2.tools.RunScript;
-import org.h2.tools.Script;
-import org.h2.util.IOUtils;
-import org.h2.util.JdbcUtils;
 
 import x.mvmn.lang.StringDisplay;
+import x.mvmn.radawatch.gui.DBConnectionDialog;
 import x.mvmn.radawatch.gui.analyze.DeputeeFactionParticipationPanel;
 import x.mvmn.radawatch.gui.analyze.DeputeesStatsPanel;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
@@ -65,20 +55,28 @@ public class RadaWatch {
 	}
 
 	private final JFrame mainWindow = new JFrame("Rada Watch by Mykola Makhin"); // Shameless selfpromotion, hehe
-	private final DataBaseConnectionService storageService = new DataBaseConnectionService();
-	private final JButton btnBrowseDb = new JButton("Browse DB");
-	private final JButton btnBackupDb = new JButton("Backup DB");
-	private final JButton btnRestoreDb = new JButton("Restore DB");
-	private final RadaVotesStorageService rvStorage = new RadaVotesStorageService(storageService);
-	private final PresidentialDecreesStorageService pdStorage = new PresidentialDecreesStorageService(storageService);
-	private final FetchController<VoteSessionResultsData> votesFetchController = new FetchController<VoteSessionResultsData>(new VoteResultsParser(false),
-			rvStorage, new FetchPanel<VoteSessionResultsData>("Rada Votes VIII", rvStorage), mainWindow);
-	private final FetchController<VoteSessionResultsData> votesFetchControllerSeven = new FetchController<VoteSessionResultsData>(new VoteResultsParser(true),
-			rvStorage, new FetchPanel<VoteSessionResultsData>("Rada Votes VII", rvStorage), mainWindow);
-	private final FetchController<PresidentialDecree> presDecreesFetchController = new FetchController<PresidentialDecree>(new PredisentialDecreesParser(),
-			pdStorage, new FetchPanel<PresidentialDecree>("Presidential Decrees", pdStorage), mainWindow);
+	private final DataBaseConnectionService storageService;
+	private final RadaVotesStorageService rvStorage;
+	private final PresidentialDecreesStorageService pdStorage;
+	private final FetchController<VoteSessionResultsData> votesFetchController;
+	private final FetchController<VoteSessionResultsData> votesFetchControllerSeven;
+	private final FetchController<PresidentialDecree> presDecreesFetchController;
 
 	public RadaWatch() {
+		final DBConnectionDialog dbConnectionDialog = new DBConnectionDialog();
+		dbConnectionDialog.showInput();
+
+		storageService = new DataBaseConnectionService(dbConnectionDialog.useEmbeddedDb(), dbConnectionDialog.getDbHost(), dbConnectionDialog.getDbPort(),
+				dbConnectionDialog.getDbName(), dbConnectionDialog.getLogin(), dbConnectionDialog.getPasswordOnce(), mainWindow.getContentPane());
+		rvStorage = new RadaVotesStorageService(storageService);
+		pdStorage = new PresidentialDecreesStorageService(storageService);
+		votesFetchController = new FetchController<VoteSessionResultsData>(new VoteResultsParser(false), rvStorage, new FetchPanel<VoteSessionResultsData>(
+				"Rada Votes VIII", rvStorage), mainWindow);
+		votesFetchControllerSeven = new FetchController<VoteSessionResultsData>(new VoteResultsParser(true), rvStorage, new FetchPanel<VoteSessionResultsData>(
+				"Rada Votes VII", rvStorage), mainWindow);
+		presDecreesFetchController = new FetchController<PresidentialDecree>(new PredisentialDecreesParser(), pdStorage, new FetchPanel<PresidentialDecree>(
+				"Presidential Decrees", pdStorage), mainWindow);
+
 		mainWindow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		mainWindow.addWindowListener(new EmptyWindowListener() {
 			@Override
@@ -87,7 +85,7 @@ public class RadaWatch {
 			}
 		});
 
-		JTabbedPane tabPane = new JTabbedPane();
+		final JTabbedPane tabPane = new JTabbedPane();
 		final JPanel tabFetch = new JPanel(new BorderLayout());
 		final JPanel tabBrowse = new JPanel(new BorderLayout());
 		final JPanel tabAnalyze = new JPanel(new BorderLayout());
@@ -96,93 +94,6 @@ public class RadaWatch {
 		tabPane.addTab("Browse", tabBrowse);
 		tabPane.addTab("Analyze", tabAnalyze);
 		tabPane.addTab("Stats", tabStats);
-
-		btnBrowseDb.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				storageService.openDbBrowser();
-			}
-		});
-
-		btnRestoreDb.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				final Runnable restoreLogic = new Runnable() {
-					public void run() {
-
-						JFileChooser fileChooser = new JFileChooser();
-						if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(mainWindow)) {
-							final File fileToLoadFrom = fileChooser.getSelectedFile();
-							btnRestoreDb.setEnabled(false);
-							btnBackupDb.setEnabled(false);
-							votesFetchController.setControlsEnabled(false);
-							votesFetchControllerSeven.setControlsEnabled(false);
-							presDecreesFetchController.setControlsEnabled(false);
-							new Thread() {
-								public void run() {
-									FileReader fis = null;
-									Connection conn = null;
-									try {
-										votesFetchController.getStorage().dropAllTables();
-										presDecreesFetchController.getStorage().dropAllTables();
-										conn = storageService.getConnection();
-										fis = new FileReader(fileToLoadFrom);
-										RunScript.execute(conn, fis);
-										SwingUtilities.invokeLater(new Runnable() {
-											@Override
-											public void run() {
-												btnRestoreDb.setEnabled(true);
-												btnBackupDb.setEnabled(true);
-												votesFetchController.setControlsEnabled(true);
-												votesFetchControllerSeven.setControlsEnabled(true);
-												presDecreesFetchController.setControlsEnabled(true);
-
-												JOptionPane.showMessageDialog(mainWindow, "Script " + fileToLoadFrom.getPath() + " executed successfully",
-														"DB restore succeeded", JOptionPane.INFORMATION_MESSAGE);
-											}
-										});
-									} catch (final Exception ex) {
-										ex.printStackTrace();
-										SwingUtilities.invokeLater(new Runnable() {
-											@Override
-											public void run() {
-												btnRestoreDb.setEnabled(true);
-												btnBackupDb.setEnabled(true);
-												votesFetchController.setControlsEnabled(true);
-												votesFetchControllerSeven.setControlsEnabled(true);
-												presDecreesFetchController.setControlsEnabled(true);
-
-												JOptionPane.showMessageDialog(mainWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(),
-														"Error occurred", JOptionPane.ERROR_MESSAGE);
-											}
-										});
-									} finally {
-										IOUtils.closeSilently(fis);
-										JdbcUtils.closeSilently(conn);
-									}
-								}
-							}.start();
-						}
-					}
-				};
-				if (JOptionPane.OK_OPTION == JOptionPane
-						.showConfirmDialog(
-								mainWindow,
-								"Restoring DB will overwrite currend DB completely \n(all current data will be deleted, and only then new data will be imported).\nDo you wish to backup current DB first?",
-								"Backup current DB before restoring new?", JOptionPane.YES_NO_OPTION)) {
-					RadaWatch.this.backupDb(restoreLogic);
-				} else {
-					restoreLogic.run();
-				}
-			}
-
-		});
-		btnBackupDb.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				RadaWatch.this.backupDb(null);
-			}
-		});
 
 		{
 			JTabbedPane statsTabs = new JTabbedPane();
@@ -253,61 +164,26 @@ public class RadaWatch {
 		mainWindow.getContentPane().setLayout(new BorderLayout());
 		mainWindow.getContentPane().add(tabPane, BorderLayout.CENTER);
 		{
-			JPanel btnPanel = new JPanel(new BorderLayout());
-			btnPanel.add(btnRestoreDb, BorderLayout.WEST);
-			btnPanel.add(btnBrowseDb, BorderLayout.CENTER);
-			btnPanel.add(btnBackupDb, BorderLayout.EAST);
-			mainWindow.getContentPane().add(btnPanel, BorderLayout.SOUTH);
+			JPanel dbPanel = new JPanel(new GridLayout(storageService.getDbOpsNames().length + 1, 1));
+			dbPanel.add(new JScrollPane(new JLabel(storageService.getDbInfo())));
+			for (final String dbOpName : storageService.getDbOpsNames()) {
+				final JButton btnDbOp = new JButton(dbOpName);
+				btnDbOp.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent actListener) {
+						storageService.getDbOp(dbOpName).run();
+					}
+				});
+				dbPanel.add(btnDbOp);
+			}
+
+			// mainWindow.getContentPane().add(btnPanel, BorderLayout.SOUTH);
+			tabPane.addTab("DataBase", dbPanel);
 		}
 		mainWindow.pack();
 		SwingHelper.resizeToScreenProportions(mainWindow, 0.7d);
 		SwingHelper.moveToScreenCenter(mainWindow);
 		mainWindow.setVisible(true);
-	}
-
-	protected void backupDb(final Runnable callbackOnSwingEDT) {
-		JFileChooser fileChooser = new JFileChooser();
-		if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(mainWindow)) {
-			final File fileToSaveTo = fileChooser.getSelectedFile();
-			btnBackupDb.setEnabled(false);
-			btnRestoreDb.setEnabled(false);
-			new Thread() {
-				public void run() {
-					FileOutputStream fis = null;
-					try {
-						fis = new FileOutputStream(fileToSaveTo);
-						Method m = Script.class.getDeclaredMethod("process", Connection.class, OutputStream.class);
-						m.setAccessible(true);
-						m.invoke(null, storageService.getConnection(), fis);
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								btnBackupDb.setEnabled(true);
-								btnRestoreDb.setEnabled(true);
-								JOptionPane.showMessageDialog(mainWindow, "File " + fileToSaveTo.getPath() + " saved successfully", "DB backup succeeded",
-										JOptionPane.INFORMATION_MESSAGE);
-								if (callbackOnSwingEDT != null) {
-									callbackOnSwingEDT.run();
-								}
-							}
-						});
-					} catch (final Exception ex) {
-						ex.printStackTrace();
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								btnBackupDb.setEnabled(true);
-								btnRestoreDb.setEnabled(true);
-								JOptionPane.showMessageDialog(mainWindow, "DB backup failed: " + ex.getClass().getCanonicalName() + " " + ex.getMessage(),
-										"Error occurred", JOptionPane.ERROR_MESSAGE);
-							}
-						});
-					} finally {
-						IOUtils.closeSilently(fis);
-					}
-				}
-			}.start();
-		}
 	}
 
 	public void closeRequest() {

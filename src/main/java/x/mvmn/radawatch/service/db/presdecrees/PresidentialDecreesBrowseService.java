@@ -98,7 +98,7 @@ public class PresidentialDecreesBrowseService extends AbstractDataBrowseService<
 		final String numCode = resultSet.getString("numcode");
 		final String fullText;
 		if (resultSet.getMetaData().getColumnCount() > 6) {
-			fullText = resultSet.getString("fulltext");
+			fullText = resultSet.getString("completetext");
 		} else {
 			fullText = null;
 		}

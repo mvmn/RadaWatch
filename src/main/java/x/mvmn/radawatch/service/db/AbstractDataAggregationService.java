@@ -163,8 +163,8 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 				aggregationIntervalsGroupingDefs.append(", HOUR(").append(getDateColumnName()).append(")");
 				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_HOUR);
 			case DAY:
-				aggregationIntervalsDefs.append(", DAY_OF_MONTH(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_DAY);
-				aggregationIntervalsGroupingDefs.append(", DAY_OF_MONTH(").append(getDateColumnName()).append(")");
+				aggregationIntervalsDefs.append(", DAYOFMONTH(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_DAY);
+				aggregationIntervalsGroupingDefs.append(", DAYOFMONTH(").append(getDateColumnName()).append(")");
 				aggregationIntervalsOrder.append(",").append(FIELDNAME_INTERVAL_DAY);
 			case WEEK:
 				aggregationIntervalsDefs.append(", WEEK(").append(getDateColumnName()).append(") as ").append(FIELDNAME_INTERVAL_WEEK);

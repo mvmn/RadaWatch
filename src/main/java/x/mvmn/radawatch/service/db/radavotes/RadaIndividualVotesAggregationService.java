@@ -25,11 +25,11 @@ public class RadaIndividualVotesAggregationService extends AbstractDataAggregati
 		availableMetrics.add("Absent");
 		metricsToSql.put("Absent", "sum(voted=5)");
 		availableMetrics.add("Present %");
-		metricsToSql.put("Present %", "case count(*) when 0 then 0 else sum(voted!=5)*100/count(*) end case");
+		metricsToSql.put("Present %", "case count(*) when 0 then 0 else sum(voted!=5)*100/count(*) end");
 		availableMetrics.add("For-votes");
 		metricsToSql.put("For-votes", "sum(voted=1)");
 		availableMetrics.add("For-votes % of present");
-		metricsToSql.put("For-votes % of present", "case (sum(voted!=5)) when 0 then 0 else sum(voted=1)*100/sum(voted!=5) end case");
+		metricsToSql.put("For-votes % of present", "case (sum(voted!=5)) when 0 then 0 else sum(voted=1)*100/sum(voted!=5) end");
 		availableMetrics.add("Against-votes");
 		metricsToSql.put("Against-votes", "sum(voted=2)");
 		availableMetrics.add("Abstained");

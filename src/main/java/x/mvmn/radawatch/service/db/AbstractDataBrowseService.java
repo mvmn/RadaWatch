@@ -42,7 +42,7 @@ public abstract class AbstractDataBrowseService<T extends Entity> extends Abstra
 				+ getTableName()
 				+ " "
 				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "=" + parentItemDbId
-						: null) + " " + query.generateLimitClause() + ")");
+						: null) + " " + query.generateLimitClause() + ") as tmptblname");
 	}
 
 	@Override

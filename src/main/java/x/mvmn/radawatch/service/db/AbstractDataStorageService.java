@@ -15,7 +15,7 @@ public abstract class AbstractDataStorageService<T extends Entity> implements Da
 
 	@Override
 	public void dropTable(String tableName, boolean ifExists) throws Exception {
-		dbService.execSingleStatement("drop table " + tableName + (ifExists ? " if exists;" : ";"));
+		dbService.execSingleStatement("drop table " + (ifExists ? " if exists " : "") + tableName + ";");
 	}
 
 	@Override

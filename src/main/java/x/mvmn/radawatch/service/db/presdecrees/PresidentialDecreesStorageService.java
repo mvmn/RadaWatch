@@ -15,7 +15,7 @@ import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 public class PresidentialDecreesStorageService extends AbstractDataStorageService<PresidentialDecree> {
 
 	private static final String SQL_TABLES[] = new String[] { "presidentialdecree" };
-	private static final String SQL_TABLE_PRESIDENTIALDECREE_DEFINITION = "id int not null primary key auto_increment, g_id int, reldate TIMESTAMP, decreetype varchar(1024), numcode varchar(1024), title varchar(16384), fulltext varchar(1048576), unique index presidentialdecree_g_id(g_id), index presidentialdecree_reldate(reldate)";
+	private static final String SQL_TABLE_PRESIDENTIALDECREE_DEFINITION = "id int not null primary key auto_increment, g_id int, reldate TIMESTAMP, decreetype varchar(1024), numcode varchar(1024), title varchar(16384), completetext TEXT, unique index presidentialdecree_g_id(g_id), index presidentialdecree_reldate(reldate), index presidentialdecree_title(title(128))";
 
 	public PresidentialDecreesStorageService(final DataBaseConnectionService dbService) {
 		super(dbService);
@@ -37,7 +37,7 @@ public class PresidentialDecreesStorageService extends AbstractDataStorageServic
 		try {
 			conn = dbService.getConnection();
 			PreparedStatement statement = conn.prepareStatement("insert into " + SQL_TABLES[0]
-					+ " (g_id, reldate, decreetype, numcode, title, fulltext) values(?, ?, ?, ?, ?, ?)");
+					+ " (g_id, reldate, decreetype, numcode, title, completetext) values(?, ?, ?, ?, ?, ?)");
 			statement.setInt(1, data.getSiteId());
 			statement.setDate(2, data.getDate());
 			statement.setString(3, data.getType());

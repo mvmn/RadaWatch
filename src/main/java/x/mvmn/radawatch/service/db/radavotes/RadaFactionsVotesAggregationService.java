@@ -29,13 +29,13 @@ public class RadaFactionsVotesAggregationService extends AbstractDataAggregation
 		availableMetrics.add("Average present %");
 		metricsToSql
 				.put("Average present %",
-						"case avg(votesessionfaction.totalmembers) when 0 then 0 else avg(((votesessionfaction.totalmembers-votesessionfaction.absent)*100))/avg(votesessionfaction.totalmembers) end case");
+						"case avg(votesessionfaction.totalmembers) when 0 then 0 else avg(((votesessionfaction.totalmembers-votesessionfaction.absent)*100))/avg(votesessionfaction.totalmembers) end");
 		availableMetrics.add("Average for-votes");
 		metricsToSql.put("Average for-votes", "avg(votesessionfaction.votedyes)");
 		availableMetrics.add("Average for-votes % of present");
 		metricsToSql
 				.put("Average for-votes % of present",
-						"case avg(votesessionfaction.totalmembers-votesessionfaction.absent) when 0 then 0 else avg((votesessionfaction.votedyes*100))/avg(votesessionfaction.totalmembers-votesessionfaction.absent) end case");
+						"case avg(votesessionfaction.totalmembers-votesessionfaction.absent) when 0 then 0 else avg((votesessionfaction.votedyes*100))/avg(votesessionfaction.totalmembers-votesessionfaction.absent) end");
 		availableMetrics.add("Average against-votes");
 		metricsToSql.put("Average against-votes", "avg(votesessionfaction.votedno)");
 		availableMetrics.add("Average abstained");
