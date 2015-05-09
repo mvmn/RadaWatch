@@ -59,8 +59,8 @@ public class VoteResultsParser extends AbstractJSoupItemsByPagedLinksParser<Vote
 		final List<ItemLinkData<VoteSessionResultsData>> result = new ArrayList<ItemLinkData<VoteSessionResultsData>>();
 		final Document document = get(String.format(useArchive ? ARCHIVE_PAGE_URL_STR_PATTERN : PAGE_URL_STR_PATTERN, pageNumber));
 		for (Element link : document.select(".archieve_block .news_item .details a")) {
-			String href = link.attr("href");
-			Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href);
+			final String href = link.attr("href");
+			final Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href);
 			if (idMatcher.find()) {
 				int id = Integer.parseInt(idMatcher.group(1));
 				if (useArchive) {

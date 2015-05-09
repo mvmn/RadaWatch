@@ -8,7 +8,11 @@ import x.mvmn.radawatch.model.Entity;
 public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> implements ItemsByPagedLinksParser<T> {
 
 	public Document get(final String url) throws Exception {
-		return Jsoup.connect(url).timeout(30000).get();
+		try {
+			return Jsoup.connect(url).timeout(30000).get();
+		} catch (final Exception e) {
+			throw new Exception("Failed to get data from URL " + url, e);
+		}
 	}
 
 	public String cleanTextPreserveLineBreaks(String str) {

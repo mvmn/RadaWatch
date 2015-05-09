@@ -41,32 +41,30 @@ public class PredisentialDecreesParser extends AbstractJSoupItemsByPagedLinksPar
 
 	@Override
 	public List<ItemLinkData<PresidentialDecree>> parseOutItemsLinksData(int pageNumber) throws Exception {
-		final int startIndex = (pageNumber - 1) * pageSize;
-		Document page = get(String.format(PAGE_URL_STR_PATTERN, startIndex));
-		Elements itemsHeadlines = page.select(".docs_list p:has(.head)");
-		List<ItemLinkData<PresidentialDecree>> result = new ArrayList<ItemLinkData<PresidentialDecree>>(itemsHeadlines.size());
+		final Document page = get(String.format(PAGE_URL_STR_PATTERN, (pageNumber - 1) * pageSize));
+		final Elements itemsHeadlines = page.select(".docs_list p:has(.head)");
+		final List<ItemLinkData<PresidentialDecree>> result = new ArrayList<ItemLinkData<PresidentialDecree>>(itemsHeadlines.size());
 		for (Element itemHeadlineElem : itemsHeadlines) {
-			String type = cleanText(itemHeadlineElem.select(".head").first().ownText()).replaceAll("[ ]*№", "").trim();
+			final String type = cleanText(itemHeadlineElem.select(".head").first().ownText()).replaceAll("[ ]*№", "").trim();
 			String numberCode = "";
-			Element numberCodeElem = itemHeadlineElem.select(".head b").first();
+			final Element numberCodeElem = itemHeadlineElem.select(".head b").first();
 			if (numberCodeElem != null) {
 				numberCode = cleanText(numberCodeElem.text()).trim();
 			}
-			String dateStr = cleanText(itemHeadlineElem.select(".date").first().text()).trim();
-			String title = cleanText(itemHeadlineElem.select("a").first().text()).trim();
-			String href = cleanText(itemHeadlineElem.select("a").first().attr("href")).trim();
+			final String dateStr = cleanText(itemHeadlineElem.select(".date").first().text()).trim();
+			final String title = cleanText(itemHeadlineElem.select("a").first().text()).trim();
+			final String href = cleanText(itemHeadlineElem.select("a").first().attr("href")).trim();
 
-			Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href);
+			final Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href);
 			idMatcher.find();
-			int id = Integer.parseInt(idMatcher.group(1));
-			ItemLinkData<PresidentialDecree> itemLinkData = new ItemLinkData<PresidentialDecree>(href, id);
+			final int id = Integer.parseInt(idMatcher.group(1));
+			final ItemLinkData<PresidentialDecree> itemLinkData = new ItemLinkData<PresidentialDecree>(href, id);
 			itemLinkData.getAdditionalData().put("decreeType", type.toLowerCase());
 			itemLinkData.getAdditionalData().put("numberCode", numberCode);
 			itemLinkData.getAdditionalData().put("dateStr", dateStr);
 			itemLinkData.getAdditionalData().put("title", title);
 			result.add(itemLinkData);
 		}
-
 		return result;
 	}
 
