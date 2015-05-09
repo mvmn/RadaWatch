@@ -7,12 +7,29 @@ import x.mvmn.radawatch.model.Entity;
 
 public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> implements ItemsByPagedLinksParser<T> {
 
+	protected final int MAX_RETRIES = 3;
+	protected final int HTTP_TIMEOUT_MILLIS = 30000;
+
+	protected Document doGet(final String url) throws Exception {
+		return Jsoup.connect(url).timeout(HTTP_TIMEOUT_MILLIS).get();
+	}
+
 	public Document get(final String url) throws Exception {
-		try {
-			return Jsoup.connect(url).timeout(30000).get();
-		} catch (final Exception e) {
-			throw new Exception("Failed to get data from URL " + url, e);
+		Document result = null;
+		int tryNumber = 0;
+		while (result == null && tryNumber < MAX_RETRIES) {
+			try {
+				result = doGet(url);
+			} catch (final Exception e) {
+				if (tryNumber < MAX_RETRIES) {
+					System.err.println("Error fetching URL " + url + " (" + e.getClass().getName() + " " + e.getMessage() + ") - retrying.");
+				} else {
+					throw new Exception("Failed to get data from URL " + url, e);
+				}
+			}
+			tryNumber++;
 		}
+		return result;
 	}
 
 	public String cleanTextPreserveLineBreaks(String str) {
