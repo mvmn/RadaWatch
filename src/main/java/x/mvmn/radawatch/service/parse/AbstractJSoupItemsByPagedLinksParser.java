@@ -17,17 +17,17 @@ public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> imp
 	public Document get(final String url) throws Exception {
 		Document result = null;
 		int tryNumber = 0;
-		while (result == null && tryNumber < MAX_RETRIES) {
+		while (result == null && tryNumber++ < MAX_RETRIES) {
 			try {
 				result = doGet(url);
 			} catch (final Exception e) {
 				if (tryNumber < MAX_RETRIES) {
-					System.err.println("Error fetching URL " + url + " (" + e.getClass().getName() + " " + e.getMessage() + ") - retrying.");
+					System.err.println("Error fetching URL " + url + " (" + e.getClass().getName() + " " + e.getMessage() + ") - retrying (attempt #"
+							+ (tryNumber + 1) + ").");
 				} else {
-					throw new Exception("Failed to get data from URL " + url, e);
+					throw new Exception("Failed to get data with " + tryNumber + " retries from URL: " + url, e);
 				}
 			}
-			tryNumber++;
 		}
 		return result;
 	}
