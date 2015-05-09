@@ -25,12 +25,12 @@ public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> imp
 			throws Exception {
 		Document result = null;
 		int tryNumber = 0;
-		while (result == null && tryNumber++ < maxRetries) {
+		while (result == null && tryNumber++ < maxRetries + 1) {
 			try {
 				result = doGet(url, httpTimoutMillis);
 			} catch (final Exception e) {
-				if (tryNumber < maxRetries) {
-					int actualRetryDelaySeconds = retryDelaySeconds * (progressiveRetryDelay ? (int) Math.pow(2, tryNumber) : 1);
+				if (tryNumber < maxRetries + 1) {
+					int actualRetryDelaySeconds = retryDelaySeconds * (progressiveRetryDelay ? (int) Math.pow(2, tryNumber - 1) : 1);
 					System.err.println(String.format("Error fetching URL %s (%s %s) - will retry after %s seconds (attempt #%s).", url, e.getClass().getName(),
 							e.getMessage(), actualRetryDelaySeconds, (tryNumber + 1)));
 					try {
