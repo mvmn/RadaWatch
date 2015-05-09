@@ -9,7 +9,7 @@ public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> imp
 
 	protected final int MAX_RETRIES = 5;
 	protected final int HTTP_TIMEOUT_MILLIS = 30000;
-	protected final int RETRY_DELAY = 5000;
+	protected final int RETRY_DELAY_SECONDS = 3;
 	protected final boolean PROGRESSIVE_RETRY_DELAY = true;
 	protected final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/600.6.3 (KHTML, like Gecko) Version/8.0.6 Safari/600.6.3";
 
@@ -18,10 +18,10 @@ public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> imp
 	}
 
 	public Document get(final String url) throws Exception {
-		return get(url, HTTP_TIMEOUT_MILLIS, MAX_RETRIES, RETRY_DELAY, PROGRESSIVE_RETRY_DELAY);
+		return get(url, HTTP_TIMEOUT_MILLIS, MAX_RETRIES, RETRY_DELAY_SECONDS, PROGRESSIVE_RETRY_DELAY);
 	}
 
-	public Document get(final String url, final int httpTimoutMillis, final int maxRetries, final int retryDelay, final boolean progressiveRetryDelay)
+	public Document get(final String url, final int httpTimoutMillis, final int maxRetries, final int retryDelaySeconds, final boolean progressiveRetryDelay)
 			throws Exception {
 		Document result = null;
 		int tryNumber = 0;
@@ -30,11 +30,11 @@ public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> imp
 				result = doGet(url, httpTimoutMillis);
 			} catch (final Exception e) {
 				if (tryNumber < maxRetries) {
-					int actualRetryDelay = (int) Math.pow(retryDelay, progressiveRetryDelay ? tryNumber : 1);
+					int actualRetryDelaySeconds = (int) Math.pow(retryDelaySeconds, progressiveRetryDelay ? tryNumber : 1);
 					System.err.println(String.format("Error fetching URL %s (%s %s) - will retry after %s seconds (attempt #%s).", url, e.getClass().getName(),
-							e.getMessage(), actualRetryDelay / 1000, (tryNumber + 1)));
+							e.getMessage(), actualRetryDelaySeconds, (tryNumber + 1)));
 					try {
-						Thread.sleep(actualRetryDelay);
+						Thread.sleep(actualRetryDelaySeconds * 1000);
 					} catch (final InterruptedException intterrupt) {
 						System.err.println("Warning: Fetch retry delay interrupted.");
 					}
