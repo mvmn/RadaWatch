@@ -9,7 +9,7 @@ public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> imp
 
 	protected final int MAX_RETRIES = 5;
 	protected final int HTTP_TIMEOUT_MILLIS = 30000;
-	protected final int RETRY_DELAY_SECONDS = 3;
+	protected final int RETRY_DELAY_SECONDS = 5;
 	protected final boolean PROGRESSIVE_RETRY_DELAY = true;
 	protected final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/600.6.3 (KHTML, like Gecko) Version/8.0.6 Safari/600.6.3";
 
@@ -30,7 +30,7 @@ public abstract class AbstractJSoupItemsByPagedLinksParser<T extends Entity> imp
 				result = doGet(url, httpTimoutMillis);
 			} catch (final Exception e) {
 				if (tryNumber < maxRetries) {
-					int actualRetryDelaySeconds = (int) Math.pow(retryDelaySeconds, progressiveRetryDelay ? tryNumber : 1);
+					int actualRetryDelaySeconds = retryDelaySeconds * (progressiveRetryDelay ? (int) Math.pow(2, tryNumber) : 1);
 					System.err.println(String.format("Error fetching URL %s (%s %s) - will retry after %s seconds (attempt #%s).", url, e.getClass().getName(),
 							e.getMessage(), actualRetryDelaySeconds, (tryNumber + 1)));
 					try {
