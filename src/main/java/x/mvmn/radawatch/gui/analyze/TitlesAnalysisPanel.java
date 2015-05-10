@@ -39,6 +39,7 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 	protected final JTable replacementsTable = new JTable(replacementsTableModel);
 
 	protected static final String[][] DEFAULT_REPLACEMENTS = new String[][] {
+			new String[] { "(«|»)", "\"" },
 			new String[] { "i", "і" },
 			new String[] { "o", "о" },
 			new String[] { "a", "а" },
@@ -58,7 +59,8 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 			new String[] { "\\b(\\p{Lu}\\.\\s*\\p{Lu}\\.\\s*\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\b", "<Прізвище-ініціали>" },
 			new String[] { "\\b(\\p{Lu}\\.\\s*\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\b", "<Прізвище-ініціали>" },
 			new String[] { "\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|)\\s+\\p{Lu}\\.\\s*\\p{Lu}\\.)", "<Прізвище-ініціали>" },
-			new String[] { "\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\s+області", "області $1" } };
+			new String[] { "\\b(\\p{Lu}[\\p{Ll}'’]+(?:-\\p{Lu}[\\p{Ll}'’]+|))\\s+області", "області $1" },
+			new String[] { "\\d{1,2} (січ|лют|бер|кві|тра|чер|лип|сер|вер|жов|лис|гру)\\p{Ll}+ \\d{4}", "<числа/місяця/року>" } };
 
 	public TitlesAnalysisPanel(final DataBrowser<T> dataBrowser, final StringDisplay<T> itemStringDisplay, final Component parentComponent) {
 		super(new BorderLayout());
