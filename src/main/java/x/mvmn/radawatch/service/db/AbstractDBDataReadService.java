@@ -16,7 +16,7 @@ public abstract class AbstractDBDataReadService {
 
 	protected abstract String getParentIdColumnName();
 
-	protected abstract String getTitleColumnName();
+	protected abstract String[] getSearchPhraseColumnNames();
 
 	protected abstract String getDateColumnName();
 

@@ -200,7 +200,7 @@ public abstract class AbstractDataAggregationService extends AbstractDBDataReadS
 				additionalClauses = null;
 			}
 			if (filters != null) {
-				query.append(filters.generateWhereClause(getTitleColumnName(), getDateColumnName(), additionalClauses)).append(" ");
+				query.append(filters.generateWhereClause(getSearchPhraseColumnNames(), getDateColumnName(), additionalClauses)).append(" ");
 			}
 			query.append(" group by ").append(aggregationIntervalsGroupingDefs.toString().substring(1));
 			query.append(" order by ").append(aggregationIntervalsOrder.toString().substring(1));

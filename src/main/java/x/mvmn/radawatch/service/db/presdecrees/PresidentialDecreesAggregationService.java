@@ -13,6 +13,8 @@ public class PresidentialDecreesAggregationService extends AbstractDataAggregati
 		super(dbService);
 	}
 
+	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " title ", " fulltext " };
+
 	private static final List<String> SUPPORTED_METRICS;
 	static {
 		List<String> supportedMetrics = new ArrayList<String>(1);
@@ -36,8 +38,8 @@ public class PresidentialDecreesAggregationService extends AbstractDataAggregati
 	}
 
 	@Override
-	protected String getTitleColumnName() {
-		return " title ";
+	protected String[] getSearchPhraseColumnNames() {
+		return SEARCH_PHRASE_COLUMNS;
 	}
 
 	@Override

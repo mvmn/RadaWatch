@@ -72,7 +72,7 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 			replacementsTableModel.addRow(defualtReplacement);
 		}
 
-		filterPanel = new FilterPanel(dataBrowser.supportsDateFilter(), dataBrowser.supportsTitleFilter());
+		filterPanel = new FilterPanel(dataBrowser.supportsDateFilter(), dataBrowser.supportsSearchPhraseFilter());
 		final JPanel replacementsPanel = new JPanel(new BorderLayout());
 		{
 			replacementsPanel.setBorder(BorderFactory.createTitledBorder("Text replacements in titles"));

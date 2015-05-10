@@ -16,6 +16,6 @@ public interface DataBrowseService<T extends Entity> {
 
 	public boolean supportsDateFilter();
 
-	public boolean supportsTitleFilter();
+	public boolean supportsSearchPhraseFilter();
 
 }

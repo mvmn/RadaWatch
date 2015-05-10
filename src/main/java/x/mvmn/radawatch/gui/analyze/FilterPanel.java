@@ -22,28 +22,28 @@ public class FilterPanel extends JPanel implements DateIntervalListener {
 
 	private final JDatePickerImpl datePickerFrom = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
 	private final JDatePickerImpl datePickerTo = new JDatePickerImpl(new JDatePanelImpl(new UtilDateModel()));
-	private final JTextField tfTitleFilter = new JTextField();
+	private final JTextField tfSearchPhraseFilter = new JTextField();
 
 	private final JButton btnClearFromDate = new JButton("X");
 	private final JButton btnClearToDate = new JButton("X");
-	private final JButton btnClearTitleFilter = new JButton("X");
+	private final JButton btnClearSearchPhraseFilter = new JButton("X");
 
-	public FilterPanel(final boolean enableDatesFilters, final boolean enableTitleFilter) {
+	public FilterPanel(final boolean enableDatesFilters, final boolean enableSearchPhraseFilter) {
 		super(new BorderLayout());
-		if (enableTitleFilter) {
-			JPanel titleFilterPanel = new JPanel(new BorderLayout());
-			titleFilterPanel.add(tfTitleFilter, BorderLayout.CENTER);
-			titleFilterPanel.add(btnClearTitleFilter, BorderLayout.EAST);
-			titleFilterPanel.setBorder(BorderFactory.createTitledBorder("Search phrase"));
+		if (enableSearchPhraseFilter) {
+			JPanel searchPhraseFilterPanel = new JPanel(new BorderLayout());
+			searchPhraseFilterPanel.add(tfSearchPhraseFilter, BorderLayout.CENTER);
+			searchPhraseFilterPanel.add(btnClearSearchPhraseFilter, BorderLayout.EAST);
+			searchPhraseFilterPanel.setBorder(BorderFactory.createTitledBorder("Search phrase"));
 
-			btnClearTitleFilter.addActionListener(new ActionListener() {
+			btnClearSearchPhraseFilter.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent actEvt) {
-					tfTitleFilter.setText("");
+					tfSearchPhraseFilter.setText("");
 				}
 			});
 
-			this.add(titleFilterPanel, BorderLayout.CENTER);
+			this.add(searchPhraseFilterPanel, BorderLayout.CENTER);
 		}
 
 		if (enableDatesFilters) {
@@ -101,6 +101,6 @@ public class FilterPanel extends JPanel implements DateIntervalListener {
 	}
 
 	public String getSearchText() {
-		return tfTitleFilter.getText();
+		return tfSearchPhraseFilter.getText();
 	}
 }

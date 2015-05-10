@@ -13,8 +13,8 @@ public class DataBrowseQueryTest {
 	public void testEmptyClauses() {
 		DataBrowseQuery test = new DataBrowseQuery(null, null, null, null, null);
 		Assert.assertEquals("", normalizeSpaces(test.generateLimitClause()));
-		Assert.assertEquals("", normalizeSpaces(test.generateWhereClause("title", "date", true)));
-		Assert.assertEquals("", normalizeSpaces(test.generateWhereClause("title", "date", false)));
+		Assert.assertEquals("", normalizeSpaces(test.generateWhereClause(new String[] { "title" }, "date", true)));
+		Assert.assertEquals("", normalizeSpaces(test.generateWhereClause(new String[] { "title" }, "date", false)));
 	}
 
 	@Test
@@ -28,54 +28,55 @@ public class DataBrowseQueryTest {
 	public void testWhereDatesClauseGeneration() {
 		final Date date = new Date(1403409053282L);
 		Assert.assertEquals("WHERE date>='" + date.toString() + "'",
-				normalizeSpaces(new DataBrowseQuery(null, null, null, date, null).generateWhereClause("title", "date", true)));
+				normalizeSpaces(new DataBrowseQuery(null, null, null, date, null).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("date>='" + date.toString() + "'",
-				normalizeSpaces(new DataBrowseQuery(null, null, null, date, null).generateWhereClause("title", "date", false)));
+				normalizeSpaces(new DataBrowseQuery(null, null, null, date, null).generateWhereClause(new String[] { "title" }, "date", false)));
 		Assert.assertEquals("WHERE date<'" + date.toString() + "'",
-				normalizeSpaces(new DataBrowseQuery(null, null, null, null, date).generateWhereClause("title", "date", true)));
+				normalizeSpaces(new DataBrowseQuery(null, null, null, null, date).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("date<'" + date.toString() + "'",
-				normalizeSpaces(new DataBrowseQuery(null, null, null, null, date).generateWhereClause("title", "date", false)));
+				normalizeSpaces(new DataBrowseQuery(null, null, null, null, date).generateWhereClause(new String[] { "title" }, "date", false)));
 		Assert.assertEquals("WHERE date>='" + date.toString() + "' AND date<'" + date.toString() + "'", normalizeSpaces(new DataBrowseQuery(null, null, null,
-				date, date).generateWhereClause("title", "date", true)));
+				date, date).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("date>='" + date.toString() + "' AND date<'" + date.toString() + "'", normalizeSpaces(new DataBrowseQuery(null, null, null, date,
-				date).generateWhereClause("title", "date", false)));
+				date).generateWhereClause(new String[] { "title" }, "date", false)));
 	}
 
 	@Test
 	public void testSearchPhraseClauseGeneration() {
-		Assert.assertEquals("", normalizeSpaces(new DataBrowseQuery("", null, null, null, null).generateWhereClause("title", "date", true)));
-		Assert.assertEquals("", normalizeSpaces(new DataBrowseQuery("%", null, null, null, null).generateWhereClause("title", "date", true)));
+		Assert.assertEquals("", normalizeSpaces(new DataBrowseQuery("", null, null, null, null).generateWhereClause(new String[] { "title" }, "date", true)));
+		Assert.assertEquals("", normalizeSpaces(new DataBrowseQuery("%", null, null, null, null).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("WHERE ( (title like '%uh % oh%') OR (0=1))",
-				normalizeSpaces(new DataBrowseQuery("uh % oh", null, null, null, null).generateWhereClause("title", "date", true)));
+				normalizeSpaces(new DataBrowseQuery("uh % oh", null, null, null, null).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("( (title like '%uh % oh%') OR (0=1))",
-				normalizeSpaces(new DataBrowseQuery("uh % oh", null, null, null, null).generateWhereClause("title", "date", false)));
+				normalizeSpaces(new DataBrowseQuery("uh % oh", null, null, null, null).generateWhereClause(new String[] { "title" }, "date", false)));
 		Assert.assertEquals("WHERE ( (title like '%uh % oh%') OR (title like '%eh % he%') OR (0=1))", normalizeSpaces(new DataBrowseQuery("uh % oh|eh % he",
-				null, null, null, null).generateWhereClause("title", "date", true)));
+				null, null, null, null).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("( (title like '%uh % oh%') OR (title like '%eh % he%') OR (0=1))", normalizeSpaces(new DataBrowseQuery("uh % oh|eh % he", null,
-				null, null, null).generateWhereClause("title", "date", false)));
+				null, null, null).generateWhereClause(new String[] { "title" }, "date", false)));
 	}
 
 	@Test
 	public void testWhereFullClauseGeneration() {
 		final Date date = new Date(1403409053282L);
 		Assert.assertEquals("WHERE ( (title like '%uh % oh%') OR (0=1)) AND date>='" + date.toString() + "'", normalizeSpaces(new DataBrowseQuery("uh % oh",
-				null, null, date, null).generateWhereClause("title", "date", true)));
+				null, null, date, null).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("( (title like '%uh % oh%') OR (0=1)) AND date>='" + date.toString() + "'", normalizeSpaces(new DataBrowseQuery("uh % oh", null,
-				null, date, null).generateWhereClause("title", "date", false)));
+				null, date, null).generateWhereClause(new String[] { "title" }, "date", false)));
 		Assert.assertEquals("WHERE ( (title like '%uh % oh%') OR (0=1)) AND date<'" + date.toString() + "'", normalizeSpaces(new DataBrowseQuery("uh % oh",
-				null, null, null, date).generateWhereClause("title", "date", true)));
+				null, null, null, date).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("( (title like '%uh % oh%') OR (0=1)) AND date<'" + date.toString() + "'", normalizeSpaces(new DataBrowseQuery("uh % oh", null,
-				null, null, date).generateWhereClause("title", "date", false)));
+				null, null, date).generateWhereClause(new String[] { "title" }, "date", false)));
 		Assert.assertEquals("WHERE ( (title like '%uh % oh%') OR (0=1)) AND date>='" + date.toString() + "' AND date<'" + date.toString() + "'",
-				normalizeSpaces(new DataBrowseQuery("uh % oh", null, null, date, date).generateWhereClause("title", "date", true)));
+				normalizeSpaces(new DataBrowseQuery("uh % oh", null, null, date, date).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("( (title like '%uh % oh%') OR (0=1)) AND date>='" + date.toString() + "' AND date<'" + date.toString() + "'",
-				normalizeSpaces(new DataBrowseQuery("uh % oh", null, null, date, date).generateWhereClause("title", "date", false)));
+				normalizeSpaces(new DataBrowseQuery("uh % oh", null, null, date, date).generateWhereClause(new String[] { "title" }, "date", false)));
 
 		Assert.assertEquals(
 				"WHERE ( (title like '%uh % oh%') OR (title like '%eh % he%') OR (0=1)) AND date>='" + date.toString() + "' AND date<'" + date.toString() + "'",
-				normalizeSpaces(new DataBrowseQuery("uh % oh|eh % he", null, null, date, date).generateWhereClause("title", "date", true)));
+				normalizeSpaces(new DataBrowseQuery("uh % oh|eh % he", null, null, date, date).generateWhereClause(new String[] { "title" }, "date", true)));
 		Assert.assertEquals("( (title like '%uh % oh%') OR (title like '%eh % he%') OR (0=1)) AND date>='" + date.toString() + "' AND date<'" + date.toString()
-				+ "'", normalizeSpaces(new DataBrowseQuery("uh % oh|eh % he", null, null, date, date).generateWhereClause("title", "date", false)));
+				+ "'",
+				normalizeSpaces(new DataBrowseQuery("uh % oh|eh % he", null, null, date, date).generateWhereClause(new String[] { "title" }, "date", false)));
 	}
 
 	private String normalizeSpaces(String txt) {

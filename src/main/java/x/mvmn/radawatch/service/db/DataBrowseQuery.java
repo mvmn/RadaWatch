@@ -45,21 +45,24 @@ public class DataBrowseQuery {
 		return toDate;
 	}
 
-	public String generateWhereClause(final String titleColumnName, final String dateColumnName) {
-		return generateWhereClause(titleColumnName, dateColumnName, true);
+	public String generateWhereClause(final String[] searchPhraseColumnNames, final String dateColumnName) {
+		return generateWhereClause(searchPhraseColumnNames, dateColumnName, true);
 	}
 
-	public String generateWhereClause(final String titleColumnName, final String dateColumnName, String... additionalClauses) {
-		return generateWhereClause(titleColumnName, dateColumnName, true, additionalClauses);
+	public String generateWhereClause(final String[] searchPhraseColumnNames, final String dateColumnName, String... additionalClauses) {
+		return generateWhereClause(searchPhraseColumnNames, dateColumnName, true, additionalClauses);
 	}
 
-	public String generateWhereClause(final String titleColumnName, final String dateColumnName, final boolean includeWhereKeyword, String... additionalClauses) {
+	public String generateWhereClause(final String[] searchPhraseColumnNames, final String dateColumnName, final boolean includeWhereKeyword,
+			String... additionalClauses) {
 		String titleCondition = null;
-		if (titleColumnName != null && searchPhrase != null && searchPhrase.trim().length() > 0 && !searchPhrase.trim().equals("%")) {
+		if (searchPhraseColumnNames != null && searchPhrase != null && searchPhrase.trim().length() > 0 && !searchPhrase.trim().equals("%")) {
 			final String searchPhraseEscaped = searchPhrase.replaceAll("'", "''");
 			titleCondition = " (";
-			for (final String searchPhraseToken : searchPhraseEscaped.split("\\|")) {
-				titleCondition += " (" + titleColumnName + " like '%" + searchPhraseToken.trim() + "%') OR ";
+			for (final String searchPhraseColumnName : searchPhraseColumnNames) {
+				for (final String searchPhraseToken : searchPhraseEscaped.split("\\|")) {
+					titleCondition += " (" + searchPhraseColumnName + " like '%" + searchPhraseToken.trim() + "%') OR ";
+				}
 			}
 			titleCondition += " (0=1)) "; // (x OR y OR ... OR n OR (0=1)) should be same as (x OR y OR ... OR n)
 		}

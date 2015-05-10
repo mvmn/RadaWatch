@@ -9,6 +9,8 @@ import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
 public class RadaIndividualVotesBrowseService extends AbstractDataBrowseService<IndividualDeputyVoteData> {
 
+	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " name " };
+
 	public RadaIndividualVotesBrowseService(final DataBaseConnectionService dbService) {
 		super(dbService);
 	}
@@ -24,8 +26,8 @@ public class RadaIndividualVotesBrowseService extends AbstractDataBrowseService<
 	}
 
 	@Override
-	protected String getTitleColumnName() {
-		return " name ";
+	protected String[] getSearchPhraseColumnNames() {
+		return SEARCH_PHRASE_COLUMNS;
 	}
 
 	@Override

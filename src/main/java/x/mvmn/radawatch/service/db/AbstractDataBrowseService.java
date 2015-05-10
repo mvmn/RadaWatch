@@ -27,8 +27,8 @@ public abstract class AbstractDataBrowseService<T extends Entity> extends Abstra
 	}
 
 	@Override
-	public boolean supportsTitleFilter() {
-		return getTitleColumnName() != null;
+	public boolean supportsSearchPhraseFilter() {
+		return getSearchPhraseColumnNames() != null;
 	}
 
 	@Override
@@ -41,8 +41,8 @@ public abstract class AbstractDataBrowseService<T extends Entity> extends Abstra
 		return dbService.execSelectOneInt("select count(*) from (select * from "
 				+ getTableName()
 				+ " "
-				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "=" + parentItemDbId
-						: null) + " " + query.generateLimitClause() + ") as tmptblname");
+				+ query.generateWhereClause(getSearchPhraseColumnNames(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "="
+						+ parentItemDbId : null) + " " + query.generateLimitClause() + ") as tmptblname");
 	}
 
 	@Override
@@ -52,8 +52,8 @@ public abstract class AbstractDataBrowseService<T extends Entity> extends Abstra
 				+ " from "
 				+ getTableName()
 				+ " "
-				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "=" + parentItemDbId
-						: null) + " ORDER BY " + getDateColumnName() + " DESC " + query.generateLimitClause());
+				+ query.generateWhereClause(getSearchPhraseColumnNames(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "="
+						+ parentItemDbId : null) + " ORDER BY " + getDateColumnName() + " DESC " + query.generateLimitClause());
 	}
 
 	@Override
@@ -61,8 +61,8 @@ public abstract class AbstractDataBrowseService<T extends Entity> extends Abstra
 		return queryForItems("select * from "
 				+ getTableName()
 				+ " "
-				+ query.generateWhereClause(getTitleColumnName(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "=" + parentItemDbId
-						: null) + " ORDER BY " + getIdColumnName() + " DESC " + query.generateLimitClause());
+				+ query.generateWhereClause(getSearchPhraseColumnNames(), getDateColumnName(), parentItemDbId > -1 ? getParentIdColumnName() + "="
+						+ parentItemDbId : null) + " ORDER BY " + getIdColumnName() + " DESC " + query.generateLimitClause());
 	}
 
 	protected T queryForItem(final String query) throws Exception {

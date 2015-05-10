@@ -143,7 +143,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		this.viewAdaptor = viewAdaptor;
 		this.subItemsBrowser = subItemsBrowser;
 
-		this.filterPanel = new FilterPanel(dataBrowseService.supportsDateFilter(), dataBrowseService.supportsTitleFilter());
+		this.filterPanel = new FilterPanel(dataBrowseService.supportsDateFilter(), dataBrowseService.supportsSearchPhraseFilter());
 
 		this.add(filterPanel, BorderLayout.NORTH);
 		final JPanel panel = new JPanel(new BorderLayout());
@@ -264,8 +264,8 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		return dataBrowseService;
 	}
 
-	public boolean supportsTitleFilter() {
-		return dataBrowseService.supportsTitleFilter();
+	public boolean supportsSearchPhraseFilter() {
+		return dataBrowseService.supportsSearchPhraseFilter();
 	}
 
 	public boolean supportsDateFilter() {
