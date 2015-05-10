@@ -13,7 +13,7 @@ public class PresidentialDecreesBrowseService extends AbstractDataBrowseService<
 	private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Site ID", "Date", "Numcode", "Type", "Title", "Full text" };
 	private static final Class<?>[] COLUMN_TYPES = new Class<?>[] { Integer.class, Integer.class, Date.class, String.class, String.class, String.class,
 			String.class };
-	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " title ", " fulltext " };
+	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " title ", " completetext " };
 
 	public static class PresidentialDecreesViewAdaptor implements ViewAdaptor<PresidentialDecree> {
 

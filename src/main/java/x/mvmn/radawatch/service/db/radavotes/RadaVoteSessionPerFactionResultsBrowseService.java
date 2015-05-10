@@ -9,7 +9,7 @@ import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
 public class RadaVoteSessionPerFactionResultsBrowseService extends AbstractDataBrowseService<VoteSessionPerFactionData> {
 
-	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " votetitle " };
+	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " title " };
 
 	public RadaVoteSessionPerFactionResultsBrowseService(final DataBaseConnectionService dbService) {
 		super(dbService);

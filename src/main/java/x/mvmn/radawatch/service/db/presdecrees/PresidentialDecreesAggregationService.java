@@ -13,7 +13,7 @@ public class PresidentialDecreesAggregationService extends AbstractDataAggregati
 		super(dbService);
 	}
 
-	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " title ", " fulltext " };
+	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " title ", " completetext " };
 
 	private static final List<String> SUPPORTED_METRICS;
 	static {
