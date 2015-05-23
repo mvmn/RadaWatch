@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -19,7 +20,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.TreePath;
 
-import scala.actors.threadpool.Arrays;
 import x.mvmn.lang.StringDisplay;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.model.Entity;
