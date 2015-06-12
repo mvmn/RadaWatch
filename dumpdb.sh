@@ -1,3 +1,4 @@
-mysqldump -u root -p radawatch > $(date "+%Y%m%d_%H%M").sql
-zip $(date "+%Y%m%d_%H%M").zip $(date "+%Y%m%d_%H%M").sql
-rm $(date "+%Y%m%d_%H%M").sql
+FILENAME=RadaWatch_MySQLDB_$(date "+%Y-%m-%d")
+mysqldump -u root -p radawatch > $FILENAME.sql
+zip $FILENAME.zip $FILENAME.sql
+rm $FILENAME.sql
