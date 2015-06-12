@@ -79,7 +79,7 @@ class FetchJob<T extends Entity> implements Runnable {
 				int existedRecords = 0;
 				for (int itemIndex = 0; itemIndex < itemsLinksData.size(); itemIndex++) {
 					ItemLinkData<T> itemLinkData = itemsLinksData.get(itemIndex);
-					int itemId = itemLinkData.getItemSiteId();
+					final int itemId = itemLinkData.getItemSiteId();
 					lastTriedItemId = itemId;
 					if (stopRequested) {
 						break;
@@ -94,7 +94,6 @@ class FetchJob<T extends Entity> implements Runnable {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							fetchProgressPanel.setItemsProgress(currentItem);
-
 						}
 					});
 				}
@@ -126,7 +125,7 @@ class FetchJob<T extends Entity> implements Runnable {
 			if (errorHandler != null) {
 				try {
 					errorHandler.handleException(ex);
-				} catch (Throwable t) {
+				} catch (final Throwable t) {
 					t.printStackTrace();
 				}
 			}
