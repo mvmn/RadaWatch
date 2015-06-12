@@ -60,7 +60,10 @@ public class PredisentialDecreesParser extends AbstractJSoupItemsByPagedLinksPar
 			 * final Matcher idMatcher = PAGE_ID_IN_URL_REGEX_PATTERN.matcher(href); idMatcher.find(); final int id = Integer.parseInt(idMatcher.group(1));
 			 */
 			final String heading = cleanText(itemHeadlineElem.select("h3 a").first().ownText()).trim();
-			final String headingSplits[] = cleanText(heading).split("№");
+			final String headingSplits[] = cleanText(heading).split("[№]+");
+			if (headingSplits.length != 2) {
+				throw new Exception("Parsing failed - unexpected heading text: " + heading);
+			}
 			final String type = headingSplits[0].trim();
 			final String numberCode = headingSplits[1].trim();
 			final String href = cleanText(itemHeadlineElem.select("h3 a").first().attr("href"));
