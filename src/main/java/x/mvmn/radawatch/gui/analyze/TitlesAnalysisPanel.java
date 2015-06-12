@@ -40,7 +40,7 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 
 	protected static final String[][] DEFAULT_REPLACEMENTS = new String[][] {
 			new String[] { "(«|»)", "\"" },
-			new String[] { "i", "і" },
+			new String[] { "i|\\bта\\b", "і" },
 			new String[] { "o", "о" },
 			new String[] { "a", "а" },
 			new String[] { "e", "е" },
