@@ -50,6 +50,28 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<configuration>
+							<tasks>
+								<echo file="${project.build.directory}/run.sh" append="false">
+									java -jar RadaWatch-${project.version}.jar -Xmx720m
+								</echo>
+								<echo file="${project.build.directory}/run.bat" append="false">
+									java -jar RadaWatch-${project.version}.jar -Xmx720m
+								</echo>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
