@@ -27,7 +27,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.plot.CategoryPlot;
 
 import x.mvmn.radawatch.gui.ChartHelper;
-import x.mvmn.radawatch.gui.analyze.FilterPanel;
+import x.mvmn.radawatch.gui.analyze.ExtFilterPanel;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.db.DataBrowseQuery;
 import x.mvmn.radawatch.service.db.DataBrowseService;
@@ -125,7 +125,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 
 	private volatile int parentEntityId;
 	private final DataBrowseService<T> dataBrowseService;
-	private final FilterPanel filterPanel;
+	private final ExtFilterPanel filterPanel;
 	private final JButton btnLoadData = new JButton("Load data");
 	private final JTable mainTable = new JTable();
 	private final JLabel itemsCountLabel = new JLabel("Results: -");
@@ -143,7 +143,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		this.viewAdaptor = viewAdaptor;
 		this.subItemsBrowser = subItemsBrowser;
 
-		this.filterPanel = new FilterPanel(dataBrowseService.supportsDateFilter(), dataBrowseService.supportsSearchPhraseFilter());
+		this.filterPanel = new ExtFilterPanel(dataBrowseService.supportsDateFilter(), dataBrowseService.supportsSearchPhraseFilter());
 
 		this.add(filterPanel, BorderLayout.NORTH);
 		final JPanel panel = new JPanel(new BorderLayout());
@@ -200,8 +200,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		new Thread() {
 			public void run() {
 				try {
-					final DataBrowseQuery dbQuery = new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(),
-							filterPanel.getDateTo());
+					final DataBrowseQuery dbQuery = filterPanel.generateDataBrowseQuery();
 					final int itemsCount = dataBrowseService.countItems(parentEntityId, dbQuery);
 					final List<T> items = dataBrowseService.fetchItems(parentEntityId, dbQuery);
 					final TableModel tableModel = new DataBrowserTableModel<T>(items, viewAdaptor);

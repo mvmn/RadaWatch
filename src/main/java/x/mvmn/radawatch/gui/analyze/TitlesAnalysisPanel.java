@@ -24,7 +24,6 @@ import x.mvmn.lang.StringDisplay;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.model.Entity;
 import x.mvmn.radawatch.service.analyze.TitlesAnalyzisHelper;
-import x.mvmn.radawatch.service.db.DataBrowseQuery;
 import x.mvmn.radawatch.swing.DefaultMouseListener;
 
 public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
@@ -33,7 +32,7 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 
 	protected final DataBrowser<T> dataBrowser;
 
-	protected final FilterPanel filterPanel;
+	protected final ExtFilterPanel filterPanel;
 
 	protected final DefaultTableModel replacementsTableModel = new DefaultTableModel(new String[] { "Regular expression", "Replacement" }, 0);
 	protected final JTable replacementsTable = new JTable(replacementsTableModel);
@@ -72,7 +71,7 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 			replacementsTableModel.addRow(defualtReplacement);
 		}
 
-		filterPanel = new FilterPanel(dataBrowser.supportsDateFilter(), dataBrowser.supportsSearchPhraseFilter());
+		filterPanel = new ExtFilterPanel(dataBrowser.supportsDateFilter(), dataBrowser.supportsSearchPhraseFilter());
 		final JPanel replacementsPanel = new JPanel(new BorderLayout());
 		{
 			replacementsPanel.setBorder(BorderFactory.createTitledBorder("Text replacements in titles"));
@@ -213,8 +212,7 @@ public class TitlesAnalysisPanel<T extends Entity> extends JPanel {
 				new Thread() {
 					public void run() {
 						try {
-							final List<T> items = dataBrowser.getDataBrowseService().fetchItems(-1,
-									new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(), filterPanel.getDateTo()));
+							final List<T> items = dataBrowser.getDataBrowseService().fetchItems(-1, filterPanel.generateDataBrowseQuery());
 							// final List<String> titles = titlesAnalyzer.getTitles(new DataBrowseQuery(filterPanel.getSearchText(), null, null, filterPanel
 							// .getDateFrom(), filterPanel.getDateTo()));
 							final TitlesTree.TreeNode<T> rootNode = TitlesAnalyzisHelper.mapItemsByTitlesToTreeNodes(items, itemStringDisplayWithReplacements);

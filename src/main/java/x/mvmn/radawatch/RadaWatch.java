@@ -16,6 +16,7 @@ import javax.swing.JTabbedPane;
 import x.mvmn.lang.StringDisplay;
 import x.mvmn.radawatch.gui.DBConnectionDialog;
 import x.mvmn.radawatch.gui.analyze.DeputeeFactionParticipationPanel;
+import x.mvmn.radawatch.gui.analyze.DeputeesDissentPanel;
 import x.mvmn.radawatch.gui.analyze.DeputeesStatsPanel;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
@@ -151,6 +152,7 @@ public class RadaWatch {
 							}
 						}, mainWindow));
 			}
+			analyzeSubtabs.addTab("Analyze Deputees Dissent", new DeputeesDissentPanel(storageService));
 		}
 
 		{

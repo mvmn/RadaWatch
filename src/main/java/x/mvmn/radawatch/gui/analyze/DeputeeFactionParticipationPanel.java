@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -20,6 +19,7 @@ import javax.swing.table.TableRowSorter;
 
 import x.mvmn.radawatch.service.analyze.DeputeesFactionsParticipationAnalyzer;
 import x.mvmn.radawatch.service.analyze.DeputeesFactionsParticipationAnalyzer.DeputyFactionParticipation;
+import x.mvmn.radawatch.swing.SwingHelper;
 
 public class DeputeeFactionParticipationPanel extends JPanel {
 	private static final long serialVersionUID = -5945222223886199546L;
@@ -133,13 +133,7 @@ public class DeputeeFactionParticipationPanel extends JPanel {
 					});
 				} catch (final Exception ex) {
 					ex.printStackTrace();
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							JOptionPane.showMessageDialog(DeputeeFactionParticipationPanel.this, ex.getClass().getCanonicalName() + " " + ex.getMessage(),
-									"Error occurred", JOptionPane.ERROR_MESSAGE);
-						}
-					});
+					SwingHelper.reportError(true, DeputeeFactionParticipationPanel.this, ex);
 				} finally {
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override

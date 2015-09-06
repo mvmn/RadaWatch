@@ -33,17 +33,16 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-import x.mvmn.radawatch.gui.analyze.FilterPanel;
+import x.mvmn.radawatch.gui.analyze.ExtFilterPanel;
 import x.mvmn.radawatch.service.db.AbstractDataAggregationService;
 import x.mvmn.radawatch.service.db.DataAggregationService;
 import x.mvmn.radawatch.service.db.DataAggregationService.AggregationInterval;
-import x.mvmn.radawatch.service.db.DataBrowseQuery;
 
 public class StatsPanel extends JPanel {
 	private static final long serialVersionUID = -5460048410145768494L;
 
 	protected final DataAggregationService daService;
-	protected final FilterPanel filterPanel;
+	protected final ExtFilterPanel filterPanel;
 	protected final JButton performAggregation = new JButton("Load data and build graph");
 	protected volatile AggregationInterval selectedAggregationInterval = AggregationInterval.YEAR;
 	protected final List<JCheckBox> metricsCheckboxes = new ArrayList<JCheckBox>();
@@ -57,7 +56,7 @@ public class StatsPanel extends JPanel {
 	public StatsPanel(final AbstractDataAggregationService daService) {
 		super(new BorderLayout());
 		this.daService = daService;
-		this.filterPanel = new FilterPanel(daService.supportsDateFilter(), daService.supportsTitleFilter());
+		this.filterPanel = new ExtFilterPanel(daService.supportsDateFilter(), daService.supportsTitleFilter());
 		this.add(filterPanel, BorderLayout.NORTH);
 
 		this.add(middlePanel, BorderLayout.CENTER);
@@ -130,8 +129,8 @@ public class StatsPanel extends JPanel {
 						try {
 							final AggregationInterval interval = selectedAggregationInterval;
 							final List<String> metrics = getEnabledMetrics();
-							final Map<String, Map<Date, Map<String, Integer>>> results = daService.getAggregatedCounts(metrics, interval, new DataBrowseQuery(
-									filterPanel.getSearchText(), null, null, filterPanel.getDateFrom(), filterPanel.getDateTo()));
+							final Map<String, Map<Date, Map<String, Integer>>> results = daService.getAggregatedCounts(metrics, interval,
+									filterPanel.generateDataBrowseQuery());
 
 							final DefaultCategoryDataset mainDataset = new DefaultCategoryDataset();
 

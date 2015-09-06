@@ -5,10 +5,12 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class SwingHelper {
 
-	public static void moveToScreenCenter(Component component) {
+	public static void moveToScreenCenter(final Component component) {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension componentSize = component.getSize();
 		int newComponentX = screenSize.width - componentSize.width;
@@ -24,17 +26,17 @@ public class SwingHelper {
 		component.setLocation(newComponentX, newComponentY);
 	}
 
-	public static void resizeToScreenProportions(Component component, double xProportion, double yProportion) {
+	public static void resizeToScreenProportions(final Component component, final double xProportion, final double yProportion) {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension componentNewSize = new Dimension((int) (screenSize.width * yProportion), (int) (screenSize.height * xProportion));
 		component.setSize(componentNewSize);
 	}
 
-	public static void resizeToScreenProportions(Component component, double proportion) {
+	public static void resizeToScreenProportions(final Component component, final double proportion) {
 		resizeToScreenProportions(component, proportion, proportion);
 	}
 
-	public static JFrame enframeComponent(Component component, String title) {
+	public static JFrame enframeComponent(final Component component, final String title) {
 		JFrame result;
 		if (title != null)
 			result = new JFrame(title);
@@ -48,7 +50,7 @@ public class SwingHelper {
 		return result;
 	}
 
-	public static JFrame enframeComponent(Component component) {
+	public static JFrame enframeComponent(final Component component) {
 		JFrame frame;
 		if (component instanceof Titled) {
 			frame = enframeComponent(component, ((Titled) component).getTitle());
@@ -57,4 +59,22 @@ public class SwingHelper {
 		}
 		return frame;
 	}
+
+	public static void reportError(final boolean calledOffSwingEventDispatchThread, final Component parentWindow, final Throwable ex) {
+		if (calledOffSwingEventDispatchThread) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					reportError(parentWindow, ex);
+				}
+			});
+		} else {
+			reportError(parentWindow, ex);
+		}
+	}
+
+	protected static void reportError(final Component parentWindow, final Throwable ex) {
+		JOptionPane.showMessageDialog(parentWindow, ex.getClass().getCanonicalName() + " " + ex.getMessage(), "Error occurred", JOptionPane.ERROR_MESSAGE);
+	}
+
 }
