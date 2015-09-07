@@ -18,6 +18,8 @@ import x.mvmn.radawatch.gui.DBConnectionDialog;
 import x.mvmn.radawatch.gui.analyze.DeputeeFactionParticipationPanel;
 import x.mvmn.radawatch.gui.analyze.DeputeesDissentPanel;
 import x.mvmn.radawatch.gui.analyze.DeputeesStatsPanel;
+import x.mvmn.radawatch.gui.analyze.FactionsDissentPanel;
+import x.mvmn.radawatch.gui.analyze.FactionsDissentingLawsPanel;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
 import x.mvmn.radawatch.gui.fetch.FetchPanel;
@@ -115,15 +117,15 @@ public class RadaWatch {
 			tabBrowse.add(tabBrowseSubtabs, BorderLayout.CENTER);
 			// tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), votesFetchController.getView());
 
+			final DataBrowser<VoteSessionResultsData> voteSessionsDataBrowser;
 			{
 				final DataBrowser<IndividualDeputyVoteData> individualVotesBrowser = new DataBrowser<IndividualDeputyVoteData>("Deputy vote ",
 						new RadaIndividualVotesBrowseService(storageService), -1, new RadaIndividualVotesBrowseService.IndividualDeputyVoteViewAdaptor(), null);
 				final DataBrowser<VoteSessionPerFactionData> votesPerFactionsBrowser = new DataBrowser<VoteSessionPerFactionData>(
 						"Vote Session Results Per Faction", new RadaVoteSessionPerFactionResultsBrowseService(storageService), -1,
 						new RadaVoteSessionPerFactionResultsBrowseService.RadaVotesPerFactionViewAdaptor(), individualVotesBrowser);
-				final DataBrowser<VoteSessionResultsData> voteSessionsDataBrowser = new DataBrowser<VoteSessionResultsData>("Rada votes",
-						new RadaVoteSessionResultsBrowseService(storageService), -1, new RadaVoteSessionResultsBrowseService.RadaVotesViewAdaptor(),
-						votesPerFactionsBrowser);
+				voteSessionsDataBrowser = new DataBrowser<VoteSessionResultsData>("Rada votes", new RadaVoteSessionResultsBrowseService(storageService), -1,
+						new RadaVoteSessionResultsBrowseService.RadaVotesViewAdaptor(), votesPerFactionsBrowser);
 				tabBrowseSubtabs.addTab("Rada votes", voteSessionsDataBrowser);
 				analyzeSubtabs.addTab("Analyze Rada Votes Titles", new TitlesAnalysisPanel<VoteSessionResultsData>(voteSessionsDataBrowser,
 						new StringDisplay<VoteSessionResultsData>() {
@@ -152,7 +154,9 @@ public class RadaWatch {
 							}
 						}, mainWindow));
 			}
-			analyzeSubtabs.addTab("Analyze Deputees Dissent", new DeputeesDissentPanel(storageService));
+			analyzeSubtabs.addTab("Deputees Dissent", new DeputeesDissentPanel(storageService));
+			analyzeSubtabs.addTab("Factions Dissent", new FactionsDissentPanel(storageService));
+			analyzeSubtabs.addTab("Factions Dissenting Laws", new FactionsDissentingLawsPanel(storageService, voteSessionsDataBrowser));
 		}
 
 		{

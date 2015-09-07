@@ -1,21 +1,15 @@
 package x.mvmn.radawatch.service.analyze;
 
 import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData.VoteType;
-import x.mvmn.radawatch.service.db.AbstractQueryProcessor;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.DataBrowseQuery;
 import x.mvmn.radawatch.service.db.ResultSetConverter;
 
-public class DeputeesDissentAnalyzer<T> extends AbstractQueryProcessor {
+public class DeputeesDissentAnalyzer<T> extends AbstractDissentAnalyzer<T> {
 	protected final String TITLE_COLUMNS[] = { "title", "name" };
 
-	protected final DataBaseConnectionService dbService;
-	protected final ResultSetConverter<T> converter;
-
 	public DeputeesDissentAnalyzer(final DataBaseConnectionService dbService, final ResultSetConverter<T> converter) {
-		super();
-		this.dbService = dbService;
-		this.converter = converter;
+		super(dbService, converter);
 	}
 
 	public T queryForDeputeesByFactionsDissent(final int percent, final DataBrowseQuery query) throws Exception {
@@ -43,16 +37,12 @@ public class DeputeesDissentAnalyzer<T> extends AbstractQueryProcessor {
 	}
 
 	public String buildSqlQueryForDeputeeDissentingLaws(final int percent, final DataBrowseQuery query) {
-		return new StringBuilder("select title as Faction, voted as VoteType, votedate as Date, votetitle as Title from votesession ")
+		return new StringBuilder("select title as Faction, name as Deputee, voted as VoteType, votedate as Date, votetitle as Title from votesession ")
 				.append(" left join votesessionfaction on votesessionfaction.votesessionid = votesession.id ")
 				.append(" left join individualvote on individualvote.votesessionfactionid = votesessionfaction.id ")
 				.append(query.generateWhereClause(TITLE_COLUMNS, "votedate",
 						"(votesessionfaction.votedyes*100)/(votesessionfaction.totalmembers-votesessionfaction.absent)>" + percent, "not voted = "
-								+ VoteType.FOR.getId(), "not voted = " + VoteType.ABSENT.getId())).append(" order by voted, votedate, title").toString();
-	}
-
-	@Override
-	protected DataBaseConnectionService getDBService() {
-		return dbService;
+								+ VoteType.FOR.getId(), "not voted = " + VoteType.ABSENT.getId())).append(" order by Faction, VoteType, Date, Title")
+				.toString();
 	}
 }

@@ -1,6 +1,7 @@
 package x.mvmn.radawatch.gui.analyze;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -14,11 +15,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 import x.mvmn.radawatch.gui.ResultSetToTableModelConverter;
 import x.mvmn.radawatch.model.radavotes.IndividualDeputyVoteData;
@@ -26,7 +25,6 @@ import x.mvmn.radawatch.service.analyze.DeputeesDissentAnalyzer;
 import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 import x.mvmn.radawatch.service.db.DataBrowseQuery;
 import x.mvmn.radawatch.swing.DefaultMouseListener;
-import x.mvmn.radawatch.swing.SwingHelper;
 
 public class DeputeesDissentPanel extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 7240909984006821063L;
@@ -39,6 +37,9 @@ public class DeputeesDissentPanel extends JPanel implements ActionListener {
 	protected final MouseListener mainTableMouseListener;
 
 	protected final DeputeesDissentAnalyzer<TableModel> analyzer;
+
+	protected final TableDataUpdateController<Object> factionsListController;
+	protected final TableDataUpdateController<String> deputeeVotesListController;
 
 	public DeputeesDissentPanel(final DataBaseConnectionService storageService) {
 		super(new BorderLayout());
@@ -89,70 +90,45 @@ public class DeputeesDissentPanel extends JPanel implements ActionListener {
 				}
 			}
 		};
+
+		factionsListController = new TableDataUpdateController<Object>(new TableDataUpdateController.TableModelProvider<Object>() {
+			@Override
+			public TableModel provide(final Object... param) throws Exception {
+				return analyzer.queryForDeputeesByFactionsDissent(sliderPercentage.getValue(), filterPanel.generateDataBrowseQuery());
+			}
+		}, mainTable, new Component[] { doQuery }, this, new Runnable() {
+			@Override
+			public void run() {
+				mainTable.removeMouseListener(mainTableMouseListener);
+			}
+		}, new Runnable() {
+			@Override
+			public void run() {
+				mainTable.addMouseListener(mainTableMouseListener);
+			}
+		});
+
+		deputeeVotesListController = new TableDataUpdateController<String>(new TableDataUpdateController.TableModelProvider<String>() {
+			@Override
+			public TableModel provide(final String... param) throws Exception {
+				final DataBrowseQuery query = filterPanel.generateDataBrowseQuery(param[0]);
+				final TableModel result = analyzer.queryForDeputeeDissentingLaws(sliderPercentage.getValue(), query);
+				return result;
+			}
+		}, mainTable, new Component[] { doQuery }, this, null, new Runnable() {
+			@Override
+			public void run() {
+				mainTable.removeMouseListener(mainTableMouseListener);
+			}
+		});
 	}
 
 	@Override
 	public void actionPerformed(final ActionEvent e) {
-		doQuery.setEnabled(false);
-		mainTable.removeMouseListener(mainTableMouseListener);
-		new Thread() {
-			public void run() {
-				try {
-					final TableModel result = analyzer.queryForDeputeesByFactionsDissent(sliderPercentage.getValue(), filterPanel.generateDataBrowseQuery());
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							mainTable.setModel(result);
-							mainTable.addMouseListener(mainTableMouseListener);
-							mainTable.setRowSorter(new TableRowSorter<TableModel>(result));
-							mainTable.invalidate();
-							mainTable.revalidate();
-						}
-					});
-				} catch (final Exception ex) {
-					ex.printStackTrace();
-					SwingHelper.reportError(true, DeputeesDissentPanel.this, ex);
-				} finally {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							doQuery.setEnabled(true);
-						}
-					});
-				}
-			}
-		}.start();
+		factionsListController.perform();
 	}
 
 	protected void displayDetails(final String deputee) {
-		doQuery.setEnabled(false);
-		new Thread() {
-			public void run() {
-				try {
-					final DataBrowseQuery query = filterPanel.generateDataBrowseQuery(deputee);
-					final TableModel result = analyzer.queryForDeputeeDissentingLaws(sliderPercentage.getValue(), query);
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							mainTable.setModel(result);
-							mainTable.removeMouseListener(mainTableMouseListener);
-							mainTable.setRowSorter(new TableRowSorter<TableModel>(result));
-							mainTable.invalidate();
-							mainTable.revalidate();
-						}
-					});
-				} catch (final Exception ex) {
-					ex.printStackTrace();
-					SwingHelper.reportError(true, DeputeesDissentPanel.this, ex);
-				} finally {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							doQuery.setEnabled(true);
-						}
-					});
-				}
-			}
-		}.start();
+		deputeeVotesListController.perform(deputee);
 	}
 }
