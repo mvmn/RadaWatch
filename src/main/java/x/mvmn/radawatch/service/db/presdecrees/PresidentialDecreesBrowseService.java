@@ -3,6 +3,8 @@ package x.mvmn.radawatch.service.db.presdecrees;
 import java.sql.Date;
 import java.sql.ResultSet;
 
+import org.apache.commons.lang.time.FastDateFormat;
+
 import x.mvmn.radawatch.gui.browse.DataBrowser.ViewAdaptor;
 import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
 import x.mvmn.radawatch.service.db.AbstractDataBrowseService;
@@ -10,10 +12,12 @@ import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
 public class PresidentialDecreesBrowseService extends AbstractDataBrowseService<PresidentialDecree> {
 
-	private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Site ID", "Date", "Numcode", "Type", "Title", "Full text" };
-	private static final Class<?>[] COLUMN_TYPES = new Class<?>[] { Integer.class, Integer.class, Date.class, String.class, String.class, String.class,
+	protected static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd");
+
+	protected static final String[] COLUMN_NAMES = new String[] { "DB ID", "Site ID", "Date", "Numcode", "Type", "Title", "Full text" };
+	protected static final Class<?>[] COLUMN_TYPES = new Class<?>[] { Integer.class, Integer.class, String.class, String.class, String.class, String.class,
 			String.class };
-	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " title ", " completetext " };
+	protected static String[] SEARCH_PHRASE_COLUMNS = new String[] { " title ", " completetext " };
 
 	public static class PresidentialDecreesViewAdaptor implements ViewAdaptor<PresidentialDecree> {
 
@@ -38,7 +42,7 @@ public class PresidentialDecreesBrowseService extends AbstractDataBrowseService<
 					result = item.getSiteId();
 				break;
 				case 2:
-					result = item.getDate();
+					result = DATE_FORMAT.format(item.getDate());
 				break;
 				case 3:
 					result = item.getNumberCode();

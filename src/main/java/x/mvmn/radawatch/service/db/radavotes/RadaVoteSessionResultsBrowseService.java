@@ -2,7 +2,8 @@ package x.mvmn.radawatch.service.db.radavotes;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+
+import org.apache.commons.lang.time.FastDateFormat;
 
 import x.mvmn.radawatch.gui.browse.DataBrowser.ViewAdaptor;
 import x.mvmn.radawatch.model.radavotes.VoteSessionResultsData;
@@ -11,7 +12,9 @@ import x.mvmn.radawatch.service.db.DataBaseConnectionService;
 
 public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseService<VoteSessionResultsData> {
 
-	private static String[] SEARCH_PHRASE_COLUMNS = new String[] { " votetitle " };
+	protected static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
+
+	protected static String[] SEARCH_PHRASE_COLUMNS = new String[] { " votetitle " };
 
 	public RadaVoteSessionResultsBrowseService(final DataBaseConnectionService dbService) {
 		super(dbService);
@@ -85,7 +88,7 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 					result = item.getResult().booleanValue() ? "Passed" : "Failed";
 				break;
 				case 4:
-					result = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(item.getDate());
+					result = DATE_FORMAT.format(item.getDate());
 				break;
 				case 5:
 					result = item.getVotedYes();

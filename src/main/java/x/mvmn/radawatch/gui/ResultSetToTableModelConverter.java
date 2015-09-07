@@ -3,14 +3,19 @@ package x.mvmn.radawatch.gui;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
+import org.apache.commons.lang.time.FastDateFormat;
+
 import x.mvmn.radawatch.service.db.ResultSetConverter;
 
 public class ResultSetToTableModelConverter implements ResultSetConverter<TableModel> {
+
+	protected static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
 
 	protected String getColumnName(final int columnIndex, final ResultSetMetaData meta) throws Exception {
 		return meta.getColumnLabel(columnIndex);
@@ -21,7 +26,7 @@ public class ResultSetToTableModelConverter implements ResultSetConverter<TableM
 	}
 
 	protected Object getValue(final int columnIndex, final ResultSet resultSet, final String columnName, final Class<?> columnClass) throws Exception {
-		return resultSet.getObject(columnIndex);
+		return Date.class.isAssignableFrom(columnClass) ? DATE_FORMAT.format(resultSet.getTimestamp(columnIndex)) : resultSet.getObject(columnIndex);
 	}
 
 	@Override
@@ -54,7 +59,7 @@ public class ResultSetToTableModelConverter implements ResultSetConverter<TableM
 
 			@Override
 			public Class<?> getColumnClass(final int columnIndex) {
-				return columnClasses[columnIndex];
+				return Date.class.isAssignableFrom(columnClasses[columnIndex]) ? String.class : columnClasses[columnIndex];
 			}
 
 			@Override

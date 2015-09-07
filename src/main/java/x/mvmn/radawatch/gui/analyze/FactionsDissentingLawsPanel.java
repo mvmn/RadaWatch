@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -34,10 +35,11 @@ public class FactionsDissentingLawsPanel extends JPanel implements ActionListene
 	protected final ExtFilterPanel filterPanel = new ExtFilterPanel(true, true);
 	protected final JTable mainTable = new JTable();
 	protected final JButton doQuery = new JButton("Run Query");
-	protected final JLabel sliderVal = new JLabel("15");
-	protected final JSlider sliderPercentageThreshold = new JSlider(JSlider.HORIZONTAL, 1, 100, 15);
+	protected final JLabel sliderVal = new JLabel("75");
+	protected final JCheckBox cbNormalizeByEffectiveVotes = new JCheckBox("Normalize by % of effective votes", true);
+	protected final JSlider sliderPercentageThreshold = new JSlider(JSlider.HORIZONTAL, 1, 100, 75);
 
-	protected final JComboBox<String> cbFormula = new JComboBox<String>(new String[] {
+	protected final JComboBox<String> cmFormula = new JComboBox<String>(new String[] {
 			"[ N(for) - N(against) - N(abstained) - N(skipped) ] / ( N(total) - N(absent) )",
 			"[ N(for) - N(against) - N(abstained) - N(skipped) - N(absent) ] / N(total)",
 			"[ N(for) - N(against) - N(abstained) ] / ( N(total) - N(absent) - N(skipped) )", });
@@ -60,21 +62,23 @@ public class FactionsDissentingLawsPanel extends JPanel implements ActionListene
 		this.add(new JScrollPane(mainTable), BorderLayout.CENTER);
 
 		final JPanel btnPanel = new JPanel(new BorderLayout());
-		btnPanel.add(cbFormula, BorderLayout.NORTH);
+		btnPanel.add(cmFormula, BorderLayout.NORTH);
 		btnPanel.add(doQuery, BorderLayout.EAST);
 		btnPanel.add(sliderPercentageThreshold, BorderLayout.CENTER);
 		btnPanel.add(sliderVal, BorderLayout.WEST);
+		btnPanel.add(cbNormalizeByEffectiveVotes, BorderLayout.SOUTH);
 		this.add(btnPanel, BorderLayout.SOUTH);
 
 		factionDissentListController = new TableDataUpdateController<Object>(new TableDataUpdateController.TableModelProvider<Object>() {
 			@Override
 			public TableModel provide(final Object... param) throws Exception {
-				int f = cbFormula.getSelectedIndex();
+				int f = cmFormula.getSelectedIndex();
 				if (f < 0 || f > 2) {
 					f = 0;
-					cbFormula.setSelectedIndex(0);
+					cmFormula.setSelectedIndex(0);
 				}
-				return analyzer.queryForDissentingLaws(sliderPercentageThreshold.getValue(), f == 2, f != 1, filterPanel.generateDataBrowseQuery());
+				return analyzer.queryForDissentingLaws(sliderPercentageThreshold.getValue(), f == 2, f != 1, cbNormalizeByEffectiveVotes.isSelected(),
+						filterPanel.generateDataBrowseQuery());
 			}
 		}, mainTable, new Component[] { doQuery }, this, null, null);
 
@@ -89,7 +93,6 @@ public class FactionsDissentingLawsPanel extends JPanel implements ActionListene
 					}
 				}
 			}
-
 		});
 	}
 

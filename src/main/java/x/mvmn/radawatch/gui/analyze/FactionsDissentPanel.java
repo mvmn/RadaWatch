@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,6 +24,7 @@ public class FactionsDissentPanel extends JPanel implements ActionListener {
 	protected final TableDataUpdateController<Object> factionDissentListController;
 
 	protected final ExtFilterPanel filterPanel = new ExtFilterPanel(true, true);
+	protected final JCheckBox cbNormalizeByEffectiveVotes = new JCheckBox("Normalize by % of effective votes", true);
 	protected final JTable mainTable = new JTable();
 	protected final JButton doQuery = new JButton("Run Query");
 
@@ -43,6 +45,7 @@ public class FactionsDissentPanel extends JPanel implements ActionListener {
 		final JPanel btnPanel = new JPanel(new BorderLayout());
 		btnPanel.add(cbFormula, BorderLayout.CENTER);
 		btnPanel.add(doQuery, BorderLayout.EAST);
+		btnPanel.add(cbNormalizeByEffectiveVotes, BorderLayout.SOUTH);
 		this.add(btnPanel, BorderLayout.SOUTH);
 
 		factionDissentListController = new TableDataUpdateController<Object>(new TableDataUpdateController.TableModelProvider<Object>() {
@@ -53,7 +56,7 @@ public class FactionsDissentPanel extends JPanel implements ActionListener {
 					f = 0;
 					cbFormula.setSelectedIndex(0);
 				}
-				return analyzer.queryForFactionsDissent(f == 2, f != 1, filterPanel.generateDataBrowseQuery());
+				return analyzer.queryForFactionsDissent(f == 2, f != 1, cbNormalizeByEffectiveVotes.isSelected(), filterPanel.generateDataBrowseQuery());
 			}
 		}, mainTable, new Component[] { doQuery }, this, null, null);
 	}
