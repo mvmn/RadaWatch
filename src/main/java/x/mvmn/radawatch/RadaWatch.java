@@ -22,6 +22,7 @@ import x.mvmn.radawatch.gui.analyze.FactionsDissentPanel;
 import x.mvmn.radawatch.gui.analyze.FactionsDissentingLawsPanel;
 import x.mvmn.radawatch.gui.analyze.TitlesAnalysisPanel;
 import x.mvmn.radawatch.gui.browse.DataBrowser;
+import x.mvmn.radawatch.gui.browse.DataBrowser.DataBrowserFactory;
 import x.mvmn.radawatch.gui.fetch.FetchPanel;
 import x.mvmn.radawatch.gui.stats.StatsPanel;
 import x.mvmn.radawatch.model.presdecrees.PresidentialDecree;
@@ -117,28 +118,31 @@ public class RadaWatch {
 			tabBrowse.add(tabBrowseSubtabs, BorderLayout.CENTER);
 			// tabBrowseSubtabs.addTab(votesFetchController.getDataTitle(), votesFetchController.getView());
 
-			final DataBrowser<VoteSessionResultsData> voteSessionsDataBrowser;
+			final DataBrowserFactory<VoteSessionResultsData> voteSessionsDataBrowserFactory;
 			{
-				final DataBrowser<IndividualDeputyVoteData> individualVotesBrowser = new DataBrowser<IndividualDeputyVoteData>("Deputy vote ",
-						new RadaIndividualVotesBrowseService(storageService), -1, new RadaIndividualVotesBrowseService.IndividualDeputyVoteViewAdaptor(), null);
-				final DataBrowser<VoteSessionPerFactionData> votesPerFactionsBrowser = new DataBrowser<VoteSessionPerFactionData>(
-						"Vote Session Results Per Faction", new RadaVoteSessionPerFactionResultsBrowseService(storageService), -1,
-						new RadaVoteSessionPerFactionResultsBrowseService.RadaVotesPerFactionViewAdaptor(), individualVotesBrowser);
-				voteSessionsDataBrowser = new DataBrowser<VoteSessionResultsData>("Rada votes", new RadaVoteSessionResultsBrowseService(storageService), -1,
-						new RadaVoteSessionResultsBrowseService.RadaVotesViewAdaptor(), votesPerFactionsBrowser);
-				tabBrowseSubtabs.addTab("Rada votes", voteSessionsDataBrowser);
-				analyzeSubtabs.addTab("Analyze Rada Votes Titles", new TitlesAnalysisPanel<VoteSessionResultsData>(voteSessionsDataBrowser,
-						new StringDisplay<VoteSessionResultsData>() {
-							public String getStringDisplay(VoteSessionResultsData item) {
-								final StringBuilder result = new StringBuilder(item.getTitle());
-								result.append(" /").append(item.getDate().toString()).append(" / ")
-										.append(item.getResult().booleanValue() ? "<прийнято> " : "<НЕ прийнято> ");
-								result.append(String.valueOf(item.getVotedYes())).append("/").append(String.valueOf(item.getVotedNo()));
-								result.append(" (").append(String.valueOf(item.getTotal())).append(")");
+				final DataBrowserFactory<IndividualDeputyVoteData> individualVotesBrowserFactory = new DataBrowserFactory<IndividualDeputyVoteData>(
+						"Deputy vote ", new RadaIndividualVotesBrowseService(storageService),
+						new RadaIndividualVotesBrowseService.IndividualDeputyVoteViewAdaptor(), null);
+				final DataBrowserFactory<VoteSessionPerFactionData> votesPerFactionsBrowserFactory = new DataBrowserFactory<VoteSessionPerFactionData>(
+						"Vote Session Results Per Faction", new RadaVoteSessionPerFactionResultsBrowseService(storageService),
+						new RadaVoteSessionPerFactionResultsBrowseService.RadaVotesPerFactionViewAdaptor(), individualVotesBrowserFactory);
 
-								return result.toString();
-							}
-						}, mainWindow));
+				voteSessionsDataBrowserFactory = new DataBrowserFactory<VoteSessionResultsData>("Rada votes", new RadaVoteSessionResultsBrowseService(
+						storageService), new RadaVoteSessionResultsBrowseService.RadaVotesViewAdaptor(), votesPerFactionsBrowserFactory);
+				tabBrowseSubtabs.addTab("Rada votes", voteSessionsDataBrowserFactory.createInstance(-1));
+				analyzeSubtabs.addTab("Analyze Rada Votes Titles",
+						new TitlesAnalysisPanel<VoteSessionResultsData>(voteSessionsDataBrowserFactory.createInstance(-1),
+								new StringDisplay<VoteSessionResultsData>() {
+									public String getStringDisplay(VoteSessionResultsData item) {
+										final StringBuilder result = new StringBuilder(item.getTitle());
+										result.append(" /").append(item.getDate().toString()).append(" / ")
+												.append(item.getResult().booleanValue() ? "<прийнято> " : "<НЕ прийнято> ");
+										result.append(String.valueOf(item.getVotedYes())).append("/").append(String.valueOf(item.getVotedNo()));
+										result.append(" (").append(String.valueOf(item.getTotal())).append(")");
+
+										return result.toString();
+									}
+								}, mainWindow));
 			}
 			{
 				final DataBrowser<PresidentialDecree> presidentialDecreesDataBrowser = new DataBrowser<PresidentialDecree>("Presidential decrees",
@@ -156,7 +160,8 @@ public class RadaWatch {
 			}
 			analyzeSubtabs.addTab("Deputees Dissent", new DeputeesDissentPanel(storageService));
 			analyzeSubtabs.addTab("Factions Dissent", new FactionsDissentPanel(storageService));
-			analyzeSubtabs.addTab("Factions Dissenting Laws", new FactionsDissentingLawsPanel(storageService, voteSessionsDataBrowser));
+			analyzeSubtabs.addTab("Factions Dissenting Laws",
+					new FactionsDissentingLawsPanel(storageService, voteSessionsDataBrowserFactory.createInstance(-1)));
 		}
 
 		{

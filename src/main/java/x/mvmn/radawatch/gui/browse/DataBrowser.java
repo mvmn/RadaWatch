@@ -123,6 +123,25 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		}
 	}
 
+	public static class DataBrowserFactory<FT extends Entity> {
+		final String dataTitle;
+		final DataBrowseService<FT> dataBrowseService;
+		final ViewAdaptor<FT> viewAdaptor;
+		final DataBrowserFactory<? extends Entity> subItemsBrowserFactory;
+
+		public DataBrowserFactory(final String dataTitle, final DataBrowseService<FT> dataBrowseService, final ViewAdaptor<FT> viewAdaptor,
+				final DataBrowserFactory<? extends Entity> subItemsBrowserFactory) {
+			this.dataTitle = dataTitle;
+			this.dataBrowseService = dataBrowseService;
+			this.viewAdaptor = viewAdaptor;
+			this.subItemsBrowserFactory = subItemsBrowserFactory;
+		}
+
+		public DataBrowser<FT> createInstance(final int parentEntityId) {
+			return new DataBrowser<FT>(dataTitle, dataBrowseService, parentEntityId, viewAdaptor, subItemsBrowserFactory);
+		}
+	}
+
 	private volatile int parentEntityId;
 	private final DataBrowseService<T> dataBrowseService;
 	private final ExtFilterPanel filterPanel;
@@ -131,17 +150,18 @@ public class DataBrowser<T extends Entity> extends JPanel {
 	private final JLabel itemsCountLabel = new JLabel("Results: -");
 	private final ViewAdaptor<T> viewAdaptor;
 	private final String dataTitle;
-	private final DataBrowser<? extends Entity> subItemsBrowser;
 	private final JTabbedPane tabPane = new JTabbedPane();
+	private final DataBrowserFactory<? extends Entity> subItemsBrowserFactory;
 
 	public DataBrowser(final String dataTitle, final DataBrowseService<T> dataBrowseService, final int parentEntityId, final ViewAdaptor<T> viewAdaptor,
-			final DataBrowser<? extends Entity> subItemsBrowser) {
+			final DataBrowserFactory<? extends Entity> subItemsBrowserFactory) {
 		super(new BorderLayout());
 		this.dataTitle = dataTitle;
 		this.dataBrowseService = dataBrowseService;
 		this.parentEntityId = parentEntityId;
 		this.viewAdaptor = viewAdaptor;
-		this.subItemsBrowser = subItemsBrowser;
+
+		this.subItemsBrowserFactory = subItemsBrowserFactory;
 
 		this.filterPanel = new ExtFilterPanel(dataBrowseService.supportsDateFilter(), dataBrowseService.supportsSearchPhraseFilter());
 
@@ -178,6 +198,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		try {
 			// TODO: consider moving off EDT
 			final T item = dataBrowseService.fetchItem(itemDbId);
+			final DataBrowser<? extends Entity> subItemsBrowser = subItemsBrowserFactory.createInstance(itemDbId);
 			SwingHelper.enframeComponent(new ItemDetailView<T>(item, viewAdaptor, subItemsBrowser), dataTitle + " - " + String.valueOf(item.getDbId()))
 					.setVisible(true);
 		} catch (final Exception ex) {
