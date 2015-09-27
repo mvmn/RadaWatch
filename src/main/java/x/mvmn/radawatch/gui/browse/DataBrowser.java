@@ -198,7 +198,7 @@ public class DataBrowser<T extends Entity> extends JPanel {
 		try {
 			// TODO: consider moving off EDT
 			final T item = dataBrowseService.fetchItem(itemDbId);
-			final DataBrowser<? extends Entity> subItemsBrowser = subItemsBrowserFactory.createInstance(itemDbId);
+			final DataBrowser<? extends Entity> subItemsBrowser = subItemsBrowserFactory != null ? subItemsBrowserFactory.createInstance(itemDbId) : null;
 			SwingHelper.enframeComponent(new ItemDetailView<T>(item, viewAdaptor, subItemsBrowser), dataTitle + " - " + String.valueOf(item.getDbId()))
 					.setVisible(true);
 		} catch (final Exception ex) {
