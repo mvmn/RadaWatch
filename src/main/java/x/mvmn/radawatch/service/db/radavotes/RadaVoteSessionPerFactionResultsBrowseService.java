@@ -53,10 +53,11 @@ public class RadaVoteSessionPerFactionResultsBrowseService extends AbstractDataB
 
 		@Override
 		public int getFieldsCount(boolean fullView) {
-			return 8;
+			return COLUMN_NAMES.length;
 		}
 
-		private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Title", "Total", "Yes votes", "No votes", "Abstained", "Skipped", "Absent" };
+		private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Title", "Total", "Yes votes", "No votes", "Abstained", "Skipped", "Absent",
+				"Yes % present", "Yes %", "No %", "Abstained %", "Skipped %", "Absent %" };
 
 		@Override
 		public String getFieldName(int fieldIndex, boolean fullView) {
@@ -90,6 +91,24 @@ public class RadaVoteSessionPerFactionResultsBrowseService extends AbstractDataB
 				break;
 				case 7:
 					result = item.getAbsent();
+				break;
+				case 8:
+					result = (int) (((double) (item.getVotedYes() * 100)) / (item.getSize() - item.getAbsent()));
+				break;
+				case 9:
+					result = (int) (((double) (item.getVotedYes() * 100)) / item.getSize());
+				break;
+				case 10:
+					result = (int) (((double) (item.getVotedNo() * 100)) / item.getSize());
+				break;
+				case 11:
+					result = (int) (((double) (item.getAbstained() * 100)) / item.getSize());
+				break;
+				case 12:
+					result = (int) (((double) (item.getSkipped() * 100)) / item.getSize());
+				break;
+				case 13:
+					result = (int) (((double) (item.getAbsent() * 100)) / item.getSize());
 				break;
 				default:
 					result = item.getTitle();

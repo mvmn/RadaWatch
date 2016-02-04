@@ -14,7 +14,7 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 
 	protected static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
 
-	protected static String[] SEARCH_PHRASE_COLUMNS = new String[] { " votetitle " };
+	protected static String[] SEARCH_PHRASE_COLUMNS = new String[] { " votetitle ", " g_id " };
 
 	public RadaVoteSessionResultsBrowseService(final DataBaseConnectionService dbService) {
 		super(dbService);
@@ -60,11 +60,11 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 
 		@Override
 		public int getFieldsCount(boolean fullView) {
-			return 11;
+			return COLUMN_NAMES.length;
 		}
 
-		private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Site ID", "Title", "Passed", "Date", "Yes votes", "Yes votes % of present",
-				"No votes", "Abstained", "Skipped", "Total" };
+		private static final String[] COLUMN_NAMES = new String[] { "DB ID", "Site ID", "Title", "Passed", "Date", "Yes votes", "Yes % of present",
+				"Yes % of 450", "No votes", "Abstained", "Skipped", "Total Present", "Present % of 450" };
 
 		@Override
 		public String getFieldName(int fieldIndex, boolean fullView) {
@@ -94,19 +94,25 @@ public class RadaVoteSessionResultsBrowseService extends AbstractDataBrowseServi
 					result = item.getVotedYes();
 				break;
 				case 6:
-					result = (int) (((double) item.getVotedYes()) * 100 / ((double) item.getTotal()));
+					result = (int) (((double) item.getVotedYes() * 100) / ((double) item.getTotal()));
 				break;
 				case 7:
-					result = item.getVotedNo();
+					result = (int) (((double) item.getVotedYes() * 100) / 450.0d);
 				break;
 				case 8:
-					result = item.getAbstained();
+					result = item.getVotedNo();
 				break;
 				case 9:
-					result = item.getSkipped();
+					result = item.getAbstained();
 				break;
 				case 10:
+					result = item.getSkipped();
+				break;
+				case 11:
 					result = item.getTotal();
+				break;
+				case 12:
+					result = (int) (((double) item.getTotal() * 100) / 450.0d);
 				break;
 				default:
 					result = item.getTitle();
