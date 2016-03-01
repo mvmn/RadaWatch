@@ -4,6 +4,11 @@
 	<groupId>x.mvmn.radawatch</groupId>
 	<artifactId>RadaWatch</artifactId>
 	<version>2.1.5-SNAPSHOT</version>
+
+	<properties>
+		<mainClass>x.mvmn.radawatch.RadaWatch</mainClass>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -26,7 +31,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<mainClass>x.mvmn.radawatch.RadaWatch</mainClass>
+					<mainClass>${mainClass}</mainClass>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -43,7 +48,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>x.mvmn.radawatch.RadaWatch</mainClass>
+									<mainClass>${mainClass}</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
@@ -59,7 +64,8 @@
 						<configuration>
 							<tasks>
 								<echo file="${project.build.directory}/run.sh" append="false">
-									java -jar RadaWatch-${project.version}.jar -Xmx720m
+									java
+									-jar RadaWatch-${project.version}.jar -Xmx720m
 								</echo>
 								<echo file="${project.build.directory}/run.bat" append="false">
 									java -jar RadaWatch-${project.version}.jar -Xmx720m
